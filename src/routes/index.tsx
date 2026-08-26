@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, Filter, Calendar } from "lucide-react";
+import { Plus, Search, Filter, Calendar, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,20 +12,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PhaseBadge } from "@/components/pdca-badge";
+
 import { PdcaDialog } from "@/components/pdca-dialog";
 import { pdcas, phases, type Pdca, type Phase } from "@/data/pdca";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Mis PDCAs · Jóvenes Talentos Grupo Modelo" },
+      { title: "Mis PDCAs · VPO Grupo Modelo" },
       {
         name: "description",
         content:
-          "Crea, da seguimiento y cierra tus reportes PDCA de mejora continua como becario de Grupo Modelo.",
+          "Crea, da seguimiento y cierra tus reportes PDCA de mejora continua.",
       },
-      { property: "og:title", content: "Mis PDCAs · Jóvenes Talentos Grupo Modelo" },
+      { property: "og:title", content: "Mis PDCAs · VPO Grupo Modelo" },
       {
         property: "og:description",
         content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar.",
@@ -36,26 +47,51 @@ export const Route = createFileRoute("/")({
 });
 
 function MisPdcas() {
+  const [pdcaList, setPdcaList] = useState<Pdca[]>(pdcas);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Phase | "Todas">("Todas");
   const [selected, setSelected] = useState<Pdca | null>(null);
-  const [open, setOpen] = useState(false);
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const rows = useMemo(
     () =>
-      pdcas.filter(
+      pdcaList.filter(
         (p) =>
           (filter === "Todas" || p.fase === filter) &&
           (p.titulo.toLowerCase().includes(query.toLowerCase()) ||
             p.area.toLowerCase().includes(query.toLowerCase())),
       ),
-    [query, filter],
+    [query, filter, pdcaList],
   );
+
+  const requestDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      setPdcaList(prev => prev.filter(p => p.id !== deleteId));
+      setDeleteId(null);
+    }
+  };
 
   const openPdca = (p: Pdca | null) => {
     setSelected(p);
-    setOpen(true);
   };
+
+  if (selected) {
+    return (
+      <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-8">
+        <PdcaDialog 
+          pdca={selected} 
+          open={true} 
+          onOpenChange={(open) => { if (!open) setSelected(null); }} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-8">
@@ -66,7 +102,7 @@ function MisPdcas() {
           </p>
           <h1 className="mt-1 text-3xl font-bold uppercase">Mis PDCAs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {pdcas.length} ciclos de mejora continua asignados a Ana López.
+            {pdcaList.length} ciclos de mejora continua asignados a Ana López.
           </p>
         </div>
         <Button size="lg" className="bg-primary shadow-sm hover:bg-brand-dark" onClick={() => openPdca(null)}>
@@ -74,34 +110,43 @@ function MisPdcas() {
         </Button>
       </header>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {phases.map((phase) => (
-          <button
-            key={phase}
-            type="button"
-            onClick={() => setFilter(filter === phase ? "Todas" : phase)}
-            className={`rounded-xl border bg-card p-4 text-left shadow-[var(--shadow-card)] transition-colors hover:border-primary/40 ${
-              filter === phase ? "border-primary" : "border-border"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <PhaseBadge phase={phase} />
-              <span className="font-display text-2xl font-bold">
-                {pdcas.filter((p) => p.fase === phase).length}
-              </span>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {phases.map((phase) => {
+          const borderColor = {
+            Plan: "border-t-phase-plan",
+            Do: "border-t-phase-do",
+            Check: "border-t-phase-check",
+            Act: "border-t-phase-act",
+          }[phase];
+          
+          return (
+            <button
+              key={phase}
+              type="button"
+              onClick={() => setFilter(filter === phase ? "Todas" : phase)}
+              className={`rounded-xl border bg-card p-4 text-left shadow-[var(--shadow-card)] transition-all hover:shadow-md hover:-translate-y-0.5 border-t-[5px] ${
+                filter === phase ? "border-primary ring-1 ring-primary/20" : borderColor
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <PhaseBadge phase={phase} />
+                <span className="font-display text-2xl font-bold">
+                  {pdcaList.filter((p) => p.fase === phase).length}
+                </span>
+              </div>
+              <p className="mt-3 text-[13px] font-medium leading-tight text-foreground/70">
                 {
-                  Plan: "En definición de problema y causa raíz",
-                  Do: "Ejecutando el plan de acción",
-                  Check: "Verificando resultados con datos",
-                  Act: "Estandarizando y cerrando",
-                }[phase]
-              }
-            </p>
-          </button>
-        ))}
+                  {
+                    Plan: "En definición de problema y causa raíz",
+                    Do: "Ejecutando el plan de acción",
+                    Check: "Verificando resultados con datos",
+                    Act: "Estandarizando y cerrando",
+                  }[phase]
+                }
+              </p>
+            </button>
+          );
+        })}
       </div>
 
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
@@ -127,17 +172,18 @@ function MisPdcas() {
 
         <Table>
           <TableHeader>
-            <TableRow className="bg-secondary/50">
-              <TableHead>Título del Proyecto</TableHead>
-              <TableHead className="hidden md:table-cell">Área</TableHead>
-              <TableHead className="w-32">Fase Actual</TableHead>
-              <TableHead className="hidden w-44 lg:table-cell">Fecha de Actualización</TableHead>
-              <TableHead className="w-24 text-right">Acción</TableHead>
+            <TableRow className="bg-secondary/80 hover:bg-secondary/80">
+              <TableHead className="font-semibold text-foreground/80">Título del Proyecto</TableHead>
+              <TableHead className="hidden md:table-cell font-semibold text-foreground/80">Área</TableHead>
+              <TableHead className="w-32 font-semibold text-foreground/80">Fase Actual</TableHead>
+              <TableHead className="hidden w-36 lg:table-cell font-semibold text-foreground/80">Fecha Límite</TableHead>
+              <TableHead className="hidden w-40 lg:table-cell font-semibold text-foreground/80">Actualización</TableHead>
+              <TableHead className="w-24 text-right font-semibold text-foreground/80">Acción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((p) => (
-              <TableRow key={p.id} className="cursor-pointer" onClick={() => openPdca(p)}>
+              <TableRow key={p.id} className="cursor-pointer transition-colors hover:bg-secondary/30" onClick={() => setSelected(p)}>
                 <TableCell>
                   <span className="block font-semibold">{p.titulo}</span>
                   <span className="mt-0.5 flex items-center gap-2 font-mono text-xs text-muted-foreground">
@@ -158,14 +204,33 @@ function MisPdcas() {
                   <PhaseBadge phase={p.fase} />
                 </TableCell>
                 <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="size-3.5" /> {p.actualizado}
+                  {p.fechaFinalizacion ? (
+                    <span className="inline-flex items-center gap-1.5 text-foreground font-medium">
+                      <Calendar className="size-3.5 text-brand-yellow" /> {p.fechaFinalizacion}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground/50 italic text-xs">Sin asignar</span>
+                  )}
+                </TableCell>
+                <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
+                  <span className="inline-flex items-center gap-1.5 text-xs">
+                    {p.actualizado}
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" className="text-primary">
-                    Abrir
-                  </Button>
+                  <div className="flex justify-end items-center gap-1">
+                    <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+                      Abrir
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                      onClick={(e) => requestDelete(e, p.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -180,7 +245,22 @@ function MisPdcas() {
         </Table>
       </div>
 
-      <PdcaDialog pdca={selected} open={open} onOpenChange={setOpen} />
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar PDCA?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente este PDCA y todos sus datos asociados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

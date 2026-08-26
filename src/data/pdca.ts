@@ -24,6 +24,7 @@ export type Pdca = {
   estandarizacion: string;
   indicador: { etiqueta: string; antes: number; despues: number; unidad: string };
   serie: { mes: string; valor: number }[];
+  fechaFinalizacion?: string;
 };
 
 export const phases: Phase[] = ["Plan", "Do", "Check", "Act"];
@@ -42,6 +43,7 @@ export const pdcas: Pdca[] = [
     area: "Producción / Envasado",
     fase: "Do",
     actualizado: "24 Ago 2026",
+    fechaFinalizacion: "2026-10-31",
     progreso: 45,
     problema:
       "La línea de envasado L3 presenta una merma de botella de 2.8% contra un objetivo de 1.5%, generando un sobrecosto estimado de $180,000 MXN mensuales.",
