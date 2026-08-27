@@ -1,21 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { useState, useEffect, useMemo } from "react";
 import { ClipboardList, CheckCircle2, Clock, Target, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { pdcas } from "@/data/pdca";
+import { type Pdca } from "@/data/pdca";
+import { subscribeToPdcas } from "@/services/pdca-service";
+import { useAuth } from "@/context/auth-context";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard de mejora continua · Jóvenes Talentos" },
+      { title: "Dashboard de mejora continua · PDCA Hub" },
       {
         name: "description",
         content:
-          "Resumen de avance de los ciclos PDCA del programa Jóvenes Talentos de Grupo Modelo.",
+          "Resumen de avance de los ciclos PDCA del programa de Grupo Modelo.",
       },
-      { property: "og:title", content: "Dashboard de mejora continua · Jóvenes Talentos" },
+      { property: "og:title", content: "Dashboard de mejora continua · PDCA Hub" },
       {
         property: "og:description",
         content: "Indicadores de avance, fases activas y últimos movimientos de tus PDCAs.",
@@ -26,11 +29,36 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
-  const activos = pdcas.filter((p) => p.fase !== "Act").length;
-  const cerrados = pdcas.filter((p) => p.fase === "Act").length;
-  const avance = Math.round(pdcas.reduce((a, p) => a + p.progreso, 0) / pdcas.length);
-  const tareas = pdcas.flatMap((p) => p.acciones);
-  const pendientes = tareas.filter((t) => !t.done).length;
+  const { currentUser } = useAuth();
+  const [pdcaList, setPdcaList] = useState<Pdca[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPdcas((updatedPdcas) => {
+      setPdcaList(updatedPdcas);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const userPdcas = useMemo(() => {
+    if (!currentUser) return pdcaList;
+    if (currentUser.role === "admin") return pdcaList;
+
+    const userEmailLower = currentUser.email.toLowerCase();
+    return pdcaList.filter((p) => {
+      if (!p.autorEmail) return true;
+      return p.autorEmail.toLowerCase() === userEmailLower || p.autor === currentUser.name;
+    });
+  }, [pdcaList, currentUser]);
+
+  const activos = useMemo(() => userPdcas.filter((p) => p.fase !== "Act").length, [userPdcas]);
+  const cerrados = useMemo(() => userPdcas.filter((p) => p.fase === "Act").length, [userPdcas]);
+  const avance = useMemo(() => {
+    if (userPdcas.length === 0) return 0;
+    return Math.round(userPdcas.reduce((a, p) => a + p.progreso, 0) / userPdcas.length);
+  }, [userPdcas]);
+
+  const tareas = useMemo(() => userPdcas.flatMap((p) => p.acciones || []), [userPdcas]);
+  const pendientes = useMemo(() => tareas.filter((t) => !t.done).length, [tareas]);
 
   const kpis = [
     { label: "PDCAs activos", value: activos, icon: ClipboardList, hint: "En Plan, Do o Check" },
@@ -40,20 +68,20 @@ function Dashboard() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-8">
+    <div className="mx-auto w-full max-w-[1700px] px-6 py-6 sm:px-10 lg:px-12">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Jóvenes Talentos
+            Módulo PDCA
           </p>
           <h1 className="mt-1 text-3xl font-bold uppercase">Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Buen día, Ana. Este es el estatus de tus proyectos de mejora continua.
+            Buen día, <span className="font-semibold text-foreground">{currentUser?.name || "Usuario"}</span>. Este es el estatus de {currentUser?.role === "admin" ? "todos los" : "tus"} proyectos de mejora continua.
           </p>
         </div>
         <Button asChild variant="outline">
           <Link to="/">
-            Ir a Mis PDCAs <ArrowRight />
+            Ir a Mis PDCAs <ArrowRight className="ml-1 size-4" />
           </Link>
         </Button>
       </header>
@@ -84,7 +112,7 @@ function Dashboard() {
             Movimientos recientes
           </h2>
           <ul className="mt-4 space-y-3">
-            {pdcas.map((p) => (
+            {userPdcas.map((p) => (
               <li
                 key={p.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 px-4 py-3"
@@ -106,6 +134,11 @@ function Dashboard() {
                 </div>
               </li>
             ))}
+            {userPdcas.length === 0 && (
+              <li className="py-6 text-center text-xs text-muted-foreground">
+                No hay PDCAs registrados para mostrar.
+              </li>
+            )}
           </ul>
         </div>
 
@@ -125,6 +158,11 @@ function Dashboard() {
                   </p>
                 </li>
               ))}
+            {tareas.filter((t) => !t.done).length === 0 && (
+              <li className="py-6 text-center text-xs text-muted-foreground">
+                No hay compromisos pendientes.
+              </li>
+            )}
           </ul>
         </div>
       </div>

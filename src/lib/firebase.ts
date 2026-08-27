@@ -4,12 +4,12 @@ import { getFirestore } from "firebase/firestore";
 
 // Configuración de Firebase usando variables de entorno o valores dummy de respaldo
 const firebaseConfig = {
-  apiKey: import.meta.env['VITE_FIREBASE_API_KEY'] || "dummy_api_key",
-  authDomain: import.meta.env['VITE_FIREBASE_AUTH_DOMAIN'] || "dummy_auth_domain",
-  projectId: import.meta.env['VITE_FIREBASE_PROJECT_ID'] || "dummy_project_id",
-  storageBucket: import.meta.env['VITE_FIREBASE_STORAGE_BUCKET'] || "dummy_storage_bucket",
-  messagingSenderId: import.meta.env['VITE_FIREBASE_MESSAGING_SENDER_ID'] || "dummy_sender_id",
-  appId: import.meta.env['VITE_FIREBASE_APP_ID'] || "dummy_app_id"
+  apiKey: import.meta.env['VITE_FIREBASE_API_KEY'] || "AIzaSyB7RK02a6zRonJdXTaK3K4BJLxkJqZUF8Y",
+  authDomain: import.meta.env['VITE_FIREBASE_AUTH_DOMAIN'] || "maz-pdca-hub.firebaseapp.com",
+  projectId: import.meta.env['VITE_FIREBASE_PROJECT_ID'] || "maz-pdca-hub",
+  storageBucket: import.meta.env['VITE_FIREBASE_STORAGE_BUCKET'] || "maz-pdca-hub.firebasestorage.app",
+  messagingSenderId: import.meta.env['VITE_FIREBASE_MESSAGING_SENDER_ID'] || "390282074253",
+  appId: import.meta.env['VITE_FIREBASE_APP_ID'] || "1:390282074253:web:0627abcb94fd00d6ef2ac4"
 };
 
 // Inicializar la App Principal

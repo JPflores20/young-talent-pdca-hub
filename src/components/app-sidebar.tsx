@@ -34,7 +34,7 @@ export function AppSidebar() {
               Grupo Modelo
             </p>
             <p className="truncate text-xs text-sidebar-foreground/70">
-              Plataforma Jóvenes Talentos
+              Plataforma PDCA Hub
             </p>
           </div>
         </div>

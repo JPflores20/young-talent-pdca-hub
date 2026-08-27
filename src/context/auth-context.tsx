@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { primaryAuth, db } from "@/lib/firebase";
 
 export type UserRole = "admin" | "user";
@@ -46,6 +46,11 @@ const INITIAL_MOCK_USERS: (UserProfile & { pass: string })[] = [
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const isAdminEmail = (email: string) => {
+  const emailLower = email.trim().toLowerCase();
+  return emailLower.includes("jose.floresc-ext");
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,23 +60,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     INITIAL_MOCK_USERS.map(({ pass, ...rest }) => rest)
   );
 
-  // We keep passwords in a ref or just use INITIAL_MOCK_USERS for login
-  // Since new users added during session might need login fallback, 
-  // we actually should keep a full mock credentials array if we want full offline mock.
-  // For simplicity, we will store them in a state that includes passwords, but not expose it.
   const [mockCredentials, setMockCredentials] = useState(INITIAL_MOCK_USERS);
 
   useEffect(() => {
-    // In a real app with Firebase, we'd use onAuthStateChanged.
-    // For this dual-setup, we check local storage to persist session.
     const storedUser = localStorage.getItem("pdca_auth_user");
     if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+      try {
+        const parsed: UserProfile = JSON.parse(storedUser);
+        if (parsed && isAdminEmail(parsed.email)) {
+          parsed.role = "admin";
+        }
+        setCurrentUser(parsed);
+      } catch (e) {
+        console.error("Error parsing stored auth user:", e);
+      }
     }
     setLoading(false);
   }, []);
 
   const persistSession = (user: UserProfile | null) => {
+    if (user && isAdminEmail(user.email)) {
+      user.role = "admin";
+    }
     setCurrentUser(user);
     if (user) {
       localStorage.setItem("pdca_auth_user", JSON.stringify(user));
@@ -82,37 +92,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, pass: string) => {
     const emailLower = email.trim().toLowerCase();
+    const isAutoAdmin = isAdminEmail(emailLower);
     
-    try {
-      // 1. Primario: Intentar con Firebase Auth
-      const userCredential = await signInWithEmailAndPassword(primaryAuth, emailLower, pass);
-      const uid = userCredential.user.uid;
-      
-      // 2. Fetch perfil en Firestore
-      const userDoc = await getDoc(doc(db, "users", uid));
-      if (userDoc.exists()) {
-        const data = userDoc.data() as Omit<UserProfile, "uid">;
-        persistSession({ uid, ...data, email: emailLower });
-        return;
-      } else {
-        throw new Error("El perfil no fue encontrado en la base de datos.");
+    // Autenticar con Firebase Auth
+    const userCredential = await signInWithEmailAndPassword(primaryAuth, emailLower, pass);
+    const firebaseUser = userCredential.user;
+    const uid = firebaseUser.uid;
+    
+    // Obtener perfil de Firestore
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (userDoc.exists()) {
+      const data = userDoc.data() as Omit<UserProfile, "uid">;
+      const role: UserRole = isAutoAdmin ? "admin" : (data.role || "user");
+      if (isAutoAdmin && data.role !== "admin") {
+        await setDoc(doc(db, "users", uid), { role: "admin" }, { merge: true });
       }
-    } catch (error: any) {
-      console.warn("Firebase Auth falló, iniciando mecanismo de respaldo (Fallback local)...", error.message);
-      
-      // 3. Mecanismo de Respaldo: Check local mock array
-      const mockMatch = mockCredentials.find(
-        (u) => u.email.toLowerCase() === emailLower && u.pass === pass
-      );
-
-      if (mockMatch) {
-        const { pass, ...profile } = mockMatch;
-        persistSession(profile);
-        return;
-      }
-
-      // Si falla Firebase y falla el Respaldo, rechazamos
-      throw new Error("Credenciales inválidas o usuario no encontrado.");
+      persistSession({ uid, ...data, role, email: emailLower });
+    } else {
+      // El perfil no existía en Firestore (posible fallo durante registro).
+      // Lo creamos automáticamente con los datos disponibles.
+      const autoProfile: UserProfile = {
+        uid,
+        name: firebaseUser.displayName || emailLower.split("@")[0] || "Usuario",
+        email: emailLower,
+        role: isAutoAdmin ? "admin" : "user",
+        area: "Usuario",
+      };
+      await setDoc(doc(db, "users", uid), {
+        name: autoProfile.name,
+        email: autoProfile.email,
+        role: autoProfile.role,
+        area: autoProfile.area,
+        createdAt: new Date().toISOString(),
+      });
+      persistSession(autoProfile);
     }
   };
 

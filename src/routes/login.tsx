@@ -99,25 +99,13 @@ function AuthPage() {
     } catch (err: any) {
       if (err.code === "auth/email-already-in-use") {
         setRegError("Este correo corporativo ya está registrado. Por favor, intenta iniciar sesión.");
+      } else if (err.code === "auth/invalid-email") {
+        setRegError("El correo electrónico no es válido.");
+      } else if (err.code === "auth/weak-password") {
+        setRegError("La contraseña es demasiado débil. Usa al menos 6 caracteres.");
       } else {
-        // FALLBACK: If Firebase is not configured, simulate success
-        console.warn("Firebase falló, simulando registro exitoso localmente.", err.message);
-        
-        const fullName = [nombre, paterno, materno].filter(Boolean).join(" ");
-        const emailLower = regEmail.trim().toLowerCase();
-        
-        // Add to local mock state so the user can immediately log in
-        addMockUser({
-          uid: `mock-${Date.now()}`,
-          name: fullName,
-          email: emailLower,
-          pass: regPassword,
-          role: "user",
-          area: "Usuario"
-        });
-        
-        // Show success screen
-        setRegSuccess(true);
+        console.error("Error en registro:", err);
+        setRegError(`Error al registrar: ${err.message}`);
       }
     } finally {
       setRegLoading(false);
@@ -222,7 +210,7 @@ function AuthPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-primary hover:bg-brand-dark" disabled={loginLoading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-[#0a1428] via-[#0f1c38] to-[#0a1428] hover:opacity-90 text-white shadow-md" disabled={loginLoading}>
                 {loginLoading ? "Iniciando sesión..." : "Ingresar a mi cuenta"}
                 {!loginLoading && <ArrowRight className="ml-2 size-4" />}
               </Button>
@@ -356,7 +344,7 @@ function AuthPage() {
               </div>
 
               <div className="pt-2">
-                <Button type="submit" className="w-full bg-primary hover:bg-brand-dark" disabled={regLoading}>
+                <Button type="submit" className="w-full bg-gradient-to-r from-[#0a1428] via-[#0f1c38] to-[#0a1428] hover:opacity-90 text-white shadow-md" disabled={regLoading}>
                   {regLoading ? "Procesando Registro..." : "Crear Mi Cuenta"}
                 </Button>
               </div>
@@ -372,7 +360,7 @@ function AuthPage() {
       </div>
 
       {/* BLUE SLIDING OVERLAY (Desktop only) */}
-      <div className={`hidden lg:flex absolute top-0 left-0 h-full w-1/2 bg-brand text-white z-20 transition-transform duration-700 ease-in-out shadow-2xl items-center justify-center overflow-hidden ${isRegistering ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`hidden lg:flex absolute top-0 left-0 h-full w-1/2 bg-gradient-to-b from-[#0a1428] via-[#0f1c38] to-[#080e1e] text-white z-20 transition-transform duration-700 ease-in-out shadow-2xl items-center justify-center overflow-hidden ${isRegistering ? 'translate-x-0' : 'translate-x-full'}`}>
          
          {/* Background accent decorations */}
          <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />

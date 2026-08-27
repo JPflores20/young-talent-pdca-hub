@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Plus, Search, Filter, Calendar, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,13 @@ import {
 import { PhaseBadge } from "@/components/pdca-badge";
 
 import { PdcaDialog } from "@/components/pdca-dialog";
-import { pdcas, phases, type Pdca, type Phase } from "@/data/pdca";
+import { 
+  subscribeToPdcas, 
+  deletePdcaFromFirestore 
+} from "@/services/pdca-service";
+import { phases, type Pdca, type Phase } from "@/data/pdca";
+
+import { useAuth } from "@/context/auth-context";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,28 +47,62 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar.",
       },
+      { property: "og:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
+      { property: "og:image:secure_url", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
+      { property: "og:image:type", content: "image/jpeg" },
+      { name: "twitter:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
     ],
   }),
   component: MisPdcas,
 });
 
 function MisPdcas() {
-  const [pdcaList, setPdcaList] = useState<Pdca[]>(pdcas);
+  const { currentUser } = useAuth();
+  const [pdcaList, setPdcaList] = useState<Pdca[]>([]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Phase | "Todas">("Todas");
-  const [selected, setSelected] = useState<Pdca | null>(null);
-
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPdcas((updatedPdcas) => {
+      setPdcaList(updatedPdcas);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const userPdcas = useMemo(() => {
+    if (!currentUser) return pdcaList;
+    if (currentUser.role === "admin") return pdcaList;
+
+    const userEmailLower = currentUser.email.toLowerCase();
+    return pdcaList.filter((p) => {
+      if (!p.autorEmail) return true;
+      return p.autorEmail.toLowerCase() === userEmailLower || p.autor === currentUser.name;
+    });
+  }, [pdcaList, currentUser]);
+
+  const selected = useMemo(() => {
+    if (!selectedId) return null;
+    return pdcaList.find((p) => p.id === selectedId) || null;
+  }, [selectedId, pdcaList]);
 
   const rows = useMemo(
     () =>
-      pdcaList.filter(
-        (p) =>
-          (filter === "Todas" || p.fase === filter) &&
-          (p.titulo.toLowerCase().includes(query.toLowerCase()) ||
-            p.area.toLowerCase().includes(query.toLowerCase())),
-      ),
-    [query, filter, pdcaList],
+      userPdcas.filter((p) => {
+        const matchPhase = filter === "Todas" || p.fase === filter;
+        const q = query.toLowerCase();
+        const matchQuery =
+          !q ||
+          p.titulo.toLowerCase().includes(q) ||
+          p.area.toLowerCase().includes(q) ||
+          (p.autor && p.autor.toLowerCase().includes(q)) ||
+          (p.autorEmail && p.autorEmail.toLowerCase().includes(q));
+
+        return matchPhase && matchQuery;
+      }),
+    [query, filter, userPdcas],
   );
 
   const requestDelete = (e: React.MouseEvent, id: string) => {
@@ -70,31 +110,42 @@ function MisPdcas() {
     setDeleteId(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteId) {
-      setPdcaList(prev => prev.filter(p => p.id !== deleteId));
+      await deletePdcaFromFirestore(deleteId);
       setDeleteId(null);
     }
   };
 
   const openPdca = (p: Pdca | null) => {
-    setSelected(p);
+    if (p) {
+      setSelectedId(p.id);
+      setIsCreatingNew(false);
+    } else {
+      setSelectedId(null);
+      setIsCreatingNew(true);
+    }
   };
 
-  if (selected) {
+  if (selected || isCreatingNew) {
     return (
-      <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-8">
+      <div className="mx-auto w-full max-w-[1700px] px-6 py-6 sm:px-10 lg:px-12">
         <PdcaDialog 
           pdca={selected} 
           open={true} 
-          onOpenChange={(open) => { if (!open) setSelected(null); }} 
+          onOpenChange={(open) => { 
+            if (!open) {
+              setSelectedId(null);
+              setIsCreatingNew(false);
+            } 
+          }} 
         />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-8">
+    <div className="mx-auto w-full max-w-[1700px] px-6 py-6 sm:px-10 lg:px-12">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
@@ -102,7 +153,7 @@ function MisPdcas() {
           </p>
           <h1 className="mt-1 text-3xl font-bold uppercase">Mis PDCAs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {pdcaList.length} ciclos de mejora continua asignados a Ana López.
+            {userPdcas.length} ciclos de mejora continua {currentUser?.role === 'admin' ? 'registrados en la plataforma (Vista Global Admin).' : `asignados a ${currentUser?.name || 'ti'}.`}
           </p>
         </div>
         <Button size="lg" className="bg-primary shadow-sm hover:bg-brand-dark" onClick={() => openPdca(null)}>
@@ -123,41 +174,34 @@ function MisPdcas() {
             <button
               key={phase}
               type="button"
-              onClick={() => setFilter(filter === phase ? "Todas" : phase)}
-              className={`rounded-xl border bg-card p-4 text-left shadow-[var(--shadow-card)] transition-all hover:shadow-md hover:-translate-y-0.5 border-t-[5px] ${
-                filter === phase ? "border-primary ring-1 ring-primary/20" : borderColor
+              onClick={() => setFilter(phase)}
+              className={`rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] text-left transition-all hover:scale-[1.01] border-t-4 ${borderColor} ${
+                filter === phase ? "ring-2 ring-primary" : ""
               }`}
             >
               <div className="flex items-center justify-between">
                 <PhaseBadge phase={phase} />
-                <span className="font-display text-2xl font-bold">
-                  {pdcaList.filter((p) => p.fase === phase).length}
+                <span className="text-2xl font-bold">
+                  {userPdcas.filter((p) => p.fase === phase).length}
                 </span>
               </div>
-              <p className="mt-3 text-[13px] font-medium leading-tight text-foreground/70">
-                {
-                  {
-                    Plan: "En definición de problema y causa raíz",
-                    Do: "Ejecutando el plan de acción",
-                    Check: "Verificando resultados con datos",
-                    Act: "Estandarizando y cerrando",
-                  }[phase]
-                }
+              <p className="mt-3 text-xs text-muted-foreground">
+                Proyectos en fase {phase}
               </p>
             </button>
           );
         })}
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
-        <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3">
-          <div className="relative min-w-56 flex-1">
+      <div className="mt-8 space-y-4 rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              placeholder={currentUser?.role === "admin" ? "Buscar por título, área o autor..." : "Buscar por título o área..."}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por título o área…"
-              className="pl-9"
+              className="pl-9 text-xs"
             />
           </div>
           <Button
@@ -174,6 +218,9 @@ function MisPdcas() {
           <TableHeader>
             <TableRow className="bg-secondary/80 hover:bg-secondary/80">
               <TableHead className="font-semibold text-foreground/80">Título del Proyecto</TableHead>
+              {currentUser?.role === "admin" && (
+                <TableHead className="hidden sm:table-cell font-semibold text-foreground/80">Autor / Creador</TableHead>
+              )}
               <TableHead className="hidden md:table-cell font-semibold text-foreground/80">Área</TableHead>
               <TableHead className="w-32 font-semibold text-foreground/80">Fase Actual</TableHead>
               <TableHead className="hidden w-36 lg:table-cell font-semibold text-foreground/80">Fecha Límite</TableHead>
@@ -183,7 +230,7 @@ function MisPdcas() {
           </TableHeader>
           <TableBody>
             {rows.map((p) => (
-              <TableRow key={p.id} className="cursor-pointer transition-colors hover:bg-secondary/30" onClick={() => setSelected(p)}>
+              <TableRow key={p.id} className="cursor-pointer transition-colors hover:bg-secondary/30" onClick={() => setSelectedId(p.id)}>
                 <TableCell>
                   <span className="block font-semibold">{p.titulo}</span>
                   <span className="mt-0.5 flex items-center gap-2 font-mono text-xs text-muted-foreground">
@@ -197,6 +244,12 @@ function MisPdcas() {
                     <span className="hidden sm:inline">{p.progreso}%</span>
                   </span>
                 </TableCell>
+                {currentUser?.role === "admin" && (
+                  <TableCell className="hidden sm:table-cell text-xs">
+                    <span className="font-medium text-foreground block">{p.autor || "Sin autor"}</span>
+                    {p.autorEmail && <span className="text-[11px] text-muted-foreground block">{p.autorEmail}</span>}
+                  </TableCell>
+                )}
                 <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
                   {p.area}
                 </TableCell>
@@ -222,14 +275,16 @@ function MisPdcas() {
                     <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
                       Abrir
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-                      onClick={(e) => requestDelete(e, p.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    {currentUser?.role === "admin" && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                        onClick={(e) => requestDelete(e, p.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection, onSnapshot } from "firebase/firestore";
 import { secondaryAuth, db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertCircle, UserPlus, Shield, User } from "lucide-react";
-import type { UserRole } from "@/context/auth-context";
+import type { UserRole, UserProfile } from "@/context/auth-context";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPanel,
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPanel() {
   const { currentUser, mockUsers, addMockUser } = useAuth();
+  const [usersList, setUsersList] = useState<UserProfile[]>([]);
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,6 +30,37 @@ function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
+      const list: UserProfile[] = [];
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data() as Record<string, any>;
+        list.push({
+          uid: docSnap.id,
+          name: (d["name"] as string) || "Usuario",
+          email: (d["email"] as string) || "",
+          role: (d["role"] as UserRole) || "user",
+          area: (d["area"] as string) || "Usuario",
+        });
+      });
+      setUsersList(list);
+    }, (err) => {
+      console.error("Error en onSnapshot de usuarios:", err);
+    });
+
+    return () => unsub();
+  }, []);
+
+  const handleRoleChange = async (uid: string, newRole: UserRole) => {
+    try {
+      await setDoc(doc(db, "users", uid), { role: newRole }, { merge: true });
+      toast.success("Permiso de usuario actualizado exitosamente.");
+    } catch (err) {
+      console.error("Error al actualizar permiso:", err);
+      toast.error("Error al actualizar rol de usuario.");
+    }
+  };
 
   if (currentUser?.role !== "admin") {
     return (
@@ -53,33 +86,27 @@ function AdminPanel() {
     const emailLower = email.trim().toLowerCase();
 
     try {
-      // Intentar crear en Firebase (Auth Secundario)
-      let uid = "";
-      try {
-        const cred = await createUserWithEmailAndPassword(secondaryAuth, emailLower, password);
-        uid = cred.user.uid;
-        
-        // Guardar en Firestore
-        await setDoc(doc(db, "users", uid), {
-          name,
-          email: emailLower,
-          role,
-          area
-        });
-      } catch (fbError: any) {
-        console.warn("Firebase falló, registrando en Fallback Local.", fbError.message);
-        // Fallback: crear UID simulado
-        uid = `mock-${Date.now()}`;
-      }
+      // Crear usuario en Firebase Auth (App Secundaria para no cerrar la sesión activa)
+      const cred = await createUserWithEmailAndPassword(secondaryAuth, emailLower, password);
+      const uid = cred.user.uid;
 
-      // Actualizar estado local (sincronización inmediata)
+      // Guardar perfil en Firestore
+      await setDoc(doc(db, "users", uid), {
+        name,
+        email: emailLower,
+        role,
+        area,
+        createdAt: new Date().toISOString(),
+      });
+
+      // Actualizar lista local de usuarios
       addMockUser({
         uid,
         name,
         email: emailLower,
-        pass: password, // For mock login
+        pass: password,
         role,
-        area
+        area,
       });
 
       setSuccess(`Usuario ${name} registrado exitosamente.`);
@@ -95,13 +122,15 @@ function AdminPanel() {
     }
   };
 
+  const displayUsers = usersList.length > 0 ? usersList : mockUsers;
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-8">
+    <div className="mx-auto w-full max-w-[1700px] px-6 py-6 sm:px-10 lg:px-12">
       <header className="mb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
           Panel de Administración
         </p>
-        <h1 className="mt-1 text-3xl font-bold uppercase">Gestión de Usuarios</h1>
+        <h1 className="mt-1 text-3xl font-bold uppercase">Gestión de Usuarios y Permisos</h1>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -169,7 +198,7 @@ function AdminPanel() {
         {/* Lista de Usuarios */}
         <div className="lg:col-span-2 overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
           <div className="flex items-center gap-3 border-b border-border px-6 py-4">
-            <h2 className="font-display text-lg font-bold">Usuarios del Sistema</h2>
+            <h2 className="font-display text-lg font-bold">Usuarios Registrados ({displayUsers.length})</h2>
           </div>
           <Table>
             <TableHeader>
@@ -177,11 +206,11 @@ function AdminPanel() {
                 <TableHead className="font-semibold text-foreground/80">Nombre</TableHead>
                 <TableHead className="font-semibold text-foreground/80">Correo</TableHead>
                 <TableHead className="font-semibold text-foreground/80">Área</TableHead>
-                <TableHead className="w-32 font-semibold text-foreground/80">Rol</TableHead>
+                <TableHead className="w-40 font-semibold text-foreground/80">Modificar Permisos</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockUsers.map((u) => (
+              {displayUsers.map((u) => (
                 <TableRow key={u.uid} className="transition-colors hover:bg-secondary/30">
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -194,12 +223,23 @@ function AdminPanel() {
                   <TableCell className="text-muted-foreground">{u.email}</TableCell>
                   <TableCell className="text-muted-foreground">{u.area}</TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      u.role === 'admin' ? 'bg-brand-yellow/20 text-brand-yellow-foreground' : 'bg-secondary text-muted-foreground'
-                    }`}>
-                      {u.role === 'admin' ? <Shield className="size-3" /> : <User className="size-3" />}
-                      {u.role === 'admin' ? 'Admin' : 'Usuario'}
-                    </span>
+                    <Select value={u.role} onValueChange={(v) => handleRoleChange(u.uid, v as UserRole)}>
+                      <SelectTrigger className="h-8 w-32 text-xs font-semibold">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">
+                          <span className="flex items-center gap-1">
+                            <User className="size-3 text-muted-foreground" /> Usuario
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="admin">
+                          <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                            <Shield className="size-3" /> Admin
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                 </TableRow>
               ))}

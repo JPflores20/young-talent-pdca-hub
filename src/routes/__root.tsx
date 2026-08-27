@@ -77,21 +77,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Mis PDCAs · VPO Grupo Modelo" },
+      { name: "description", content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar." },
+      { name: "author", content: "Grupo Modelo" },
+      { property: "og:title", content: "Mis PDCAs · VPO Grupo Modelo" },
+      { property: "og:description", content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://maz-pdca-hub.web.app/" },
+      { property: "og:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
+      { property: "og:image:secure_url", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
+      { property: "og:image:type", content: "image/jpeg" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Mis PDCAs · VPO Grupo Modelo" },
+      { name: "twitter:description", content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar." },
+      { name: "twitter:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/logos/MAZ.jpeg", type: "image/jpeg" },
+      { rel: "apple-touch-icon", href: "/logos/MAZ.jpeg" },
+      { rel: "shortcut icon", href: "/favicon.ico" },
     ],
   }),
   shellComponent: RootShell,
@@ -102,7 +110,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -116,17 +124,20 @@ function RootShell({ children }: { children: ReactNode }) {
 
 import { AppLayout } from "../components/layout";
 import { AuthProvider } from "@/context/auth-context";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <AppLayout>
-          <Outlet />
-        </AppLayout>
-      </AuthProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <AuthProvider>
+          <AppLayout>
+            <Outlet />
+          </AppLayout>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
