@@ -13,3 +13,13 @@ if (rootElement) {
     createRoot(rootElement).render(<RouterProvider router={router} />);
   }
 }
+
+// Unregister any stale or lingering Service Worker (e.g. Workbox) on local environment
+if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister().catch(() => {});
+    }
+  });
+}
+

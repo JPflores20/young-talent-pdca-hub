@@ -1,0 +1,15 @@
+{
+  "short_name": "PDCA Hub",
+  "name": "Mis PDCAs · VPO Grupo Modelo",
+  "icons": [
+    {
+      "src": "/logos/MAZ.jpeg",
+      "type": "image/jpeg",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0F2942",
+  "theme_color": "#0F2942",
+  "display": "standalone"
+}

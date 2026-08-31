@@ -170,3 +170,13 @@
     letter-spacing: 0.01em;
   }
 }
+
+/* Utilities */
+.hide-arrows::-webkit-outer-spin-button,
+.hide-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.hide-arrows {
+  -moz-appearance: textfield;
+}

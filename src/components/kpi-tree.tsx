@@ -222,7 +222,7 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
               </button>
             )}
             <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-              <span>Paso 4: Árbol de Indicadores (KPI Tree)</span>
+              <span>PASO 4: KPI TREE</span>
               {isStepCompleted && (
                 <span className="text-xs font-normal normal-case px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                   Completado

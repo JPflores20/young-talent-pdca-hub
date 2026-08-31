@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { primaryAuth, db } from "@/lib/firebase";
 
@@ -63,19 +63,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [mockCredentials, setMockCredentials] = useState(INITIAL_MOCK_USERS);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("pdca_auth_user");
-    if (storedUser) {
-      try {
-        const parsed: UserProfile = JSON.parse(storedUser);
-        if (parsed && isAdminEmail(parsed.email)) {
-          parsed.role = "admin";
+    const unsub = onAuthStateChanged(primaryAuth, async (user) => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          const isAutoAdmin = isAdminEmail(user.email || "");
+          if (userDoc.exists()) {
+            const data = userDoc.data() as Omit<UserProfile, "uid">;
+            const role: UserRole = isAutoAdmin ? "admin" : (data.role || "user");
+            persistSession({
+              uid: user.uid,
+              name: data.name || user.displayName || "Usuario",
+              email: user.email || "",
+              role,
+              area: data.area || "Usuario",
+            });
+          } else {
+            const autoProfile: UserProfile = {
+              uid: user.uid,
+              name: user.displayName || (user.email ? user.email.split("@")[0] : "Usuario"),
+              email: user.email || "",
+              role: isAutoAdmin ? "admin" : "user",
+              area: "Usuario",
+            };
+            persistSession(autoProfile);
+          }
+        } catch (e) {
+          console.error("Error al sincronizar usuario de Firebase Auth:", e);
         }
-        setCurrentUser(parsed);
-      } catch (e) {
-        console.error("Error parsing stored auth user:", e);
+      } else {
+        const storedUser = localStorage.getItem("pdca_auth_user");
+        if (storedUser) {
+          try {
+            const parsed: UserProfile = JSON.parse(storedUser);
+            if (parsed && isAdminEmail(parsed.email)) {
+              parsed.role = "admin";
+            }
+            setCurrentUser(parsed);
+          } catch (e) {
+            console.error("Error parsing stored auth user:", e);
+          }
+        } else {
+          setCurrentUser(null);
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    });
+
+    return () => unsub();
   }, []);
 
   const persistSession = (user: UserProfile | null) => {

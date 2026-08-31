@@ -53,12 +53,24 @@ function AdminPanel() {
   }, []);
 
   const handleRoleChange = async (uid: string, newRole: UserRole) => {
+    // Actualización optimista en el estado local del componente
+    setUsersList((prev) =>
+      prev.map((u) => (u.uid === uid ? { ...u, role: newRole } : u))
+    );
+
     try {
       await setDoc(doc(db, "users", uid), { role: newRole }, { merge: true });
       toast.success("Permiso de usuario actualizado exitosamente.");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al actualizar permiso:", err);
-      toast.error("Error al actualizar rol de usuario.");
+      if (err?.code === "permission-denied" || err?.message?.includes("permissions")) {
+        toast.warning(
+          "Rol actualizado localmente, pero Firebase bloqueó el guardado en la nube por Reglas de Firestore. Revisa tu consola de Firebase.",
+          { duration: 6000 }
+        );
+      } else {
+        toast.error("Error al actualizar rol de usuario en la base de datos.");
+      }
     }
   };
 

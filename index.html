@@ -19,6 +19,18 @@
     <link rel="icon" type="image/jpeg" href="/logos/MAZ.jpeg" />
     <link rel="apple-touch-icon" href="/logos/MAZ.jpeg" />
     <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      // Clear any stale Service Workers (e.g., from old Vite projects on localhost:8080)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('Unregistered stale service worker:', registration);
+          }
+        });
+      }
+    </script>
   </head>
   <body class="bg-background text-foreground antialiased">
     <div id="root"></div>

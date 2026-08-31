@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef, Fragment } from "react";
 import {
   Check,
   UploadCloud,
@@ -49,7 +49,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem } from "@/data/pdca";
+import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
+import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "./kpi-tree";
 import { ActionKanban } from "./action-kanban";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -66,14 +67,14 @@ const PHASE_STEPS_MAP: Record<Phase, string[]> = {
   Plan: ["step-1", "step-2"],
   Do: ["step-3", "step-4", "step-5"],
   Check: ["step-6", "step-7"],
-  Act: ["step-8"],
+  Act: ["step-8", "step-9"],
 };
 
 const customPhases = [
   { id: "Plan", label: "1. Definición", sub: "Pasos 1 y 2" },
   { id: "Do", label: "2. Análisis", sub: "Pasos 3, 4 y 5" },
   { id: "Check", label: "3. Causa Raíz", sub: "Pasos 6 y 7" },
-  { id: "Act", label: "4. Ejecución", sub: "Paso 8" }
+  { id: "Act", label: "4. Ejecución", sub: "Pasos 8 y 9" }
 ] as const;
 
 const getEmptyDraft = (): Pdca => ({
@@ -225,20 +226,133 @@ const CategoryBox = ({
   );
 };
 
+export function IshikawaSection({
+  ishikawas,
+  onChange,
+  isStepCompleted,
+  onToggleStep,
+}: {
+  ishikawas: IshikawaItem[];
+  onChange: (items: IshikawaItem[]) => void;
+  isStepCompleted?: boolean;
+  onToggleStep?: () => void;
+}) {
+  const addIshikawa = () => {
+    onChange([
+      ...ishikawas,
+      {
+        id: `ishikawa-${Date.now()}`,
+        effect: "Efecto / Problema",
+        causes: { machine: [], method: [], material: [], manpower: [], measurement: [], environment: [] },
+        prioritization: []
+      }
+    ]);
+  };
+
+  const removeIshikawa = (id: string) => {
+    if (ishikawas.length > 1) {
+      onChange(ishikawas.filter(i => i.id !== id));
+    }
+  };
+
+  const updateIshikawa = (id: string, field: keyof IshikawaItem, value: any) => {
+    onChange(ishikawas.map(i => i.id === id ? { ...i, [field]: value } : i));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        {onToggleStep && (
+          <button
+            type="button"
+            onClick={onToggleStep}
+            title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
+            className={cn(
+              "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
+              isStepCompleted
+                ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
+                : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
+            )}
+          >
+            <Check className="size-4" />
+          </button>
+        )}
+        <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
+            <span>PASO 6: FISHBONE</span>
+          {isStepCompleted && (
+            <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
+              Completado
+            </span>
+          )}
+        </h3>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700">
+          <span className="size-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+          Estamos trabajando en la opción de subir archivos
+        </span>
+      </div>
+
+      <StepInstructions>
+        <p className="mb-2">1. Basándote en las conclusiones extraídas de los pasos anteriores para estrechar tu enfoque, define el tema que debe ser analizado, y será la "cabeza del pez". Nota: este NO debe ser el KPI que estás tratando de mejorar, sino más bien, el PI o aspecto del mismo al que has reducido tu enfoque.</p>
+        <p className="mb-2">2. Reunir un equipo y en base a una discusión, rellenar el diagrama con las causas levantadas, intentando separar las causas y subcausas según sus categorías.</p>
+        <p className="mb-2">3. Recuerda... ¡esta es una herramienta para la lluvia de ideas! Cualquier cosa que se ponga en la Espina de Pescado debe ser validado como un contribuyente al problema o no.</p>
+        <p className="mb-2">4. Para añadir sub-puntos, escribe la causa y presiona Enter dentro de la categoría correspondiente.</p>
+        <p>5. Las posibles causas rellenadas en el diagrama deben introducirse en el cuadro de prioridades (Filtro) para su posterior validación/confirmación de que efectivamente están contribuyendo al problema.</p>
+      </StepInstructions>
+
+      <div className="space-y-12">
+        {ishikawas.map((ish, index) => (
+          <div key={ish.id} className="relative group/ishikawa">
+            {ishikawas.length > 1 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => removeIshikawa(ish.id)}
+                className="absolute -right-2 -top-2 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
+              >
+                <X className="size-3 mr-1" /> Eliminar Ishikawa
+              </Button>
+            )}
+            <IshikawaInteractive
+              causes={ish.causes}
+              setCauses={(c) => updateIshikawa(ish.id, "causes", typeof c === "function" ? c(ish.causes) : c)}
+              effect={ish.effect}
+              setEffect={(e) => updateIshikawa(ish.id, "effect", e)}
+              prioritizationCauses={ish.prioritization}
+              setPrioritizationCauses={(p) => updateIshikawa(ish.id, "prioritization", p)}
+              titleSuffix={ishikawas.length > 1 ? ` ${index + 1}` : ""}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="flex justify-center border-t border-border/60 pt-6">
+        <Button onClick={addIshikawa} variant="outline" className="gap-2 shadow-sm bg-card hover:bg-card/80">
+          <Plus className="size-4" /> Agregar otro Ishikawa
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function IshikawaInteractive({
   causes,
   setCauses,
   effect,
   setEffect,
-  isStepCompleted,
-  onToggleStep,
+  prioritizationCauses,
+  setPrioritizationCauses,
+  titleSuffix = "",
 }: {
   causes: Record<string, string[]>;
   setCauses: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
   effect: string;
   setEffect: (val: string) => void;
-  isStepCompleted?: boolean | undefined;
-  onToggleStep?: (() => void) | undefined;
+  prioritizationCauses?: any[];
+  setPrioritizationCauses?: (causes: any[]) => void;
+  titleSuffix?: string;
 }) {
   const categories = [
     { id: "machine", label: "Máquina", position: "top" },
@@ -265,40 +379,10 @@ function IshikawaInteractive({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="flex items-center gap-3">
-        {onToggleStep && (
-          <button
-            type="button"
-            onClick={onToggleStep}
-            title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
-            className={cn(
-              "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-              isStepCompleted
-                ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-            )}
-          >
-            <Check className="size-4" />
-          </button>
-        )}
-        <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-          <span>Paso 6: Diagrama de Ishikawa (6M)</span>
-          {isStepCompleted && (
-            <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
-              Completado
-            </span>
-          )}
-        </h3>
-      </div>
-      
-      <StepInstructions>
-        <p className="mb-2">1. Basándote en las conclusiones extraídas de los pasos anteriores para estrechar tu enfoque, define el tema que debe ser analizado, y será la "cabeza del pez". Nota: este NO debe ser el KPI que estás tratando de mejorar, sino más bien, el PI o aspecto del mismo al que has reducido tu enfoque.</p>
-        <p className="mb-2">2. Reunir un equipo y en base a una discusión, rellenar el diagrama con las causas levantadas, intentando separar las causas y subcausas según sus categorías.</p>
-        <p className="mb-2">3. Recuerda... ¡esta es una herramienta para la lluvia de ideas! Cualquier cosa que se ponga en la Espina de Pescado debe ser validado como un contribuyente al problema o no.</p>
-        <p className="mb-2">4. Para añadir sub-puntos, escribe la causa y presiona Enter dentro de la categoría correspondiente.</p>
-        <p>5. Las posibles causas rellenadas en el diagrama deben introducirse en el cuadro de prioridades (Filtro) para su posterior validación/confirmación de que efectivamente están contribuyendo al problema.</p>
-      </StepInstructions>
+    <div className="space-y-6 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
+      {titleSuffix && (
+        <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">Ishikawa{titleSuffix}</h4>
+      )}
 
       <div className="relative pt-2 pb-2 overflow-x-auto">
         <div className="min-w-[650px] relative">
@@ -340,6 +424,7 @@ function IshikawaInteractive({
           </div>
         </div>
       </div>
+      <PrioritizationMatrix value={prioritizationCauses} onChange={setPrioritizationCauses} />
     </div>
   );
 }
@@ -353,6 +438,8 @@ function ParetoInteractive({
   onDataChange,
   onBarClick,
   onClose,
+  unit = "",
+  onUnitChange,
   isStepCompleted,
   onToggleStep,
 }: {
@@ -363,6 +450,8 @@ function ParetoInteractive({
   onDataChange?: (newData: ParetoItem[]) => void;
   onBarClick?: (category: string) => void;
   onClose?: () => void;
+  unit?: string;
+  onUnitChange?: (newUnit: string) => void;
   isStepCompleted?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
 }) {
@@ -397,6 +486,25 @@ function ParetoInteractive({
       cumPct: currentCumulative
     };
   });
+
+  const formatValue = (val: any) => {
+    if (val === null || val === undefined || isNaN(val)) return "";
+    const numStr = Number(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (unit === "$") {
+      return "$" + numStr;
+    }
+    return numStr + (unit ? (unit === "%" ? "%" : " " + unit) : "");
+  };
+
+  const CustomBarLabel = (props: any) => {
+    const { x, y, width, value } = props;
+    if (value === null || value === undefined) return null;
+    return (
+      <text x={x + width / 2} y={y - 10} fill="var(--color-foreground)" fontSize={9} textAnchor="middle" fontWeight="bold">
+        {formatValue(value)}
+      </text>
+    );
+  };
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] col-span-full animate-in fade-in zoom-in-95">
@@ -452,6 +560,18 @@ function ParetoInteractive({
         </StepInstructions>
       )}
 
+      {level === 0 && (
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
+          <Input 
+            value={unit} 
+            onChange={e => { if(onUnitChange) onUnitChange(e.target.value) }}
+            placeholder="ej. $, %, HL" 
+            className="w-28 h-7 text-xs font-bold" 
+          />
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="overflow-x-auto border rounded-md">
           <Table className="text-xs">
@@ -500,7 +620,7 @@ function ParetoInteractive({
               ))}
               <TableRow className="bg-secondary/20">
                 <TableCell className="py-2 px-3 font-bold text-right">TOTAL</TableCell>
-                <TableCell className="py-2 px-3 font-bold font-mono text-right">{totalGap.toFixed(2)}</TableCell>
+                <TableCell className="py-2 px-3 font-bold font-mono text-right">{formatValue(totalGap)}</TableCell>
                 <TableCell className="py-2 px-3 font-bold font-mono">100%</TableCell>
                 <TableCell colSpan={2}></TableCell>
               </TableRow>
@@ -510,26 +630,27 @@ function ParetoInteractive({
 
         <div className="h-64 border rounded-md p-3 flex flex-col justify-center">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={paretoData} margin={{ top: 15, right: 15, bottom: 5, left: -20 }}>
+            <ComposedChart data={paretoData} margin={{ top: 25, right: 15, bottom: 5, left: -10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
               <XAxis dataKey="area" tick={{ fontSize: 10 }} stroke="var(--color-muted-foreground)" />
-              <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
-              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" domain={[0, 100]} />
+              <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" tickFormatter={(val) => formatValue(val)} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" domain={[0, 100]} tickFormatter={(val) => Math.round(val) + "%"} />
               <RTooltip
-                contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12 }}
-                formatter={(val: number, name: string) => [val.toFixed(2) + (name === "Acumulado" ? "%" : ""), name]}
+                contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12, backgroundColor: "var(--color-card)", color: "var(--color-foreground)", padding: "8px 12px" }}
+                formatter={(val: number, name: string) => [name === "Acumulado" ? val.toFixed(2) + "%" : formatValue(val), name]}
               />
               <Bar 
                 yAxisId="left" 
                 dataKey="gap" 
                 name="Valor" 
-                fill="var(--color-primary)" 
+                fill="#4285f4" 
                 radius={[4, 4, 0, 0]} 
                 maxBarSize={40} 
                 onClick={(payload) => { if (onBarClick && payload.area) onBarClick(payload.area); }}
                 className={onBarClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
+                label={<CustomBarLabel />}
               />
-              <Line yAxisId="right" type="monotone" dataKey="cumPct" name="Acumulado" stroke="var(--color-destructive)" strokeWidth={2} dot={{ r: 3, fill: "var(--color-destructive)" }} />
+              <Line yAxisId="right" type="monotone" dataKey="cumPct" name="Acumulado" stroke="#ff4d4f" strokeWidth={2} dot={{ r: 4, fill: "var(--color-card)", stroke: "#ff4d4f", strokeWidth: 2 }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -543,6 +664,8 @@ function ParetoSection({
   setDrillDowns,
   dataMap,
   setDataMap,
+  unit = "",
+  onUnitChange,
   isStepCompleted,
   onToggleStep,
 }: {
@@ -550,6 +673,8 @@ function ParetoSection({
   setDrillDowns: (d: string[]) => void;
   dataMap: Record<string, ParetoItem[]>;
   setDataMap: (m: Record<string, ParetoItem[]>) => void;
+  unit?: string;
+  onUnitChange?: (newUnit: string) => void;
   isStepCompleted?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
 }) {
@@ -577,11 +702,13 @@ function ParetoSection({
   return (
     <div className="space-y-4">
       <ParetoInteractive 
-        title="Paso 5: Análisis de Pareto"
+        title="PASO 5: PARETO"
         level={0}
         data={dataMap["root"] || []}
         onDataChange={(d) => updateData("root", d)}
         onBarClick={(cat) => handleBarClick(cat, 0)} 
+        unit={unit}
+        onUnitChange={onUnitChange}
         isStepCompleted={isStepCompleted}
         onToggleStep={onToggleStep}
       />
@@ -598,6 +725,8 @@ function ParetoSection({
             onDataChange={(d) => updateData(path, d)}
             onBarClick={(cat) => handleBarClick(cat, index + 1)}
             onClose={() => handleClose(index + 1)}
+            unit={unit}
+            onUnitChange={onUnitChange}
           />
         );
       })}
@@ -605,142 +734,168 @@ function ParetoSection({
   );
 }
 
-function PrioritizationMatrix() {
-  const [causes, setCauses] = useState([
-    { id: 1, text: "", impact: "3", authority: "3", difficulty: "3" }
-  ]);
+function AutoResizeTextarea({
+  value,
+  onChange,
+  className,
+  placeholder,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  className?: string;
+  placeholder?: string;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [value]);
 
-  const addCause = () => {
-    setCauses([...causes, { id: Date.now(), text: "", impact: "3", authority: "3", difficulty: "3" }]);
-  };
-
-  const updateCause = (id: number, field: string, value: string) => {
-    setCauses(causes.map(c => c.id === id ? { ...c, [field]: value } : c));
-  };
-
-  const removeCause = (id: number) => {
-    setCauses(causes.filter(c => c.id !== id));
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
+    onChange(e.target.value);
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-display text-base font-semibold uppercase tracking-wide">
-            Matriz de Priorización de Causas (Filtro)
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            (1=Bajo, 3=Medio, 5=Alto). Se priorizan automáticamente aquellas con impacto alto (&gt;= 12).
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={addCause}>
-          <Plus className="size-4 mr-2" /> Agregar Causa
+    <textarea
+      ref={textareaRef}
+      value={value}
+      onChange={handleInput}
+      placeholder={placeholder}
+      rows={1}
+      className={cn(
+        "w-full resize-none overflow-hidden bg-transparent focus:outline-none focus-visible:ring-1",
+        className
+      )}
+      style={{ minHeight: "32px", height: "auto" }}
+    />
+  );
+}
+
+function PrioritizationMatrix({
+  value = [],
+  onChange
+}: {
+  value?: any[];
+  onChange?: (causes: any[]) => void;
+}) {
+  const causes = value && value.length > 0 ? value : [
+    { id: 1, text: "", impact: "", authority: "", difficulty: "", criteria: "" },
+    { id: 2, text: "", impact: "", authority: "", difficulty: "", criteria: "" },
+    { id: 3, text: "", impact: "", authority: "", difficulty: "", criteria: "" },
+    { id: 4, text: "", impact: "", authority: "", difficulty: "", criteria: "" },
+  ];
+
+  const updateCause = (id: number, field: string, val: string) => {
+    if (onChange) {
+      onChange(causes.map(c => c.id === id ? { ...c, [field]: val } : c));
+    }
+  };
+
+  const addRow = () => {
+    if (onChange) {
+      onChange([...causes, { id: Date.now(), text: "", impact: "", authority: "", difficulty: "", criteria: "" }]);
+    }
+  };
+
+  const removeRow = (id: number) => {
+    if (onChange && causes.length > 1) {
+      onChange(causes.filter(c => c.id !== id));
+    }
+  };
+
+  return (
+    <div className="mt-8 border border-[#0078D7] rounded-sm overflow-hidden bg-white shadow-sm dark:bg-background">
+      <div className="bg-white dark:bg-background px-2 py-1 flex items-center justify-between border-b border-[#0078D7]">
+        <span className="text-[11px] font-bold text-[#0078D7] uppercase tracking-wide">
+          PRIORIZACIÓN - CAUSAS PROBABLES - PROBLEMA 1
+        </span>
+        <Button variant="ghost" size="sm" onClick={addRow} className="h-6 px-2 text-[10px] uppercase font-bold text-[#0078D7] hover:bg-[#0078D7]/10">
+          <Plus className="size-3 mr-1" /> Agregar causa
         </Button>
       </div>
-
-      <div className="overflow-x-auto mt-2">
-        <Table className="min-w-[700px]">
-          <TableHeader>
-            <TableRow className="bg-secondary/40">
-              <TableHead>Causas Probables</TableHead>
-              <TableHead className="w-24 text-center">Impacto</TableHead>
-              <TableHead className="w-24 text-center">Autoridad</TableHead>
-              <TableHead className="w-24 text-center">Dificultad</TableHead>
-              <TableHead className="w-24 text-center">Priorizar</TableHead>
-              <TableHead className="w-10"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {causes.map((c) => {
-              const total = Number(c.impact) + Number(c.authority) + Number(c.difficulty);
-              const isHigh = total >= 12;
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-[#0078D7] text-white">
+              <th className="font-bold uppercase text-center border-r border-white p-2 text-[10px] w-[30%]">CAUSAS PROBABLES</th>
+              <th className="font-bold uppercase text-center border-r border-white p-2 text-[10px] w-[14%]">IMPACTO SOBRE EL PROBLEMA</th>
+              <th className="font-bold uppercase text-center border-r border-white p-2 text-[10px] w-[14%]">AUTORIDAD</th>
+              <th className="font-bold uppercase text-center border-r border-white p-2 text-[10px] w-[14%]">DIFICULTAD</th>
+              <th className="font-bold uppercase text-center border-r border-white p-2 text-[10px] w-[14%]">CRITERIO ADICIONAL</th>
+              <th className="font-bold uppercase text-center p-2 text-[10px] w-[14%]">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {causes.map((c, i) => {
+              const impact = Number(c.impact) || 0;
+              const authority = Number(c.authority) || 0;
+              const difficulty = Number(c.difficulty) || 0;
+              const total = impact * authority * difficulty;
+              const isHigh = total > 0;
               
               return (
-                <TableRow key={c.id}>
-                  <TableCell>
-                    <Input
+                <tr key={c.id} className="border-b border-white group">
+                  <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white relative group/td">
+                    <AutoResizeTextarea
                       value={c.text}
-                      onChange={(e) => updateCause(c.id, "text", e.target.value)}
-                      placeholder="Ej. Desajuste de máquina..."
-                      className="h-8 shadow-none text-sm"
+                      onChange={(val) => updateCause(c.id, "text", val)}
+                      className="py-1.5 font-medium focus-visible:ring-black/20 text-xs text-center dark:text-foreground pr-8"
                     />
-                  </TableCell>
-                  <TableCell>
-                    <Select value={c.impact} onValueChange={(v) => updateCause(c.id, "impact", v)}>
-                      <SelectTrigger className="h-8 shadow-none text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 - Bajo</SelectItem>
-                        <SelectItem value="3">3 - Medio</SelectItem>
-                        <SelectItem value="5">5 - Alto</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Select value={c.authority} onValueChange={(v) => updateCause(c.id, "authority", v)}>
-                      <SelectTrigger className="h-8 shadow-none text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 - Baja</SelectItem>
-                        <SelectItem value="3">3 - Media</SelectItem>
-                        <SelectItem value="5">5 - Alta</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const diffColors: Record<string, string> = {
-                        "1": "bg-red-500/15 text-red-700 border-red-500/40 font-semibold dark:bg-red-950/50 dark:text-red-300",
-                        "3": "bg-amber-500/15 text-amber-700 border-amber-500/40 font-semibold dark:bg-amber-950/50 dark:text-amber-300",
-                        "5": "bg-emerald-500/15 text-emerald-700 border-emerald-500/40 font-semibold dark:bg-emerald-950/50 dark:text-emerald-300",
-                      };
-                      return (
-                        <Select value={c.difficulty} onValueChange={(v) => updateCause(c.id, "difficulty", v)}>
-                          <SelectTrigger className={cn("h-8 shadow-none text-xs transition-colors", diffColors[c.difficulty])}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1" className="text-red-600 font-semibold focus:text-red-700 focus:bg-red-50">
-                              <span className="flex items-center gap-1.5">
-                                <span className="size-2 rounded-full bg-red-500 shrink-0" />
-                                1 - Difícil
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="3" className="text-amber-600 font-semibold focus:text-amber-700 focus:bg-amber-50">
-                              <span className="flex items-center gap-1.5">
-                                <span className="size-2 rounded-full bg-amber-500 shrink-0" />
-                                3 - Medio
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="5" className="text-emerald-600 font-semibold focus:text-emerald-700 focus:bg-emerald-50">
-                              <span className="flex items-center gap-1.5">
-                                <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
-                                5 - Fácil
-                              </span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      );
-                    })()}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className={cn(
-                      "inline-flex items-center justify-center font-bold text-xs px-2 py-1 rounded-md",
-                      isHigh ? "bg-emerald-500/20 text-emerald-600" : "bg-secondary text-muted-foreground"
-                    )}>
-                      {isHigh ? "YES" : "NO"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
                     {causes.length > 1 && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => removeCause(c.id)}>
-                        <X className="size-4" />
-                      </Button>
+                      <button 
+                        onClick={() => removeRow(c.id)}
+                        className="absolute right-2 top-2 text-muted-foreground/60 hover:text-destructive transition-colors"
+                        title="Eliminar causa"
+                      >
+                        <X className="size-3.5" />
+                      </button>
                     )}
-                  </TableCell>
-                </TableRow>
+                  </td>
+                  <td className="bg-[#00A2E8] p-0 border-r border-white">
+                    <Input
+                      type="number"
+                      value={c.impact}
+                      onChange={(e) => updateCause(c.id, "impact", e.target.value)}
+                      className="h-full min-h-[32px] rounded-none border-none shadow-none bg-transparent font-bold text-white text-center focus-visible:ring-1 focus-visible:ring-white/50 text-xs hide-arrows"
+                    />
+                  </td>
+                  <td className="bg-[#00A2E8] p-0 border-r border-white">
+                    <Input
+                      type="number"
+                      value={c.authority}
+                      onChange={(e) => updateCause(c.id, "authority", e.target.value)}
+                      className="h-full min-h-[32px] rounded-none border-none shadow-none bg-transparent font-bold text-white text-center focus-visible:ring-1 focus-visible:ring-white/50 text-xs hide-arrows"
+                    />
+                  </td>
+                  <td className="bg-[#00A2E8] p-0 border-r border-white">
+                    <Input
+                      type="number"
+                      value={c.difficulty}
+                      onChange={(e) => updateCause(c.id, "difficulty", e.target.value)}
+                      className="h-full min-h-[32px] rounded-none border-none shadow-none bg-transparent font-bold text-white text-center focus-visible:ring-1 focus-visible:ring-white/50 text-xs hide-arrows"
+                    />
+                  </td>
+                  <td className="bg-[#00A2E8] p-0 border-r border-white">
+                    <AutoResizeTextarea
+                      value={c.criteria}
+                      onChange={(val) => updateCause(c.id, "criteria", val)}
+                      placeholder="Texto..."
+                      className="py-1.5 font-medium text-white text-center focus-visible:ring-white/50 text-xs placeholder:text-white/50"
+                    />
+                  </td>
+                  <td className={cn("p-0 text-center font-bold text-xs", isHigh ? "bg-[#00B050] text-white" : "bg-[#E2E2E2] dark:bg-secondary text-black/60 dark:text-foreground/60")}>
+                    {total}
+                  </td>
+                </tr>
               );
             })}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -749,11 +904,15 @@ function PrioritizationMatrix() {
 function TimeSeriesYTD({
   value,
   onChange,
+  unit = "$",
+  onUnitChange,
   isStepCompleted,
   onToggleStep,
 }: {
   value?: { mes: string; target: number; actual: number | null }[];
   onChange?: (newSeries: { mes: string; target: number; actual: number | null }[]) => void;
+  unit?: string;
+  onUnitChange?: (newUnit: string) => void;
   isStepCompleted?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
 }) {
@@ -779,6 +938,73 @@ function TimeSeriesYTD({
     if (onChange) onChange(updated);
   };
 
+  const ytdTarget = series.length > 0 ? series.reduce((sum, s) => sum + (s.target || 0), 0) / series.length : 0;
+  const actuals = series.filter(s => s.actual !== null && s.actual !== undefined);
+  const ytdActual = actuals.length > 0 ? actuals.reduce((sum, s) => sum + (s.actual || 0), 0) / actuals.length : 0;
+
+  const chartData = [
+    ...series.map(s => ({
+      name: s.mes,
+      metaLine: s.target,
+      actualLine: s.actual,
+      ytdTargetBar: null,
+      ytdActualBar: null,
+    })),
+    {
+      name: "YTD Target",
+      metaLine: null,
+      actualLine: null,
+      ytdTargetBar: ytdTarget,
+      ytdActualBar: null,
+    },
+    {
+      name: "YTD Actual",
+      metaLine: null,
+      actualLine: null,
+      ytdTargetBar: null,
+      ytdActualBar: ytdActual,
+    }
+  ];
+
+  const formatValue = (val: any) => {
+    if (val === null || val === undefined || isNaN(val)) return "";
+    const numStr = Number(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (unit === "$") {
+      return "$" + numStr;
+    }
+    return numStr + (unit ? (unit === "%" ? "%" : " " + unit) : "");
+  };
+
+  const CustomActualLabel = (props: any) => {
+    const { x, y, value } = props;
+    if (value === null || value === undefined) return null;
+    return (
+      <text x={x} y={y - 10} fill="var(--color-foreground)" fontSize={9} textAnchor="middle" fontWeight="bold">
+        {formatValue(value)}
+      </text>
+    );
+  };
+
+  const CustomMetaLabel = (props: any) => {
+    const { x, y, value } = props;
+    if (value === null || value === undefined) return null;
+    return (
+      <text x={x} y={y + 16} fill="#4DB8FF" fontSize={9} textAnchor="middle" fontWeight="bold">
+        {formatValue(value)}
+      </text>
+    );
+  };
+
+  const CustomBarLabel = (props: any) => {
+    const { x, y, width, value } = props;
+    if (value === null || value === undefined) return null;
+    return (
+      <text x={x + width / 2} y={y - 10} fill="var(--color-foreground)" fontSize={9} textAnchor="middle" fontWeight="bold">
+        {formatValue(value)}
+      </text>
+    );
+  };
+
   return (
     <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] col-span-full">
       <div className="flex items-center justify-between">
@@ -799,7 +1025,7 @@ function TimeSeriesYTD({
             </button>
           )}
           <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-            <span>Paso 3: Seguimiento Mensual (Target vs Actual)</span>
+            <span>PASO 3: CURRENT TIME SERIES</span>
             {isStepCompleted && (
               <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
                 Completado
@@ -811,121 +1037,311 @@ function TimeSeriesYTD({
           <RefreshCw className="size-3.5 mr-2" /> Sincronizar Grafana
         </Button>
       </div>
+
+      <div className="bg-[#1F497D] text-white p-2.5 text-xs leading-relaxed font-sans rounded-sm shadow-sm">
+        <p className="mb-1">Instrucciones:</p>
+        <p>1. Rellena el campo gris con su problema.</p>
+        <p>2. Completa el período de tiempo con tu período de tiempo deseado (años, meses, semanas, días, etc.)</p>
+        <p>3. Rellena las columnas "Objetivo" y "Actual" con tus datos.</p>
+      </div>
       
-      <StepInstructions>
-        <p className="mb-2">1. Los datos base del problema se capturan desde la sección "1. Definición".</p>
-        <p className="mb-2">2. Completa el período de tiempo con tu período de tiempo deseado (meses preconfigurados por defecto).</p>
-        <p>3. Rellena las columnas "Target" (Objetivo) y "Actual" (Real) con tus datos. El gráfico se actualizará automáticamente.</p>
-      </StepInstructions>
-      
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={series} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-              <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
-              <YAxis tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
-              <RTooltip contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12 }} />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-              <Bar dataKey="actual" name="Real (Actual)" fill="var(--color-primary)" radius={[4, 4, 0, 0]} maxBarSize={40} />
-              <Line type="stepAfter" dataKey="target" name="Meta (Target)" stroke="var(--color-destructive)" strokeWidth={2} dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="overflow-x-auto lg:max-h-64 border rounded-md">
-          <Table className="text-xs">
-            <TableHeader className="bg-secondary/50 sticky top-0 z-10">
-              <TableRow>
-                <TableHead className="py-1.5 px-2">Mes</TableHead>
-                <TableHead className="py-1.5 px-2">Target</TableHead>
-                <TableHead className="py-1.5 px-2">Actual</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
+        <Input 
+          value={unit} 
+          onChange={e => { if(onUnitChange) onUnitChange(e.target.value) }}
+          placeholder="ej. $, %, HL" 
+          className="w-28 h-7 text-xs font-bold" 
+        />
+      </div>
+
+      <div className="flex flex-col xl:flex-row gap-6 mt-4">
+        {/* Table Side */}
+        <div className="w-full xl:w-[40%] overflow-x-auto border border-[#0078D7] rounded-sm bg-white dark:bg-background">
+          <table className="w-full text-xs text-center border-collapse">
+            <thead>
+              <tr className="bg-[#0078D7] text-white">
+                <th className="border-r border-white/20 p-2 font-bold w-[30%]">MES</th>
+                <th className="border-r border-white/20 p-2 font-bold w-[35%]">META</th>
+                <th className="p-2 font-bold w-[35%]">ACTUAL</th>
+              </tr>
+            </thead>
+            <tbody>
               {series.map((s, i) => (
-                <TableRow key={s.mes}>
-                  <TableCell className="py-1 px-2 font-medium">{s.mes}</TableCell>
-                  <TableCell className="py-1 px-2">
+                <tr key={s.mes} className="border-b border-border/40">
+                  <td className="border-r border-border/40 p-2 font-semibold bg-[#E2E2E2] dark:bg-secondary/30">{s.mes}</td>
+                  <td className="border-r border-border/40 p-0">
                     <Input 
                       type="number" 
                       value={s.target || ""} 
                       onChange={e => updateTarget(i, e.target.value)}
-                      className="h-6 w-14 text-xs px-1 shadow-none" 
+                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20" 
                     />
-                  </TableCell>
-                  <TableCell className="py-1 px-2">
+                  </td>
+                  <td className="p-0">
                     <Input 
                       type="number" 
                       value={s.actual ?? ""} 
                       onChange={e => updateActual(i, e.target.value)}
-                      className="h-6 w-14 text-xs px-1 shadow-none" 
+                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20" 
                     />
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
+              <tr className="border-b border-border/40">
+                <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">YTD Target</td>
+                <td className="border-r border-border/40 p-2 font-bold font-mono text-[#0078D7]">{formatValue(ytdTarget)}</td>
+                <td className="p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
+              </tr>
+              <tr>
+                <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">YTD Actual</td>
+                <td className="border-r border-border/40 p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
+                <td className="p-2 font-bold font-mono text-muted-foreground">{formatValue(ytdActual)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Chart Side */}
+        <div className="w-full xl:w-[60%] flex flex-col h-[400px]">
+          <h4 className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80">CURRENT TIME SERIES</h4>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 40, left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fontSize: 10, fontWeight: 600 }} 
+                stroke="var(--color-muted-foreground)"
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                interval={0}
+              />
+              <YAxis 
+                tick={{ fontSize: 10 }} 
+                stroke="var(--color-muted-foreground)" 
+                tickFormatter={(val) => formatValue(val)}
+                width={80}
+              />
+              <RTooltip 
+                contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12, backgroundColor: "var(--color-card)" }}
+                formatter={(val: number) => formatValue(val)}
+              />
+              <Bar dataKey="ytdTargetBar" name="YTD Target" fill="#0078D7" barSize={30} label={<CustomBarLabel />} />
+              <Bar dataKey="ytdActualBar" name="YTD Actual" fill="#808080" barSize={30} label={<CustomBarLabel />} />
+              <Line 
+                type="linear" 
+                dataKey="metaLine" 
+                name="Meta" 
+                stroke="#4DB8FF" 
+                strokeWidth={2} 
+                dot={{ r: 4, fill: "#4DB8FF" }} 
+                label={<CustomMetaLabel />}
+                isAnimationActive={false}
+              />
+              <Line 
+                type="linear" 
+                dataKey="actualLine" 
+                name="Actual" 
+                stroke="#0078D7" 
+                strokeWidth={2} 
+                dot={{ r: 4, fill: "#0078D7" }}
+                label={<CustomActualLabel />}
+                isAnimationActive={false}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
   );
 }
 
-function FiveWhysInteractive({
-  value,
+// ─── IMPACT MATRIX ───────────────────────────────────────────────────────────
+const SCORE_OPTIONS = ["", "1", "3", "5"] as const;
+const SCORE_LABELS: Record<string, string> = { "1": "Bajo", "3": "Medio", "5": "Alto" };
+const SCORE_COLORS: Record<string, string> = {
+  "1": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  "3": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  "5": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+};
+
+function newImpactRow(): ImpactMatrixRow {
+  return { id: `ir-${Date.now()}-${Math.random()}`, accion: "", seguridad: "", calidadHigiene: "", costo: "", medioAmbiente: "", servicio: "", priorizar: "" };
+}
+
+function calcImpact(row: ImpactMatrixRow): number {
+  const vals = [row.seguridad, row.calidadHigiene, row.costo, row.medioAmbiente, row.servicio];
+  const nums = vals.filter((v): v is number => typeof v === "number" && v !== 0);
+  if (nums.length === 0) return 0;
+  return Math.max(...nums);
+}
+
+function ImpactMatrixTable({
+  rows,
   onChange,
-  initialValue,
-  preloadedCauses = [],
   isStepCompleted,
   onToggleStep,
 }: {
-  value?: string[];
-  onChange?: (whys: string[]) => void;
-  initialValue?: string;
-  preloadedCauses?: string[];
-  isStepCompleted?: boolean | undefined;
-  onToggleStep?: (() => void) | undefined;
+  rows: ImpactMatrixRow[];
+  onChange: (rows: ImpactMatrixRow[]) => void;
+  isStepCompleted?: boolean;
+  onToggleStep?: () => void;
 }) {
-  const whys = value && value.length > 0
-    ? value
-    : (initialValue ? initialValue.split(" | WHY: ") : [""]);
+  const updateRow = (id: string, field: keyof ImpactMatrixRow, val: any) => {
+    onChange(rows.map(r => r.id === id ? { ...r, [field]: val } : r));
+  };
+  const addRow = () => onChange([...rows, newImpactRow()]);
+  const removeRow = (id: string) => { if (rows.length > 1) onChange(rows.filter(r => r.id !== id)); };
 
-  useEffect(() => {
-    if (whys.length === 1 && whys[0] === "" && preloadedCauses.length > 0) {
-      const initial = [preloadedCauses.join(", ")];
-      if (onChange) onChange(initial);
-    }
-  }, [preloadedCauses, whys]);
+  const COLS = [
+    { key: "seguridad", label: "SEGURIDAD" },
+    { key: "calidadHigiene", label: "CALIDAD / HIGIENE" },
+    { key: "costo", label: "COSTO" },
+    { key: "medioAmbiente", label: "MEDIO AMBIENTE" },
+    { key: "servicio", label: "SERVICIO" },
+  ] as const;
 
-  const updateWhysState = (newWhys: string[]) => {
-    if (onChange) {
-      onChange(newWhys);
-    }
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          {onToggleStep && (
+            <button type="button" onClick={onToggleStep}
+              title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
+              className={cn("shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
+                isStepCompleted ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm" : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
+              )}>
+              <Check className="size-4" />
+            </button>
+          )}
+          <div>
+            <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
+              <span>PASO 8.1: MATRIZ DE IMPACTO</span>
+              {isStepCompleted && <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">Completado</span>}
+            </h3>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={addRow}><Plus className="mr-2 size-4" /> Agregar Acción</Button>
+      </div>
+
+      <StepInstructions>
+        <p className="mb-1">1. Elige la causa raíz eliminando las acciones a ser analizadas en base a los pasos anteriores.</p>
+        <p className="mb-1">2. Evalúa las acciones en base a los criterios (Seguridad, Calidad, Costo, Medio Ambiente y Servicio) usando la escala: <strong>ALTO = 5 · MEDIO = 3 · BAJO = 1</strong>.</p>
+        <p>3. La columna "Resultado del Impacto" se auto-poblará. Define qué acciones serán priorizadas y llena la última columna con SÍ o NO.</p>
+      </StepInstructions>
+
+      <div className="overflow-x-auto rounded-sm border border-[#0078D7]">
+        <table className="w-full text-sm border-collapse min-w-[900px]">
+          <thead>
+            <tr className="bg-[#0078D7] text-white text-[10px] uppercase font-bold">
+              <th className="p-2 border-r border-white/20 text-left w-[22%]">ACCIÓN</th>
+              {COLS.map(c => <th key={c.key} className="p-2 border-r border-white/20 text-center w-[11%]">{c.label}</th>)}
+              <th className="p-2 border-r border-white/20 text-center w-[11%]">RESULTADO DE IMPACTO</th>
+              <th className="p-2 border-r border-white/20 text-center w-[8%]">PRIORIZAR SÍ/NO</th>
+              <th className="w-8" />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const impact = calcImpact(row);
+              const impactLevel = impact === 5 ? "5" : impact === 3 ? "3" : impact === 1 ? "1" : "";
+              return (
+                <tr key={row.id} className="border-b border-border last:border-0 group">
+                  <td className="p-0 border-r border-border">
+                    <Textarea value={row.accion} onChange={e => updateRow(row.id, "accion", e.target.value)}
+                      className="min-h-[36px] rounded-none border-none shadow-none bg-transparent text-xs resize-none p-2 focus-visible:ring-1 focus-visible:ring-black/20"
+                      placeholder="Acción..." />
+                  </td>
+                  {COLS.map(c => (
+                    <td key={c.key} className="p-1 border-r border-border text-center">
+                      <select value={row[c.key] === "" ? "" : String(row[c.key])}
+                        onChange={e => updateRow(row.id, c.key, e.target.value === "" ? "" : Number(e.target.value))}
+                        className={cn("w-full rounded px-1 py-1 text-xs font-semibold border border-transparent cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors",
+                          row[c.key] ? SCORE_COLORS[String(row[c.key])] : "bg-muted text-muted-foreground"
+                        )}>
+                        <option value="">—</option>
+                        {["1","3","5"].map(v => <option key={v} value={v}>{v} – {SCORE_LABELS[v]}</option>)}
+                      </select>
+                    </td>
+                  ))}
+                  <td className="p-1 border-r border-border text-center">
+                    {impactLevel ? (
+                      <span className={cn("inline-block px-2 py-0.5 rounded text-xs font-bold", SCORE_COLORS[impactLevel])}>
+                        {SCORE_LABELS[impactLevel]}
+                      </span>
+                    ) : <span className="text-muted-foreground text-xs">—</span>}
+                  </td>
+                  <td className="p-1 border-r border-border text-center">
+                    <select value={row.priorizar}
+                      onChange={e => updateRow(row.id, "priorizar", e.target.value as "SI" | "NO" | "")}
+                      className={cn("w-full rounded px-1 py-1 text-xs font-semibold border border-transparent cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400",
+                        row.priorizar === "SI" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" :
+                        row.priorizar === "NO" ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" : "bg-muted text-muted-foreground"
+                      )}>
+                      <option value="">—</option>
+                      <option value="SI">SÍ</option>
+                      <option value="NO">NO</option>
+                    </select>
+                  </td>
+                  <td className="p-1 text-center">
+                    {rows.length > 1 && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
+                        <X className="size-3.5" />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Leyenda */}
+      <div className="flex items-center gap-3 text-[10px] pt-1">
+        <span className="text-muted-foreground font-semibold uppercase">Leyenda:</span>
+        {[["5","ALTO"],["3","MEDIO"],["1","BAJO"]].map(([v,l]) => (
+          <span key={v} className={cn("px-2 py-0.5 rounded font-bold", SCORE_COLORS[v])}>{l} = {v}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+function FiveWhysSection({
+  tables,
+  onChange,
+  isStepCompleted,
+  onToggleStep,
+}: {
+  tables: FiveWhysTableData[];
+  onChange: (tables: FiveWhysTableData[]) => void;
+  isStepCompleted?: boolean;
+  onToggleStep?: () => void;
+}) {
+  const addTable = () => {
+    const newId = `fivewhys-${Date.now()}`;
+    onChange([...tables, { id: newId, title: "MÉTODO", rows: [{ id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" }] }]);
   };
 
-  const updateWhy = (index: number, val: string) => {
-    const newWhys = [...whys];
-    newWhys[index] = val;
-    updateWhysState(newWhys);
+  const updateTable = (id: string, newRows: any[]) => {
+    onChange(tables.map(t => t.id === id ? { ...t, rows: newRows } : t));
+  };
+  
+  const updateTitle = (id: string, newTitle: string) => {
+    onChange(tables.map(t => t.id === id ? { ...t, title: newTitle } : t));
   };
 
-  const addWhy = () => {
-    if (whys.length < 5) {
-      const newWhys = [...whys, ""];
-      updateWhysState(newWhys);
-    }
-  };
-
-  const removeWhy = (index: number) => {
-    const newWhys = whys.filter((_, i) => i !== index);
-    const finalWhys = newWhys.length ? newWhys : [""];
-    updateWhysState(finalWhys);
+  const removeTable = (id: string) => {
+    if (tables.length === 1) return;
+    onChange(tables.filter(t => t.id !== id));
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-      <div className="flex items-center justify-between">
+    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
           {onToggleStep && (
             <button
@@ -943,7 +1359,7 @@ function FiveWhysInteractive({
             </button>
           )}
           <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-            <span>Paso 7: Análisis de 5 Porqués (5 WHYs)</span>
+            <span>PASO 7: 5 WHYS</span>
             {isStepCompleted && (
               <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
                 Completado
@@ -951,64 +1367,208 @@ function FiveWhysInteractive({
             )}
           </h3>
         </div>
-        <span className="text-xs font-semibold text-muted-foreground bg-secondary px-2 py-1 rounded-md">
-          {whys.length}/5 Niveles
-        </span>
       </div>
-      
-      <div className="mt-4 flex flex-col items-center space-y-2">
-        {whys.map((why, index) => {
-          const isRootCause = index === whys.length - 1;
-          
-          return (
-            <div key={index} className="w-full flex flex-col items-center">
-              <div className={cn(
-                "w-full flex items-start gap-3 rounded-lg border p-3 transition-colors",
-                isRootCause ? "border-brand-yellow/50 bg-brand-yellow/5" : "border-border bg-background"
-              )}>
-                <div className="flex shrink-0 items-center justify-center rounded-md bg-secondary text-xs font-bold size-8">
-                  W{index + 1}
-                </div>
-                <Textarea
-                  value={why}
-                  onChange={(e) => updateWhy(index, e.target.value)}
-                  placeholder={`¿Por qué ocurrió el problema${index > 0 ? ' anterior' : ''}?`}
-                  className="min-h-12 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 sm:text-sm"
-                  rows={2}
-                />
-                {index > 0 && (
-                  <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeWhy(index)}>
-                    <MinusCircle className="size-4" />
-                  </Button>
-                )}
-              </div>
-              
-              {isRootCause && (
-                <div className="mt-2 text-[11px] font-semibold text-brand-yellow-foreground tracking-wide uppercase">
-                  ⭐ Causa Raíz Identificada
-                </div>
-              )}
-              
-              {!isRootCause && (
-                <div className="py-2 text-border">
-                  <ArrowDown className="size-4" />
-                </div>
-              )}
-            </div>
-          );
-        })}
+
+      <div className="space-y-8">
+        {tables.map((table, index) => (
+          <div key={table.id} className="relative group/fivewhys">
+            {tables.length > 1 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => removeTable(table.id)}
+                className="absolute -right-2 -top-2 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
+              >
+                <X className="size-3 mr-1" /> Eliminar Tabla
+              </Button>
+            )}
+            <FiveWhysInteractive
+              value={table.rows}
+              onChange={(rows) => updateTable(table.id, rows)}
+              title={table.title}
+              onTitleChange={(title) => updateTitle(table.id, title)}
+              index={index}
+            />
+          </div>
+        ))}
       </div>
-      
-      {whys.length < 5 && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={addWhy} 
-          className="w-full mt-4 border-dashed"
-        >
-          <Plus className="mr-2 size-4" /> Profundizar (Agregar ¿Por qué?)
+
+      <div className="flex justify-center pt-4 border-t border-border">
+        <Button variant="outline" size="sm" onClick={addTable} className="border-dashed border-2 hover:border-primary hover:bg-primary/5">
+          <Plus className="size-4 mr-2" /> Agregar otra tabla 5 Whys
         </Button>
-      )}
+      </div>
+    </div>
+  );
+}
+
+function FiveWhysInteractive({
+  value,
+  onChange,
+  title,
+  onTitleChange,
+  index,
+}: {
+  value?: any[];
+  onChange?: (whys: any[]) => void;
+  title?: string;
+  onTitleChange?: (title: string) => void;
+  index: number;
+}) {
+  const updateRow = (id: number, field: string, val: string) => {
+    if (!value || !onChange) return;
+    onChange(value.map((r: any) => r.id === id ? { ...r, [field]: val } : r));
+  };
+
+  const addRow = () => {
+    if (onChange && value) {
+      onChange([...value, { id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" }]);
+    }
+  };
+
+  const removeRow = (id: number) => {
+    if (onChange && value) {
+      if (value.length === 1) return;
+      onChange(value.filter((r: any) => r.id !== id));
+    }
+  };
+
+  return (
+    <div className="overflow-x-auto border border-[#0078D7] rounded-sm bg-white dark:bg-background shadow-sm">
+      <div className="flex justify-between items-center px-2 py-1 bg-white dark:bg-background border-b border-[#0078D7]">
+        <input 
+          type="text" 
+          value={title || "MÉTODO"} 
+          onChange={(e) => onTitleChange?.(e.target.value)}
+          className="text-[11px] font-bold text-[#0078D7] uppercase bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-400 p-0.5 w-48" 
+          placeholder="TÍTULO DE LA TABLA"
+        />
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={addRow}>
+            <Plus className="mr-1 size-3" /> Añadir Causa
+          </Button>
+          <span className="text-[11px] font-bold text-[#0078D7] uppercase">TEMA {String(index + 1).padStart(2, '0')}</span>
+        </div>
+      </div>
+      <table className="w-full text-sm border-collapse min-w-[900px]">
+        <thead>
+          <tr className="bg-[#0078D7] text-white">
+            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">1er POR QUÉ</th>
+            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">2do POR QUÉ</th>
+            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">3er POR QUÉ</th>
+            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">4to POR QUÉ</th>
+            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">5to POR QUÉ</th>
+            <th className="font-bold uppercase text-center p-2 text-[10px] w-[16%] border-r border-white/20">ACCION(ES)</th>
+            <th className="w-8"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {value?.map((row: any) => (
+            <Fragment key={row.id}>
+              {/* Fila de Preguntas */}
+              <tr className="border-b border-white group">
+                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
+                  <Textarea
+                    value={row.q1 || ""}
+                    onChange={(e) => updateRow(row.id, "q1", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
+                    placeholder="Pregunta..."
+                  />
+                </td>
+                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
+                  <Textarea
+                    value={row.q2 || ""}
+                    onChange={(e) => updateRow(row.id, "q2", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
+                    placeholder="Pregunta..."
+                  />
+                </td>
+                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
+                  <Textarea
+                    value={row.q3 || ""}
+                    onChange={(e) => updateRow(row.id, "q3", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
+                    placeholder="Pregunta..."
+                  />
+                </td>
+                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
+                  <Textarea
+                    value={row.q4 || ""}
+                    onChange={(e) => updateRow(row.id, "q4", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
+                    placeholder="Pregunta..."
+                  />
+                </td>
+                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
+                  <Textarea
+                    value={row.q5 || ""}
+                    onChange={(e) => updateRow(row.id, "q5", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
+                    placeholder="Pregunta..."
+                  />
+                </td>
+                <td rowSpan={2} className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white align-top">
+                  <Textarea
+                    value={row.accion}
+                    onChange={(e) => updateRow(row.id, "accion", e.target.value)}
+                    className="h-full min-h-[80px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground"
+                  />
+                </td>
+                <td rowSpan={2} className="bg-background align-middle">
+                  {(value?.length || 0) > 1 && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive mx-auto block" onClick={() => removeRow(row.id)}>
+                      <X className="size-4" />
+                    </Button>
+                  )}
+                </td>
+              </tr>
+              {/* Fila de Respuestas */}
+              <tr className="border-b-[3px] border-[#0078D7] group">
+                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
+                  <Textarea
+                    value={row.w1}
+                    onChange={(e) => updateRow(row.id, "w1", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
+                    placeholder="Respuesta..."
+                  />
+                </td>
+                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
+                  <Textarea
+                    value={row.w2}
+                    onChange={(e) => updateRow(row.id, "w2", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
+                    placeholder="Respuesta..."
+                  />
+                </td>
+                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
+                  <Textarea
+                    value={row.w3}
+                    onChange={(e) => updateRow(row.id, "w3", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
+                    placeholder="Respuesta..."
+                  />
+                </td>
+                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
+                  <Textarea
+                    value={row.w4}
+                    onChange={(e) => updateRow(row.id, "w4", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
+                    placeholder="Respuesta..."
+                  />
+                </td>
+                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
+                  <Textarea
+                    value={row.w5}
+                    onChange={(e) => updateRow(row.id, "w5", e.target.value)}
+                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
+                    placeholder="Respuesta..."
+                  />
+                </td>
+              </tr>
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -1252,16 +1812,29 @@ function VpoCheckpointTable({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <StepHeader
           stepId="step-2"
-          title="Paso 2: VPO Tool Checkpoint (SDCA Checklist)"
+          title="PASO 2: PHASE SDCA CHECKLIST"
           completedSteps={completedSteps}
           onToggleStep={onToggleStep}
         />
         
         <StepInstructions>
-          <p className="mb-2"><strong>VPO Tool Checkpoint - Paso 2 SDCA:</strong> Este checklist evalúa la madurez y estandarización del proceso afectado según los pilares del Sistema de Gestión VPO de Grupo Modelo.</p>
+          <p className="mb-2"><strong>PHASE SDCA CHECKLIST:</strong> Este checklist evalúa la madurez y estandarización del proceso afectado según los pilares del Sistema de Gestión VPO de Grupo Modelo.</p>
           <p>Evalúa cada punto en el contexto de tu problema. Registra las evidencias o comentarios de soporte para cada ítem y selecciona el status correspondiente (YES / NO / N/A). La brecha identificada servirá para alimentar el plan de acción (Kanban).</p>
         </StepInstructions>
 
+        <div className="w-full flex rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-950/20 overflow-hidden shadow-sm">
+          <div className="flex w-[120px] shrink-0 items-center justify-center bg-white dark:bg-background border-r border-sky-500/30 p-4">
+            <span className="font-bold text-sky-500">Guía</span>
+          </div>
+          <div className="flex-1 space-y-3 p-4 text-sm font-medium text-foreground/90">
+            <p>
+              <strong>Si el score es inferior al 70%</strong> - priorizar las acciones entre los miembros del equipo para cerrar las brechas en los puntos más relevantes del problema. Sin embargo, el equipo debe proceder en paralelo si los datos iniciales indican que hay otros aspectos del problema que estos items del SDCA no pueden abordar sin datos y análisis adicionales.
+            </p>
+            <p>
+              <strong>Si el score es mayor al 70%</strong> - proceda directamente al resto de este toolkit. Cualquier brecha en los puntos anteriores puede asignarse como acciones para los miembros del equipo si es relevante para el problema y es probable que tenga un impacto. Utilice la matriz de impacto en la pestaña de action log, si es necesario, para ayudar a decidir si deben completarse o no.
+            </p>
+          </div>
+        </div>
         <div className="flex items-center gap-3 bg-secondary/80 px-4 py-2 rounded-xl border border-border/80 shadow-sm">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progreso VPO Checkpoint:</span>
           <span className={cn(
@@ -1436,24 +2009,59 @@ export function PdcaDialog({
   const [paretoDataMap, setParetoDataMap] = useState<Record<string, ParetoItem[]>>(
     data.paretoDataMap || DEFAULT_PARETO_DATA_MAP
   );
+  const [paretoUnit, setParetoUnit] = useState<string>(data.paretoUnit || "");
 
   // TimeSeries YTD state
   const [targetVsActual, setTargetVsActual] = useState<{ mes: string; target: number; actual: number | null }[]>(
     data.targetVsActual || DEFAULT_TARGET_VS_ACTUAL
   );
+  const [targetVsActualUnit, setTargetVsActualUnit] = useState<string>(data.targetVsActualUnit || "$");
 
   // 5 Whys state
-  const [fiveWhys, setFiveWhys] = useState<string[]>(
-    data.fiveWhys || (data.causaRaiz ? data.causaRaiz.split(" | WHY: ") : [""])
+  const [fiveWhysTables, setFiveWhysTables] = useState<FiveWhysTableData[]>(() => {
+    if (data.fiveWhysTables && data.fiveWhysTables.length > 0) {
+      return data.fiveWhysTables;
+    }
+    // Migration from old fiveWhys array
+    if (data.fiveWhys && Array.isArray(data.fiveWhys) && data.fiveWhys.length > 0) {
+      let migratedRows = [];
+      if (typeof data.fiveWhys[0] === 'object') {
+        migratedRows = data.fiveWhys;
+      } else {
+        migratedRows = [{
+          id: 1,
+          q1: "", q2: "", q3: "", q4: "", q5: "",
+          w1: data.fiveWhys[0] || "",
+          w2: data.fiveWhys[1] || "",
+          w3: data.fiveWhys[2] || "",
+          w4: data.fiveWhys[3] || "",
+          w5: data.fiveWhys[4] || "",
+          accion: ""
+        }];
+      }
+      return [{ id: "fivewhys-1", title: "MÉTODO", rows: migratedRows }];
+    }
+    return [{ id: "fivewhys-1", title: "MÉTODO", rows: [{ id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" }] }];
+  });
+
+  // Impact Matrix state
+  const [impactMatrix, setImpactMatrix] = useState<ImpactMatrixRow[]>(() =>
+    data.impactMatrix && data.impactMatrix.length > 0 ? data.impactMatrix : [newImpactRow()]
   );
 
-  // Ishikawa state
-  const [ishikawaCauses, setIshikawaCauses] = useState<Record<string, string[]>>(
-    data.ishikawaCauses || { machine: [], method: [], material: [], manpower: [], measurement: [], environment: [] }
-  );
-  const [ishikawaEffect, setIshikawaEffect] = useState<string>(
-    data.ishikawaEffect || "Efecto / Problema"
-  );
+  // Ishikawas state
+  const [ishikawas, setIshikawas] = useState<IshikawaItem[]>(() => {
+    if (data.ishikawas && data.ishikawas.length > 0) {
+      return data.ishikawas;
+    }
+    // Migration from old fields
+    return [{
+      id: "ishikawa-1",
+      effect: data.ishikawaEffect || "Efecto / Problema",
+      causes: data.ishikawaCauses || { machine: [], method: [], material: [], manpower: [], measurement: [], environment: [] },
+      prioritization: data.prioritizationCauses || []
+    }];
+  });
 
   // KPI Tree state
   const [kpiNodes, setKpiNodes] = useState<any[]>(data.kpiNodes || []);
@@ -1540,9 +2148,26 @@ export function PdcaDialog({
     });
   }, [isAdmin]);
 
+  // Definición de la Meta state
+  const [definicionMeta, setDefinicionMeta] = useState<DefinicionMeta>(
+    data.definicionMeta || DEFAULT_DEFINICION_META
+  );
+
+  // Participantes state
+  const [participantes, setParticipantes] = useState<ParticipantesData>(
+    data.participantes || {
+      localesNombres: "",
+      localesRoles: "",
+      externosNombres: "",
+      externosRoles: "",
+      fechaReunionInicial: "",
+      reunionRutina: ""
+    }
+  );
+
   const flattenedCauses = useMemo(() => {
-    return Object.values(ishikawaCauses).flat();
-  }, [ishikawaCauses]);
+    return ishikawas.flatMap(ish => Object.values(ish.causes).flat());
+  }, [ishikawas]);
 
   const isInitialMount = useRef(true);
   const lastSavedRef = useRef<string>("");
@@ -1574,27 +2199,70 @@ export function PdcaDialog({
     setProblema(initialData.problema || "");
     setCausaRaiz(initialData.causaRaiz || "");
     setFechaFin(parseDateString(initialData.fechaFinalizacion));
-    setFiveWhys(initialData.fiveWhys || (initialData.causaRaiz ? initialData.causaRaiz.split(" | WHY: ") : [""]));
+    setFiveWhysTables(() => {
+      if (initialData.fiveWhysTables && initialData.fiveWhysTables.length > 0) {
+        return initialData.fiveWhysTables;
+      }
+      if (initialData.fiveWhys && Array.isArray(initialData.fiveWhys) && initialData.fiveWhys.length > 0) {
+        let migratedRows = [];
+        if (typeof initialData.fiveWhys[0] === 'object') {
+          migratedRows = initialData.fiveWhys;
+        } else {
+          migratedRows = [{
+            id: 1,
+            q1: "", q2: "", q3: "", q4: "", q5: "",
+            w1: initialData.fiveWhys[0] || "",
+            w2: initialData.fiveWhys[1] || "",
+            w3: initialData.fiveWhys[2] || "",
+            w4: initialData.fiveWhys[3] || "",
+            w5: initialData.fiveWhys[4] || "",
+            accion: ""
+          }];
+        }
+        return [{ id: "fivewhys-1", title: "MÉTODO", rows: migratedRows }];
+      }
+      return [{ id: "fivewhys-1", title: "MÉTODO", rows: [{ id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" }] }];
+    });
     setTab(initialData.fase);
     setAcciones(initialData.acciones || []);
     setKpiNodes(initialData.kpiNodes || []);
     setKpiEdges(initialData.kpiEdges || []);
-    setIshikawaCauses(initialData.ishikawaCauses || { machine: [], method: [], material: [], manpower: [], measurement: [], environment: [] });
-    setIshikawaEffect(initialData.ishikawaEffect || "Efecto / Problema");
+    setIshikawas(() => {
+      if (initialData.ishikawas && initialData.ishikawas.length > 0) {
+        return initialData.ishikawas;
+      }
+      return [{
+        id: "ishikawa-1",
+        effect: initialData.ishikawaEffect || "Efecto / Problema",
+        causes: initialData.ishikawaCauses || { machine: [], method: [], material: [], manpower: [], measurement: [], environment: [] },
+        prioritization: initialData.prioritizationCauses || []
+      }];
+    });
     setTargetVsActual(initialData.targetVsActual || DEFAULT_TARGET_VS_ACTUAL);
+    setTargetVsActualUnit(initialData.targetVsActualUnit || "$");
     setParetoDrillDowns(initialData.paretoDrillDowns || []);
     setParetoDataMap(initialData.paretoDataMap || DEFAULT_PARETO_DATA_MAP);
+    setParetoUnit(initialData.paretoUnit || "");
     setVpoCheckpoints(initialData.vpoCheckpoints || DEFAULT_VPO_CHECKPOINTS);
+    setDefinicionMeta(initialData.definicionMeta || DEFAULT_DEFINICION_META);
+    setParticipantes(initialData.participantes || {
+      localesNombres: "",
+      localesRoles: "",
+      externosNombres: "",
+      externosRoles: "",
+      fechaReunionInicial: "",
+      reunionRutina: ""
+    });
     setCompletedPhases(new Set(initialData.completedPhases || []));
     setCompletedSteps(new Set(initialData.completedSteps || []));
   }, [data.id, open, data]);
 
   const completedStepsCount = useMemo(() => {
-    const allStepIds = ["step-1", "step-2", "step-3", "step-4", "step-5", "step-6", "step-7", "step-8"];
+    const allStepIds = ["step-1", "step-2", "step-3", "step-4", "step-5", "step-6", "step-7", "step-8", "step-9"];
     return allStepIds.filter(s => completedSteps.has(s)).length;
   }, [completedSteps]);
 
-  const progressPercentage = Math.round((completedStepsCount / 8) * 100);
+  const progressPercentage = Math.round((completedStepsCount / 9) * 100);
 
   // Save changes locally to browser cache (localStorage) on every edit
   useEffect(() => {
@@ -1603,33 +2271,35 @@ export function PdcaDialog({
       return;
     }
 
-    const computedCausa = fiveWhys.filter(Boolean).join(" | WHY: ") || causaRaiz;
-
-    const draftPdca: Pdca = {
+    const newDraft: Pdca = {
       ...data,
       titulo,
       area,
       problema,
-      causaRaiz: computedCausa,
-      fiveWhys,
+      causaRaiz: causaRaiz,
+      fiveWhysTables,
+      impactMatrix,
       fase: tab,
       progreso: progressPercentage,
       acciones,
       kpiNodes,
       kpiEdges,
-      ishikawaCauses,
-      ishikawaEffect,
+      ishikawas,
       targetVsActual,
+      targetVsActualUnit,
       paretoDataMap,
       paretoDrillDowns,
+      paretoUnit,
       vpoCheckpoints,
+      definicionMeta,
+      participantes,
       completedPhases: Array.from(completedPhases),
       completedSteps: Array.from(completedSteps),
       fechaFinalizacion: formatDateToString(fechaFin),
       actualizado: new Date().toLocaleDateString("es-ES", { day: 'numeric', month: 'short', year: 'numeric' })
     };
 
-    const draftStr = JSON.stringify(draftPdca);
+    const draftStr = JSON.stringify(newDraft);
     if (draftStr === lastSavedRef.current) {
       localStorage.removeItem(`pdca_draft_${data.id}`);
       setHasUnsavedChanges(false);
@@ -1643,33 +2313,36 @@ export function PdcaDialog({
       console.error("Error al guardar en el caché local:", e);
     }
   }, [
-    titulo, area, problema, causaRaiz, fiveWhys, tab, progressPercentage, acciones,
-    kpiNodes, kpiEdges, ishikawaCauses, ishikawaEffect, targetVsActual, paretoDataMap, paretoDrillDowns, vpoCheckpoints, completedPhases, completedSteps, fechaFin
+    titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones,
+    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, completedPhases, completedSteps, fechaFin
   ]);
 
   // Upload all cached changes to Firestore database
   const handleSaveToFirestore = useCallback(async () => {
     setIsSaving(true);
-    const computedCausa = fiveWhys.filter(Boolean).join(" | WHY: ") || causaRaiz;
 
     const updatedPdca: Pdca = {
       ...data,
       titulo,
       area,
       problema,
-      causaRaiz: computedCausa,
-      fiveWhys,
+      causaRaiz: causaRaiz,
+      fiveWhysTables,
+      impactMatrix,
       fase: tab,
       progreso: progressPercentage,
       acciones,
       kpiNodes,
       kpiEdges,
-      ishikawaCauses,
-      ishikawaEffect,
+      ishikawas,
       targetVsActual,
+      targetVsActualUnit,
       paretoDataMap,
       paretoDrillDowns,
+      paretoUnit,
       vpoCheckpoints,
+      definicionMeta,
+      participantes,
       completedPhases: Array.from(completedPhases),
       completedSteps: Array.from(completedSteps),
       fechaFinalizacion: formatDateToString(fechaFin),
@@ -1690,7 +2363,7 @@ export function PdcaDialog({
     } finally {
       setIsSaving(false);
     }
-  }, [data, titulo, area, problema, causaRaiz, fiveWhys, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawaCauses, ishikawaEffect, targetVsActual, paretoDataMap, paretoDrillDowns, vpoCheckpoints, completedPhases, completedSteps, fechaFin, currentUser]);
+  }, [data, titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, completedPhases, completedSteps, fechaFin, currentUser]);
 
   const nextPhase = phases[Math.min(phases.indexOf(tab) + 1, 3)];
 
@@ -1753,7 +2426,7 @@ export function PdcaDialog({
             )}>
               {progressPercentage}%
             </span>
-            <span className="text-xs text-muted-foreground font-medium">({completedStepsCount}/8 pasos)</span>
+            <span className="text-xs text-muted-foreground font-medium">({completedStepsCount}/9 pasos)</span>
           </div>
         </div>
 
@@ -1836,6 +2509,19 @@ export function PdcaDialog({
                     placeholder="Describe el problema con datos, magnitud e impacto."
                   />
                 </div>
+
+                <div className="pt-3 border-t border-border/60 space-y-6">
+                  <PdcaGoalDefinition 
+                    value={definicionMeta} 
+                    onChange={setDefinicionMeta} 
+                    readOnly={!isAdmin} 
+                  />
+                  <PdcaParticipants 
+                    value={participantes} 
+                    onChange={setParticipantes} 
+                    readOnly={!isAdmin} 
+                  />
+                </div>
               </div>
 
               <VpoCheckpointTable
@@ -1854,6 +2540,8 @@ export function PdcaDialog({
               <TimeSeriesYTD 
                 value={targetVsActual}
                 onChange={setTargetVsActual}
+                unit={targetVsActualUnit}
+                onUnitChange={setTargetVsActualUnit}
                 isStepCompleted={completedSteps.has("step-3")} 
                 onToggleStep={() => toggleStepComplete("step-3")} 
               />
@@ -1863,6 +2551,8 @@ export function PdcaDialog({
                 setDrillDowns={setParetoDrillDowns}
                 dataMap={paretoDataMap}
                 setDataMap={setParetoDataMap}
+                unit={paretoUnit}
+                onUnitChange={setParetoUnit}
                 isStepCompleted={completedSteps.has("step-5")}
                 onToggleStep={() => toggleStepComplete("step-5")}
               />
@@ -1872,19 +2562,15 @@ export function PdcaDialog({
           {/* FASE 3: CAUSA RAÍZ */}
           {tab === "Check" && (
             <div className="space-y-6">
-              <IshikawaInteractive 
-                causes={ishikawaCauses} 
-                setCauses={setIshikawaCauses} 
-                effect={ishikawaEffect}
-                setEffect={setIshikawaEffect}
+              <IshikawaSection 
+                ishikawas={ishikawas} 
+                onChange={setIshikawas} 
                 isStepCompleted={completedSteps.has("step-6")} 
                 onToggleStep={() => toggleStepComplete("step-6")} 
               />
-              <FiveWhysInteractive 
-                value={fiveWhys}
-                onChange={setFiveWhys}
-                initialValue={data.causaRaiz} 
-                preloadedCauses={flattenedCauses} 
+              <FiveWhysSection 
+                tables={fiveWhysTables}
+                onChange={setFiveWhysTables}
                 isStepCompleted={completedSteps.has("step-7")} 
                 onToggleStep={() => toggleStepComplete("step-7")} 
               />
@@ -1894,16 +2580,56 @@ export function PdcaDialog({
           {/* FASE 4: EJECUCIÓN */}
           {tab === "Act" && (
             <div className="space-y-6">
+              {/* PASO 8.1: MATRIZ DE IMPACTO */}
+              <ImpactMatrixTable
+                rows={impactMatrix}
+                onChange={setImpactMatrix}
+                isStepCompleted={completedSteps.has("step-8")}
+                onToggleStep={() => toggleStepComplete("step-8")}
+              />
+
+              {/* PASO 8.2: PLAN DE ACCIÓN */}
               <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+                <div className="flex items-center gap-3 mb-4">
+                  <h3 className="font-display text-base font-semibold uppercase tracking-wide">PASO 8.2: PLAN DE ACCIÓN</h3>
+                </div>
+                <StepInstructions>
+                  <p className="mb-1">1. Use esto como cualquier otro registro de acción en su MCRS.</p>
+                  <p>2. Si una acción particular tuvo éxito en la eliminación de un síntoma o causa de raíz, indique si se necesita una herramienta SDCA o necesita ser actualizada para estandarizar el resultado.</p>
+                </StepInstructions>
+              </div>
+              <ActionKanban acciones={acciones} setAcciones={setAcciones} />
+
+              {/* PASO 9: GEMBA (EVIDENCIAS) */}
+              <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] space-y-4">
                 <StepHeader
-                  stepId="step-8"
-                  title="Paso 8: Plan de Acción y Matriz de Priorización"
+                  stepId="step-9"
+                  title="PASO 9: GEMBA (EVIDENCIAS)"
                   completedSteps={completedSteps}
                   onToggleStep={toggleStepComplete}
                 />
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700">
+                    <span className="size-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+                    Estamos trabajando en la opción de subir archivos
+                  </span>
+                </div>
+                <StepInstructions>
+                  <p>Registra las evidencias de que el plan de acción se ejecutó correctamente y que los resultados se mantienen (GEMBA). Puedes adjuntar fotos, documentos o enlaces relevantes.</p>
+                </StepInstructions>
+                <div className="mt-4 p-8 border-2 border-dashed border-border rounded-xl text-center text-muted-foreground flex flex-col items-center justify-center gap-3 bg-secondary/20">
+                  <div className="size-12 rounded-full bg-background border shadow-sm flex items-center justify-center">
+                    <UploadCloud className="size-5 text-primary/60" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Gestión de Evidencias Gemba</h4>
+                    <p className="text-sm max-w-sm mx-auto mt-1 text-muted-foreground">Sube archivos, fotos del Gemba o documentos que respalden la estandarización del proceso.</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="mt-2" onClick={() => toast.info("Funcionalidad en desarrollo")}>
+                    Subir Evidencia
+                  </Button>
+                </div>
               </div>
-              <PrioritizationMatrix />
-              <ActionKanban acciones={acciones} setAcciones={setAcciones} />
             </div>
           )}
         </div>

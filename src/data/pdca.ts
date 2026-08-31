@@ -31,13 +31,77 @@ export type Pdca = {
   completedSteps?: string[];
   ishikawaCauses?: Record<string, string[]>;
   ishikawaEffect?: string;
-  fiveWhys?: string[];
+  fiveWhys?: any[];
   targetVsActual?: { mes: string; target: number; actual: number | null }[];
+  targetVsActualUnit?: string;
   paretoDataMap?: Record<string, ParetoItem[]>;
   paretoDrillDowns?: string[];
+  paretoUnit?: string;
   autor?: string;
   autorEmail?: string;
   vpoCheckpoints?: VpoCheckpointItem[];
+  definicionMeta?: DefinicionMeta;
+  participantes?: ParticipantesData;
+  prioritizationCauses?: any[];
+  ishikawas?: IshikawaItem[];
+  fiveWhysTables?: FiveWhysTableData[];
+  impactMatrix?: ImpactMatrixRow[];
+};
+
+export type ImpactMatrixRow = {
+  id: string;
+  accion: string;
+  seguridad: number | "";
+  calidadHigiene: number | "";
+  costo: number | "";
+  medioAmbiente: number | "";
+  servicio: number | "";
+  priorizar: "SI" | "NO" | "";
+};
+
+export type IshikawaItem = {
+  id: string;
+  effect: string;
+  causes: Record<string, string[]>;
+  prioritization: any[];
+};
+
+export type FiveWhysTableData = {
+  id: string;
+  title: string;
+  rows: any[];
+};
+
+export type ParticipantesData = {
+  localesNombres: string;
+  localesRoles: string;
+  externosNombres: string;
+  externosRoles: string;
+  fechaReunionInicial: string;
+  reunionRutina: string;
+};
+
+export const DEFAULT_PARTICIPANTES: ParticipantesData = {
+  localesNombres: "",
+  localesRoles: "",
+  externosNombres: "",
+  externosRoles: "",
+  fechaReunionInicial: "",
+  reunionRutina: ""
+};
+
+export type DefinicionMeta = {
+  kpi: string;
+  pis: string;
+  metodoCalculo: string;
+  desdeValor: string;
+  aValor: string;
+  hastaFecha: string;
+  unidadMedida: string;
+  benchmark: string;
+  mejora: "lower" | "higher" | "menor" | "mayor" | string;
+  responsable: string;
+  facilitadorLider: string;
 };
 
 export type VpoCheckpointItem = {
