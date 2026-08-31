@@ -42,6 +42,7 @@ export type Pdca = {
   vpoCheckpoints?: VpoCheckpointItem[];
   definicionMeta?: DefinicionMeta;
   participantes?: ParticipantesData;
+  equipo?: string[];
   prioritizationCauses?: any[];
   ishikawas?: IshikawaItem[];
   fiveWhysTables?: FiveWhysTableData[];

@@ -98,6 +98,7 @@ const getEmptyDraft = (): Pdca => ({
     { mes: "Ago", valor: 0 },
   ],
   vpoCheckpoints: DEFAULT_VPO_CHECKPOINTS.map(item => ({ ...item, status: "", evidencia: "" })),
+  equipo: [],
 });
 
 function StepInstructions({ title = "Instrucciones", children }: { title?: string, children: React.ReactNode }) {
@@ -118,14 +119,13 @@ function StepInstructions({ title = "Instrucciones", children }: { title?: strin
   );
 }
 
-function TeamMembersInput({ initialMembers = [] }: { initialMembers?: string[] }) {
-  const [members, setMembers] = useState<string[]>(initialMembers);
+function TeamMembersInput({ members = [], onChange }: { members?: string[], onChange: (m: string[]) => void }) {
   const [inputValue, setInputValue] = useState("");
 
   const addMember = () => {
     const val = inputValue.trim();
     if (val && !members.includes(val)) {
-      setMembers([...members, val]);
+      onChange([...members, val]);
       setInputValue("");
     }
   };
@@ -138,7 +138,7 @@ function TeamMembersInput({ initialMembers = [] }: { initialMembers?: string[] }
   };
 
   const removeMember = (indexToRemove: number) => {
-    setMembers(members.filter((_, index) => index !== indexToRemove));
+    onChange(members.filter((_, index) => index !== indexToRemove));
   };
 
   return (
@@ -708,9 +708,9 @@ function ParetoSection({
         onDataChange={(d) => updateData("root", d)}
         onBarClick={(cat) => handleBarClick(cat, 0)} 
         unit={unit}
-        onUnitChange={onUnitChange}
+        {...(onUnitChange ? { onUnitChange } : {})}
         isStepCompleted={isStepCompleted}
-        onToggleStep={onToggleStep}
+        {...(onToggleStep ? { onToggleStep } : {})}
       />
       
       {drillDowns.map((category, index) => {
@@ -726,7 +726,7 @@ function ParetoSection({
             onBarClick={(cat) => handleBarClick(cat, index + 1)}
             onClose={() => handleClose(index + 1)}
             unit={unit}
-            onUnitChange={onUnitChange}
+            {...(onUnitChange ? { onUnitChange } : {})}
           />
         );
       })}
@@ -780,8 +780,8 @@ function PrioritizationMatrix({
   value = [],
   onChange
 }: {
-  value?: any[];
-  onChange?: (causes: any[]) => void;
+  value?: any[] | undefined;
+  onChange?: ((causes: any[]) => void) | undefined;
 }) {
   const causes = value && value.length > 0 ? value : [
     { id: 1, text: "", impact: "", authority: "", difficulty: "", criteria: "" },
@@ -918,6 +918,27 @@ function TimeSeriesYTD({
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
 
+  const updateMes = (index: number, val: string) => {
+    const updated = series.map((s, i) => {
+      if (i === index) {
+        return { ...s, mes: val };
+      }
+      return s;
+    });
+    if (onChange) onChange(updated);
+  };
+
+  const addRow = () => {
+    const updated = [...series, { mes: "Nuevo", target: 0, actual: null }];
+    if (onChange) onChange(updated);
+  };
+
+  const removeRow = (index: number) => {
+    if (series.length <= 1) return;
+    const updated = series.filter((_, i) => i !== index);
+    if (onChange) onChange(updated);
+  };
+
   const updateActual = (index: number, val: string) => {
     const updated = series.map((s, i) => {
       if (i === index) {
@@ -1045,14 +1066,62 @@ function TimeSeriesYTD({
         <p>3. Rellena las columnas "Objetivo" y "Actual" con tus datos.</p>
       </div>
       
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
-        <Input 
-          value={unit} 
-          onChange={e => { if(onUnitChange) onUnitChange(e.target.value) }}
-          placeholder="ej. $, %, HL" 
-          className="w-28 h-7 text-xs font-bold" 
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
+          <Input 
+            value={unit} 
+            onChange={e => { if(onUnitChange) onUnitChange(e.target.value) }}
+            placeholder="ej. $, %, HL" 
+            className="w-28 h-7 text-xs font-bold" 
+          />
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Plantilla Rápida:</span>
+          <Select onValueChange={(val) => {
+            if (window.confirm("Cambiar la plantilla reemplazará los datos actuales en la tabla. ¿Deseas continuar?")) {
+              if (val === 'meses') {
+                if (onChange) onChange([
+                  { mes: "Ene", target: 0, actual: null }, { mes: "Feb", target: 0, actual: null },
+                  { mes: "Mar", target: 0, actual: null }, { mes: "Abr", target: 0, actual: null },
+                  { mes: "May", target: 0, actual: null }, { mes: "Jun", target: 0, actual: null },
+                  { mes: "Jul", target: 0, actual: null }, { mes: "Ago", target: 0, actual: null },
+                  { mes: "Sep", target: 0, actual: null }, { mes: "Oct", target: 0, actual: null },
+                  { mes: "Nov", target: 0, actual: null }, { mes: "Dic", target: 0, actual: null }
+                ]);
+              } else if (val.startsWith('sem-')) {
+                const month = val.split('-')[1];
+                if (onChange) onChange([
+                  { mes: `${month} Sem 1`, target: 0, actual: null },
+                  { mes: `${month} Sem 2`, target: 0, actual: null },
+                  { mes: `${month} Sem 3`, target: 0, actual: null },
+                  { mes: `${month} Sem 4`, target: 0, actual: null },
+                  { mes: `${month} Sem 5`, target: 0, actual: null },
+                ]);
+              }
+            }
+          }}>
+            <SelectTrigger className="h-7 text-xs w-[180px] bg-secondary/30">
+              <SelectValue placeholder="Elegir..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="meses">12 Meses (Anual)</SelectItem>
+              <SelectItem value="sem-Ene">Enero (Semanas)</SelectItem>
+              <SelectItem value="sem-Feb">Febrero (Semanas)</SelectItem>
+              <SelectItem value="sem-Mar">Marzo (Semanas)</SelectItem>
+              <SelectItem value="sem-Abr">Abril (Semanas)</SelectItem>
+              <SelectItem value="sem-May">Mayo (Semanas)</SelectItem>
+              <SelectItem value="sem-Jun">Junio (Semanas)</SelectItem>
+              <SelectItem value="sem-Jul">Julio (Semanas)</SelectItem>
+              <SelectItem value="sem-Ago">Agosto (Semanas)</SelectItem>
+              <SelectItem value="sem-Sep">Septiembre (Semanas)</SelectItem>
+              <SelectItem value="sem-Oct">Octubre (Semanas)</SelectItem>
+              <SelectItem value="sem-Nov">Noviembre (Semanas)</SelectItem>
+              <SelectItem value="sem-Dic">Diciembre (Semanas)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="flex flex-col xl:flex-row gap-6 mt-4">
@@ -1061,15 +1130,26 @@ function TimeSeriesYTD({
           <table className="w-full text-xs text-center border-collapse">
             <thead>
               <tr className="bg-[#0078D7] text-white">
-                <th className="border-r border-white/20 p-2 font-bold w-[30%]">MES</th>
-                <th className="border-r border-white/20 p-2 font-bold w-[35%]">META</th>
-                <th className="p-2 font-bold w-[35%]">ACTUAL</th>
+                <th className="border-r border-white/20 p-2 font-bold w-[30%]">PERÍODO</th>
+                <th className="border-r border-white/20 p-2 font-bold w-[30%]">META</th>
+                <th className="border-r border-white/20 p-2 font-bold w-[30%]">ACTUAL</th>
+                <th className="p-1 w-[10%]">
+                  <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20 hover:text-white" onClick={addRow}>
+                    <Plus className="size-3" />
+                  </Button>
+                </th>
               </tr>
             </thead>
             <tbody>
               {series.map((s, i) => (
-                <tr key={s.mes} className="border-b border-border/40">
-                  <td className="border-r border-border/40 p-2 font-semibold bg-[#E2E2E2] dark:bg-secondary/30">{s.mes}</td>
+                <tr key={i} className="border-b border-border/40 group">
+                  <td className="border-r border-border/40 p-0 font-semibold bg-[#E2E2E2] dark:bg-secondary/30">
+                    <Input 
+                      value={s.mes} 
+                      onChange={e => updateMes(i, e.target.value)}
+                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-semibold bg-transparent focus-visible:ring-1 focus-visible:ring-black/20" 
+                    />
+                  </td>
                   <td className="border-r border-border/40 p-0">
                     <Input 
                       type="number" 
@@ -1078,7 +1158,7 @@ function TimeSeriesYTD({
                       className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20" 
                     />
                   </td>
-                  <td className="p-0">
+                  <td className="border-r border-border/40 p-0">
                     <Input 
                       type="number" 
                       value={s.actual ?? ""} 
@@ -1086,17 +1166,24 @@ function TimeSeriesYTD({
                       className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20" 
                     />
                   </td>
+                  <td className="p-0">
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeRow(i)}>
+                      <X className="size-3" />
+                    </Button>
+                  </td>
                 </tr>
               ))}
               <tr className="border-b border-border/40">
                 <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">YTD Target</td>
                 <td className="border-r border-border/40 p-2 font-bold font-mono text-[#0078D7]">{formatValue(ytdTarget)}</td>
+                <td className="border-r border-border/40 p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
                 <td className="p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
               </tr>
               <tr>
                 <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">YTD Actual</td>
                 <td className="border-r border-border/40 p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
-                <td className="p-2 font-bold font-mono text-muted-foreground">{formatValue(ytdActual)}</td>
+                <td className="border-r border-border/40 p-2 font-bold font-mono text-muted-foreground">{formatValue(ytdActual)}</td>
+                <td className="p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
               </tr>
             </tbody>
           </table>
@@ -1301,9 +1388,12 @@ function ImpactMatrixTable({
       {/* Leyenda */}
       <div className="flex items-center gap-3 text-[10px] pt-1">
         <span className="text-muted-foreground font-semibold uppercase">Leyenda:</span>
-        {[["5","ALTO"],["3","MEDIO"],["1","BAJO"]].map(([v,l]) => (
-          <span key={v} className={cn("px-2 py-0.5 rounded font-bold", SCORE_COLORS[v])}>{l} = {v}</span>
-        ))}
+        {(["5","3","1"] as const).map((v) => {
+          const labels: Record<string, string> = { "5": "ALTO", "3": "MEDIO", "1": "BAJO" };
+          return (
+            <span key={v} className={cn("px-2 py-0.5 rounded font-bold", SCORE_COLORS[v])}>{labels[v]} = {v}</span>
+          );
+        })}
       </div>
     </div>
   );
@@ -2153,6 +2243,8 @@ export function PdcaDialog({
     data.definicionMeta || DEFAULT_DEFINICION_META
   );
 
+  const [equipo, setEquipo] = useState<string[]>(data.equipo || []);
+  
   // Participantes state
   const [participantes, setParticipantes] = useState<ParticipantesData>(
     data.participantes || {
@@ -2245,6 +2337,7 @@ export function PdcaDialog({
     setParetoUnit(initialData.paretoUnit || "");
     setVpoCheckpoints(initialData.vpoCheckpoints || DEFAULT_VPO_CHECKPOINTS);
     setDefinicionMeta(initialData.definicionMeta || DEFAULT_DEFINICION_META);
+    setEquipo(initialData.equipo || []);
     setParticipantes(initialData.participantes || {
       localesNombres: "",
       localesRoles: "",
@@ -2293,6 +2386,7 @@ export function PdcaDialog({
       vpoCheckpoints,
       definicionMeta,
       participantes,
+      equipo,
       completedPhases: Array.from(completedPhases),
       completedSteps: Array.from(completedSteps),
       fechaFinalizacion: formatDateToString(fechaFin),
@@ -2314,7 +2408,7 @@ export function PdcaDialog({
     }
   }, [
     titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones,
-    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, completedPhases, completedSteps, fechaFin
+    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin
   ]);
 
   // Upload all cached changes to Firestore database
@@ -2343,6 +2437,7 @@ export function PdcaDialog({
       vpoCheckpoints,
       definicionMeta,
       participantes,
+      equipo,
       completedPhases: Array.from(completedPhases),
       completedSteps: Array.from(completedSteps),
       fechaFinalizacion: formatDateToString(fechaFin),
@@ -2363,7 +2458,7 @@ export function PdcaDialog({
     } finally {
       setIsSaving(false);
     }
-  }, [data, titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, completedPhases, completedSteps, fechaFin, currentUser]);
+  }, [data, titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin, currentUser]);
 
   const nextPhase = phases[Math.min(phases.indexOf(tab) + 1, 3)];
 
@@ -2498,7 +2593,7 @@ export function PdcaDialog({
                     />
                   </div>
                 </div>
-                <TeamMembersInput initialMembers={[]} />
+                <TeamMembersInput members={equipo} onChange={setEquipo} />
                 <div className="space-y-2">
                   <Label htmlFor="problema">Descripción del Problema</Label>
                   <Textarea
