@@ -47,6 +47,22 @@ export type Pdca = {
   ishikawas?: IshikawaItem[];
   fiveWhysTables?: FiveWhysTableData[];
   impactMatrix?: ImpactMatrixRow[];
+  hasFlavorCorrelation?: boolean;
+  flavorCorrelationData?: any;
+  hasGopThemes?: boolean;
+  gopThemesData?: GopThemeItem[];
+  processMappingImage?: string;
+  kpiFinalResultData?: { mes: string; target: number; actual: number | null }[];
+  kpiFinalResultUnit?: string;
+  gembaFinalImage?: string;
+};
+
+export type GopThemeItem = {
+  id: number;
+  tema: string;
+  meses: boolean[];
+  focusItems: string;
+  status: "Not Started" | "In Progress" | "Complete" | "";
 };
 
 export type ImpactMatrixRow = {
@@ -62,9 +78,11 @@ export type ImpactMatrixRow = {
 
 export type IshikawaItem = {
   id: string;
+  title?: string;
   effect: string;
   causes: Record<string, string[]>;
   prioritization: any[];
+  customLabels?: Record<string, string>;
 };
 
 export type FiveWhysTableData = {

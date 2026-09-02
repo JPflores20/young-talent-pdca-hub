@@ -65,6 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsub = onAuthStateChanged(primaryAuth, async (user) => {
       if (user) {
+        const threshold = new Date("2026-09-01T21:00:00Z").getTime();
+        const creationTime = new Date(user.metadata.creationTime || 0).getTime();
+        const isLegacyUser = creationTime < threshold;
+
+        if (!user.emailVerified && !isLegacyUser) {
+          await signOut(primaryAuth);
+          setCurrentUser(null);
+          localStorage.removeItem("pdca_auth_user");
+          setLoading(false);
+          return;
+        }
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           const isAutoAdmin = isAdminEmail(user.email || "");
@@ -132,6 +143,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Autenticar con Firebase Auth
     const userCredential = await signInWithEmailAndPassword(primaryAuth, emailLower, pass);
     const firebaseUser = userCredential.user;
+    
+    const threshold = new Date("2026-09-01T21:00:00Z").getTime();
+    const creationTime = new Date(firebaseUser.metadata.creationTime || 0).getTime();
+    const isLegacyUser = creationTime < threshold;
+
+    if (!firebaseUser.emailVerified && !isLegacyUser) {
+      await signOut(primaryAuth);
+      throw new Error("Por favor, verifica tu correo electrónico usando el enlace que te enviamos antes de iniciar sesión.");
+    }
+    
     const uid = firebaseUser.uid;
     
     // Obtener perfil de Firestore

@@ -1,15 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, collection, onSnapshot } from "firebase/firestore";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { doc, setDoc, deleteDoc, collection, onSnapshot } from "firebase/firestore";
 import { secondaryAuth, db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, UserPlus, Shield, User } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertCircle, UserPlus, Shield, User, Trash2 } from "lucide-react";
 import type { UserRole, UserProfile } from "@/context/auth-context";
 import { toast } from "sonner";
 
@@ -74,6 +75,26 @@ function AdminPanel() {
     }
   };
 
+  const handleDeleteUser = async (uid: string, name: string) => {
+    // Si se trata de un mock (aunque en prod se usa la DB real)
+    if (mockUsers.find(u => u.uid === uid) && usersList.length === 0) {
+      toast.info("No se puede eliminar un usuario simulado de prueba local.");
+      return;
+    }
+    
+    try {
+      await deleteDoc(doc(db, "users", uid));
+      toast.success(`El usuario ${name} ha sido eliminado exitosamente.`);
+    } catch (err: any) {
+      console.error("Error al eliminar usuario:", err);
+      if (err?.code === "permission-denied") {
+        toast.error("No tienes permisos suficientes en Firestore para eliminar usuarios.");
+      } else {
+        toast.error("Error al eliminar el usuario en la base de datos.");
+      }
+    }
+  };
+
   if (currentUser?.role !== "admin") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -86,8 +107,8 @@ function AdminPanel() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      setError("El correo es estrictamente obligatorio.");
+    if (!name || !email || !password || !area) {
+      setError("Por favor, completa todos los campos requeridos.");
       return;
     }
     
@@ -101,6 +122,9 @@ function AdminPanel() {
       // Crear usuario en Firebase Auth (App Secundaria para no cerrar la sesión activa)
       const cred = await createUserWithEmailAndPassword(secondaryAuth, emailLower, password);
       const uid = cred.user.uid;
+
+      // Enviar correo de verificación
+      await sendEmailVerification(cred.user);
 
       // Guardar perfil en Firestore
       await setDoc(doc(db, "users", uid), {
@@ -121,7 +145,7 @@ function AdminPanel() {
         area,
       });
 
-      setSuccess(`Usuario ${name} registrado exitosamente.`);
+      setSuccess(`Usuario ${name} registrado. Se ha enviado un correo de confirmación.`);
       setName("");
       setEmail("");
       setPassword("");
@@ -155,7 +179,7 @@ function AdminPanel() {
             <h2 className="font-display text-xl font-bold">Registrar Usuario</h2>
           </div>
 
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4" noValidate>
             {error && (
               <div className="flex items-center gap-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
                 <AlertCircle className="size-4 shrink-0" />
@@ -219,6 +243,7 @@ function AdminPanel() {
                 <TableHead className="font-semibold text-foreground/80">Correo</TableHead>
                 <TableHead className="font-semibold text-foreground/80">Área</TableHead>
                 <TableHead className="w-40 font-semibold text-foreground/80">Modificar Permisos</TableHead>
+                <TableHead className="w-20 font-semibold text-foreground/80 text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -252,6 +277,29 @@ function AdminPanel() {
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors">
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            ¿Estás seguro que deseas eliminar a <strong className="text-foreground">{u.name}</strong> del sistema? Esta acción no se puede deshacer. Se le revocará el acceso inmediatamente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteUser(u.uid, u.name)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                            Eliminar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}

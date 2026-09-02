@@ -10,7 +10,8 @@ import {
   MinusCircle,
   X,
   RefreshCw,
-  FileText
+  FileText,
+  Maximize2
 } from "lucide-react";
 import {
   Bar,
@@ -19,6 +20,11 @@ import {
   Line,
   LineChart,
   ComposedChart,
+  ScatterChart,
+  Scatter,
+  ZAxis,
+  ReferenceArea,
+  Cell,
   ResponsiveContainer,
   Tooltip as RTooltip,
   XAxis,
@@ -32,6 +38,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -53,6 +75,8 @@ import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_
 import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "./kpi-tree";
 import { ActionKanban } from "./action-kanban";
+import { GopThemesSection } from "./GopThemesSection";
+import { ProcessMappingSection } from "./ProcessMappingSection";
 import { DatePicker } from "@/components/ui/date-picker";
 import { savePdcaToFirestore } from "@/services/pdca-service";
 import { useAuth } from "@/context/auth-context";
@@ -65,7 +89,7 @@ import {
 
 const PHASE_STEPS_MAP: Record<Phase, string[]> = {
   Plan: ["step-1", "step-2"],
-  Do: ["step-3", "step-4", "step-5"],
+  Do: ["step-3", "step-4", "step-5", "step-flavor", "step-gop"],
   Check: ["step-6", "step-7"],
   Act: ["step-8", "step-9"],
 };
@@ -179,12 +203,14 @@ const CategoryBox = ({
   cat, 
   causesList, 
   onAdd, 
-  onRemove 
+  onRemove,
+  onLabelChange
 }: { 
   cat: { id: string; label: string; position: "top" | "bottom" };
   causesList: string[];
   onAdd: (id: string, value: string) => void;
   onRemove: (id: string, index: number) => void;
+  onLabelChange?: (id: string, newLabel: string) => void;
 }) => {
   const [inputValue, setInputValue] = useState("");
 
@@ -198,8 +224,13 @@ const CategoryBox = ({
 
   return (
     <div className="w-full flex flex-col rounded-md border border-border bg-card shadow-sm overflow-hidden">
-      <div className="bg-secondary/60 px-2 py-1.5 border-b border-border text-center font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {cat.label}
+      <div className="bg-secondary/60 px-1 py-1 border-b border-border text-center font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground focus-within:bg-secondary/80">
+        <input 
+          type="text" 
+          value={cat.label} 
+          onChange={(e) => onLabelChange?.(cat.id, e.target.value)} 
+          className="w-full bg-transparent text-center outline-none uppercase font-display" 
+        />
       </div>
       <div className="p-2 flex flex-col gap-1.5 min-h-[60px]">
         {causesList.map((cause, i) => (
@@ -304,16 +335,33 @@ export function IshikawaSection({
 
       <div className="space-y-12">
         {ishikawas.map((ish, index) => (
-          <div key={ish.id} className="relative group/ishikawa">
+          <div key={ish.id} className="relative group/ishikawa pt-4">
             {ishikawas.length > 1 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => removeIshikawa(ish.id)}
-                className="absolute -right-2 -top-2 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
-              >
-                <X className="size-3 mr-1" /> Eliminar Ishikawa
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -right-2 top-0 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
+                  >
+                    <X className="size-3 mr-1" /> Eliminar Ishikawa
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Eliminar diagrama de Ishikawa?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta acción no se puede deshacer. Se eliminarán permanentemente las causas y priorizaciones registradas en este diagrama.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => removeIshikawa(ish.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                      Eliminar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
             <IshikawaInteractive
               causes={ish.causes}
@@ -322,7 +370,11 @@ export function IshikawaSection({
               setEffect={(e) => updateIshikawa(ish.id, "effect", e)}
               prioritizationCauses={ish.prioritization}
               setPrioritizationCauses={(p) => updateIshikawa(ish.id, "prioritization", p)}
+              customLabels={ish.customLabels}
+              setCustomLabels={(l) => updateIshikawa(ish.id, "customLabels", typeof l === "function" ? l(ish.customLabels || {}) : l)}
               titleSuffix={ishikawas.length > 1 ? ` ${index + 1}` : ""}
+              title={ish.title}
+              setTitle={(t) => updateIshikawa(ish.id, "title", t)}
             />
           </div>
         ))}
@@ -344,7 +396,11 @@ function IshikawaInteractive({
   setEffect,
   prioritizationCauses,
   setPrioritizationCauses,
+  customLabels = {},
+  setCustomLabels,
   titleSuffix = "",
+  title,
+  setTitle,
 }: {
   causes: Record<string, string[]>;
   setCauses: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
@@ -352,16 +408,26 @@ function IshikawaInteractive({
   setEffect: (val: string) => void;
   prioritizationCauses?: any[];
   setPrioritizationCauses?: (causes: any[]) => void;
+  customLabels?: Record<string, string>;
+  setCustomLabels?: (labels: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
   titleSuffix?: string;
+  title?: string;
+  setTitle?: (t: string) => void;
 }) {
   const categories = [
-    { id: "machine", label: "Máquina", position: "top" },
-    { id: "method", label: "Método", position: "top" },
-    { id: "material", label: "Material", position: "top" },
-    { id: "manpower", label: "Mano de Obra", position: "bottom" },
-    { id: "measurement", label: "Medición", position: "bottom" },
-    { id: "environment", label: "Medio Amb.", position: "bottom" },
-  ] as const;
+    { id: "machine", label: customLabels["machine"] ?? "Máquina", position: "top" as const },
+    { id: "method", label: customLabels["method"] ?? "Método", position: "top" as const },
+    { id: "material", label: customLabels["material"] ?? "Material", position: "top" as const },
+    { id: "manpower", label: customLabels["manpower"] ?? "Mano de Obra", position: "bottom" as const },
+    { id: "measurement", label: customLabels["measurement"] ?? "Medición", position: "bottom" as const },
+    { id: "environment", label: customLabels["environment"] ?? "Medio Amb.", position: "bottom" as const },
+  ];
+
+  const handleLabelChange = (id: string, newLabel: string) => {
+    if (setCustomLabels) {
+      setCustomLabels(prev => ({ ...prev, [id]: newLabel }));
+    }
+  };
 
   const addCause = (id: string, value: string) => {
     if (!value.trim()) return;
@@ -378,52 +444,74 @@ function IshikawaInteractive({
     }));
   };
 
-  return (
-    <div className="space-y-6 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
-      {titleSuffix && (
-        <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">Ishikawa{titleSuffix}</h4>
-      )}
+  const fishboneDiagram = (
+    <div className="relative pt-4 pb-4 overflow-x-auto min-h-[400px]">
+      <div className="min-w-[800px] relative mt-4">
+        <div className="absolute top-1/2 left-0 right-36 h-1.5 bg-border rounded-full -translate-y-1/2 z-0">
+           <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 border-[8px] border-transparent border-l-border"></div>
+        </div>
+        
+        <div className="absolute top-1/2 right-0 -translate-y-1/2 bg-destructive/10 text-destructive text-[11px] font-bold uppercase tracking-widest p-2 rounded-xl border border-destructive/30 z-10 w-36 text-center flex flex-col items-center justify-center shadow-sm min-h-[90px]">
+          <span className="text-[9px] font-semibold text-destructive/70 uppercase tracking-wider mb-1">
+            Efecto / Problema
+          </span>
+          <Textarea
+            value={effect}
+            onChange={(e) => setEffect(e.target.value)}
+            placeholder="Escribe el efecto..."
+            rows={2}
+            className="w-full text-center bg-transparent border-none text-destructive font-bold text-xs resize-none focus-visible:ring-1 focus-visible:ring-destructive/40 p-0 shadow-none"
+          />
+        </div>
 
-      <div className="relative pt-2 pb-2 overflow-x-auto">
-        <div className="min-w-[650px] relative">
-          <div className="absolute top-1/2 left-0 right-36 h-1.5 bg-border rounded-full -translate-y-1/2 z-0">
-             <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 border-[8px] border-transparent border-l-border"></div>
-          </div>
-          
-          <div className="absolute top-1/2 right-0 -translate-y-1/2 bg-destructive/10 text-destructive text-[11px] font-bold uppercase tracking-widest p-2 rounded-xl border border-destructive/30 z-10 w-36 text-center flex flex-col items-center justify-center shadow-sm min-h-[90px]">
-            <span className="text-[9px] font-semibold text-destructive/70 uppercase tracking-wider mb-1">
-              Efecto / Problema
-            </span>
-            <Textarea
-              value={effect}
-              onChange={(e) => setEffect(e.target.value)}
-              placeholder="Escribe el efecto..."
-              rows={2}
-              className="w-full text-center bg-transparent border-none text-destructive font-bold text-xs resize-none focus-visible:ring-1 focus-visible:ring-destructive/40 p-0 shadow-none"
-            />
-          </div>
+        <div className="grid grid-cols-3 gap-4 pr-44 relative z-10">
+          {categories.filter(c => c.position === "top").map(cat => (
+            <div key={cat.id} className="flex flex-col items-center">
+              <CategoryBox cat={cat} causesList={causes[cat.id] || []} onAdd={addCause} onRemove={removeCause} onLabelChange={handleLabelChange} />
+              <div className="w-0.5 h-8 bg-border"></div>
+            </div>
+          ))}
+        </div>
 
-          <div className="grid grid-cols-3 gap-3 pr-40 relative z-10">
-            {categories.filter(c => c.position === "top").map(cat => (
-              <div key={cat.id} className="flex flex-col items-center">
-                <CategoryBox cat={cat} causesList={causes[cat.id] || []} onAdd={addCause} onRemove={removeCause} />
-                <div className="w-0.5 h-6 bg-border"></div>
-              </div>
-            ))}
-          </div>
+        <div className="h-4"></div>
 
-          <div className="h-4"></div>
-
-          <div className="grid grid-cols-3 gap-3 pr-40 relative z-10">
-            {categories.filter(c => c.position === "bottom").map(cat => (
-              <div key={cat.id} className="flex flex-col items-center">
-                <div className="w-0.5 h-6 bg-border"></div>
-                <CategoryBox cat={cat} causesList={causes[cat.id] || []} onAdd={addCause} onRemove={removeCause} />
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-3 gap-4 pr-44 relative z-10">
+          {categories.filter(c => c.position === "bottom").map(cat => (
+            <div key={cat.id} className="flex flex-col items-center">
+              <div className="w-0.5 h-8 bg-border"></div>
+              <CategoryBox cat={cat} causesList={causes[cat.id] || []} onAdd={addCause} onRemove={removeCause} onLabelChange={handleLabelChange} />
+            </div>
+          ))}
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="flex items-center justify-between mb-2 gap-4">
+        <Input 
+          value={title ?? `ISHIKAWA${titleSuffix}`} 
+          onChange={(e) => setTitle?.(e.target.value)}
+          placeholder={`ISHIKAWA${titleSuffix}`}
+          className="text-sm font-bold text-muted-foreground uppercase tracking-wider bg-transparent border-transparent hover:border-border focus-visible:border-border px-2 py-0 h-8 w-64 shadow-none"
+        />
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-2">
+              <Maximize2 className="size-3.5" /> Expandir Diagrama
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-[95vw] w-full p-6">
+            <h3 className="text-lg font-bold uppercase mb-4">{title ?? `ISHIKAWA${titleSuffix}`}</h3>
+            {fishboneDiagram}
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {fishboneDiagram}
+      
       <PrioritizationMatrix value={prioritizationCauses} onChange={setPrioritizationCauses} />
     </div>
   );
@@ -680,19 +768,26 @@ function ParetoSection({
 }) {
   const handleBarClick = (category: string, level: number) => {
     if (category) {
-      const newDrills = drillDowns.slice(0, level);
-      newDrills.push(category);
-      setDrillDowns(newDrills);
-      
       const newPath = `level-${level + 1}-${category}`;
+      
+      const isLegacy = drillDowns.length > 0 && !drillDowns[0].startsWith("level-");
+      const currentDrills = isLegacy ? drillDowns.map((d, i) => `level-${i + 1}-${d}`) : [...drillDowns];
+      
+      if (!currentDrills.includes(newPath)) {
+        currentDrills.push(newPath);
+        setDrillDowns(currentDrills);
+      }
+      
       if (!dataMap[newPath]) {
         setDataMap({ ...dataMap, [newPath]: [] });
       }
     }
   };
 
-  const handleClose = (level: number) => {
-    setDrillDowns(drillDowns.slice(0, level - 1));
+  const handleClose = (pathToRemove: string) => {
+    const isLegacy = drillDowns.length > 0 && !drillDowns[0].startsWith("level-");
+    const currentDrills = isLegacy ? drillDowns.map((d, i) => `level-${i + 1}-${d}`) : [...drillDowns];
+    setDrillDowns(currentDrills.filter(p => p !== pathToRemove));
   };
 
   const updateData = (path: string, newData: ParetoItem[]) => {
@@ -713,18 +808,24 @@ function ParetoSection({
         {...(onToggleStep ? { onToggleStep } : {})}
       />
       
-      {drillDowns.map((category, index) => {
-        const path = `level-${index + 1}-${category}`;
+      {drillDowns.map((drillStr, index) => {
+        const isLegacy = !drillStr.startsWith("level-");
+        const path = isLegacy ? `level-${index + 1}-${drillStr}` : drillStr;
+        
+        const parts = path.split("-");
+        const level = parseInt(parts[1], 10) || (index + 1);
+        const category = parts.slice(2).join("-");
+
         return (
           <ParetoInteractive 
             key={path}
-            level={index + 1}
+            level={level}
             title={`Sub-Pareto: ${category}`}
-            subtitle={`Desglose específico (2do Nivel) de la categoría ${category}.`}
+            subtitle={`Desglose específico (Nivel ${level + 1}) de la categoría ${category}.`}
             data={dataMap[path] || []}
             onDataChange={(d) => updateData(path, d)}
-            onBarClick={(cat) => handleBarClick(cat, index + 1)}
-            onClose={() => handleClose(index + 1)}
+            onBarClick={(cat) => handleBarClick(cat, level)}
+            onClose={() => handleClose(path)}
             unit={unit}
             {...(onUnitChange ? { onUnitChange } : {})}
           />
@@ -835,7 +936,15 @@ function PrioritizationMatrix({
               const impact = Number(c.impact) || 0;
               const authority = Number(c.authority) || 0;
               const difficulty = Number(c.difficulty) || 0;
-              const total = impact * authority * difficulty;
+              
+              let total = impact * authority * difficulty;
+              const criteriaText = String(c.criteria || "").trim();
+              const criteriaNum = Number(criteriaText);
+              
+              if (criteriaText !== "" && !isNaN(criteriaNum)) {
+                total *= criteriaNum;
+              }
+              
               const isHigh = total > 0;
               
               return (
@@ -908,6 +1017,8 @@ function TimeSeriesYTD({
   onUnitChange,
   isStepCompleted,
   onToggleStep,
+  title = "PASO 3: CURRENT TIME SERIES",
+  chartTitle = "CURRENT TIME SERIES",
 }: {
   value?: { mes: string; target: number; actual: number | null }[];
   onChange?: (newSeries: { mes: string; target: number; actual: number | null }[]) => void;
@@ -915,6 +1026,8 @@ function TimeSeriesYTD({
   onUnitChange?: (newUnit: string) => void;
   isStepCompleted?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
+  title?: string;
+  chartTitle?: string;
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
 
@@ -1046,7 +1159,7 @@ function TimeSeriesYTD({
             </button>
           )}
           <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-            <span>PASO 3: CURRENT TIME SERIES</span>
+            <span>{title}</span>
             {isStepCompleted && (
               <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
                 Completado
@@ -1191,7 +1304,7 @@ function TimeSeriesYTD({
         
         {/* Chart Side */}
         <div className="w-full xl:w-[60%] flex flex-col h-[400px]">
-          <h4 className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80">CURRENT TIME SERIES</h4>
+          <h4 className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80">{chartTitle}</h4>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 40, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
@@ -1461,16 +1574,33 @@ function FiveWhysSection({
 
       <div className="space-y-8">
         {tables.map((table, index) => (
-          <div key={table.id} className="relative group/fivewhys">
+          <div key={table.id} className="relative group/fivewhys pt-4">
             {tables.length > 1 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => removeTable(table.id)}
-                className="absolute -right-2 -top-2 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
-              >
-                <X className="size-3 mr-1" /> Eliminar Tabla
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -right-2 top-0 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
+                  >
+                    <X className="size-3 mr-1" /> Eliminar Tabla
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Eliminar tabla 5 Whys?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta acción no se puede deshacer. Se eliminarán permanentemente todas las preguntas y respuestas registradas en esta tabla.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => removeTable(table.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                      Eliminar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
             <FiveWhysInteractive
               value={table.rows}
@@ -1523,6 +1653,34 @@ function FiveWhysInteractive({
     }
   };
 
+  const whysCount = Math.max(
+    5,
+    ...(value || []).flatMap((r: any) => 
+      Object.keys(r)
+        .filter(k => k.startsWith('q'))
+        .map(k => parseInt(k.substring(1)))
+        .filter(n => !isNaN(n))
+    )
+  );
+
+  const addWhyColumn = () => {
+    if (onChange && value) {
+      const nextWhy = whysCount + 1;
+      onChange(value.map((r: any) => ({ ...r, [`q${nextWhy}`]: "", [`w${nextWhy}`]: "" })));
+    }
+  };
+
+  const removeWhyColumn = () => {
+    if (onChange && value && whysCount > 5) {
+      onChange(value.map((r: any) => {
+        const newRow = { ...r };
+        delete newRow[`q${whysCount}`];
+        delete newRow[`w${whysCount}`];
+        return newRow;
+      }));
+    }
+  };
+
   return (
     <div className="overflow-x-auto border border-[#0078D7] rounded-sm bg-white dark:bg-background shadow-sm">
       <div className="flex justify-between items-center px-2 py-1 bg-white dark:bg-background border-b border-[#0078D7]">
@@ -1534,6 +1692,16 @@ function FiveWhysInteractive({
           placeholder="TÍTULO DE LA TABLA"
         />
         <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={addWhyColumn}>
+              <Plus className="mr-1 size-3" /> Añadir Por Qué
+            </Button>
+            {whysCount > 5 && (
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 font-bold" onClick={removeWhyColumn}>
+                <MinusCircle className="mr-1 size-3" /> Quitar Por Qué
+              </Button>
+            )}
+          </div>
           <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={addRow}>
             <Plus className="mr-1 size-3" /> Añadir Causa
           </Button>
@@ -1543,12 +1711,12 @@ function FiveWhysInteractive({
       <table className="w-full text-sm border-collapse min-w-[900px]">
         <thead>
           <tr className="bg-[#0078D7] text-white">
-            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">1er POR QUÉ</th>
-            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">2do POR QUÉ</th>
-            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">3er POR QUÉ</th>
-            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">4to POR QUÉ</th>
-            <th className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] w-[16%]">5to POR QUÉ</th>
-            <th className="font-bold uppercase text-center p-2 text-[10px] w-[16%] border-r border-white/20">ACCION(ES)</th>
+            {Array.from({ length: whysCount }).map((_, i) => (
+              <th key={i} className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] min-w-[150px]">
+                {i + 1}º POR QUÉ
+              </th>
+            ))}
+            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[150px] border-r border-white/20">ACCION(ES)</th>
             <th className="w-8"></th>
           </tr>
         </thead>
@@ -1557,51 +1725,21 @@ function FiveWhysInteractive({
             <Fragment key={row.id}>
               {/* Fila de Preguntas */}
               <tr className="border-b border-white group">
-                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
-                  <Textarea
-                    value={row.q1 || ""}
-                    onChange={(e) => updateRow(row.id, "q1", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
-                    placeholder="Pregunta..."
-                  />
-                </td>
-                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
-                  <Textarea
-                    value={row.q2 || ""}
-                    onChange={(e) => updateRow(row.id, "q2", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
-                    placeholder="Pregunta..."
-                  />
-                </td>
-                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
-                  <Textarea
-                    value={row.q3 || ""}
-                    onChange={(e) => updateRow(row.id, "q3", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
-                    placeholder="Pregunta..."
-                  />
-                </td>
-                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
-                  <Textarea
-                    value={row.q4 || ""}
-                    onChange={(e) => updateRow(row.id, "q4", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
-                    placeholder="Pregunta..."
-                  />
-                </td>
-                <td className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white">
-                  <Textarea
-                    value={row.q5 || ""}
-                    onChange={(e) => updateRow(row.id, "q5", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60"
-                    placeholder="Pregunta..."
-                  />
-                </td>
+                {Array.from({ length: whysCount }).map((_, i) => (
+                  <td key={`q-${i}`} className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white align-top">
+                    <AutoResizeTextarea
+                      value={row[`q${i + 1}`] || ""}
+                      onChange={(val) => updateRow(row.id, `q${i + 1}`, val)}
+                      className="w-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-semibold focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/60 overflow-hidden"
+                      placeholder="Pregunta..."
+                    />
+                  </td>
+                ))}
                 <td rowSpan={2} className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white align-top">
-                  <Textarea
-                    value={row.accion}
-                    onChange={(e) => updateRow(row.id, "accion", e.target.value)}
-                    className="h-full min-h-[80px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground"
+                  <AutoResizeTextarea
+                    value={row.accion || ""}
+                    onChange={(val) => updateRow(row.id, "accion", val)}
+                    className="w-full min-h-[80px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground overflow-hidden"
                   />
                 </td>
                 <td rowSpan={2} className="bg-background align-middle">
@@ -1614,46 +1752,16 @@ function FiveWhysInteractive({
               </tr>
               {/* Fila de Respuestas */}
               <tr className="border-b-[3px] border-[#0078D7] group">
-                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
-                  <Textarea
-                    value={row.w1}
-                    onChange={(e) => updateRow(row.id, "w1", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
-                    placeholder="Respuesta..."
-                  />
-                </td>
-                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
-                  <Textarea
-                    value={row.w2}
-                    onChange={(e) => updateRow(row.id, "w2", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
-                    placeholder="Respuesta..."
-                  />
-                </td>
-                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
-                  <Textarea
-                    value={row.w3}
-                    onChange={(e) => updateRow(row.id, "w3", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
-                    placeholder="Respuesta..."
-                  />
-                </td>
-                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
-                  <Textarea
-                    value={row.w4}
-                    onChange={(e) => updateRow(row.id, "w4", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
-                    placeholder="Respuesta..."
-                  />
-                </td>
-                <td className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white">
-                  <Textarea
-                    value={row.w5}
-                    onChange={(e) => updateRow(row.id, "w5", e.target.value)}
-                    className="h-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50"
-                    placeholder="Respuesta..."
-                  />
-                </td>
+                {Array.from({ length: whysCount }).map((_, i) => (
+                  <td key={`w-${i}`} className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white align-top">
+                    <AutoResizeTextarea
+                      value={row[`w${i + 1}`] || ""}
+                      onChange={(val) => updateRow(row.id, `w${i + 1}`, val)}
+                      className="w-full min-h-[40px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground placeholder:text-muted-foreground/50 overflow-hidden"
+                      placeholder="Respuesta..."
+                    />
+                  </td>
+                ))}
               </tr>
             </Fragment>
           ))}
@@ -2107,6 +2215,19 @@ export function PdcaDialog({
   );
   const [targetVsActualUnit, setTargetVsActualUnit] = useState<string>(data.targetVsActualUnit || "$");
 
+  const [kpiFinalResultData, setKpiFinalResultData] = useState<{ mes: string; target: number; actual: number | null }[]>(
+    data.kpiFinalResultData || DEFAULT_TARGET_VS_ACTUAL
+  );
+  const [kpiFinalResultUnit, setKpiFinalResultUnit] = useState<string>(data.kpiFinalResultUnit || "$");
+  const [gembaFinalImage, setGembaFinalImage] = useState<string | null>(data.gembaFinalImage || null);
+
+  const [hasFlavorCorrelation, setHasFlavorCorrelation] = useState<boolean>(data.hasFlavorCorrelation || false);
+  const [flavorCorrelationData, setFlavorCorrelationData] = useState<any>(data.flavorCorrelationData || null);
+  
+  const [hasGopThemes, setHasGopThemes] = useState<boolean>(data.hasGopThemes || false);
+  const [gopThemesData, setGopThemesData] = useState<any[]>(data.gopThemesData || []);
+  const [processMappingImage, setProcessMappingImage] = useState<string | null>(data.processMappingImage || null);
+
   // 5 Whys state
   const [fiveWhysTables, setFiveWhysTables] = useState<FiveWhysTableData[]>(() => {
     if (data.fiveWhysTables && data.fiveWhysTables.length > 0) {
@@ -2237,7 +2358,6 @@ export function PdcaDialog({
       return nextSteps;
     });
   }, [isAdmin]);
-
   // Definición de la Meta state
   const [definicionMeta, setDefinicionMeta] = useState<DefinicionMeta>(
     data.definicionMeta || DEFAULT_DEFINICION_META
@@ -2262,27 +2382,17 @@ export function PdcaDialog({
   }, [ishikawas]);
 
   const isInitialMount = useRef(true);
+  const skipNextAutosave = useRef(true);
   const lastSavedRef = useRef<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     isInitialMount.current = true;
+    skipNextAutosave.current = true;
     
-    // Check if there is a cached local draft for this PDCA
     let initialData = data;
-    const cachedDraftStr = localStorage.getItem(`pdca_draft_${data.id}`);
-    if (cachedDraftStr) {
-      try {
-        const parsed = JSON.parse(cachedDraftStr);
-        initialData = { ...data, ...parsed };
-        setHasUnsavedChanges(true);
-      } catch (e) {
-        console.error("Error al leer el borrador local del caché:", e);
-      }
-    } else {
-      setHasUnsavedChanges(false);
-    }
+    setHasUnsavedChanges(false);
 
     lastSavedRef.current = JSON.stringify(data);
 
@@ -2335,6 +2445,7 @@ export function PdcaDialog({
     setParetoDrillDowns(initialData.paretoDrillDowns || []);
     setParetoDataMap(initialData.paretoDataMap || DEFAULT_PARETO_DATA_MAP);
     setParetoUnit(initialData.paretoUnit || "");
+    setImpactMatrix(initialData.impactMatrix && initialData.impactMatrix.length > 0 ? initialData.impactMatrix : [newImpactRow()]);
     setVpoCheckpoints(initialData.vpoCheckpoints || DEFAULT_VPO_CHECKPOINTS);
     setDefinicionMeta(initialData.definicionMeta || DEFAULT_DEFINICION_META);
     setEquipo(initialData.equipo || []);
@@ -2351,13 +2462,13 @@ export function PdcaDialog({
   }, [data.id, open, data]);
 
   const completedStepsCount = useMemo(() => {
-    const allStepIds = ["step-1", "step-2", "step-3", "step-4", "step-5", "step-6", "step-7", "step-8", "step-9"];
+    const allStepIds = ["step-1", "step-2", "step-3", "step-4", "step-5", "step-6", "step-7", "step-8", "step-9", "step-10", "step-11"];
     return allStepIds.filter(s => completedSteps.has(s)).length;
   }, [completedSteps]);
 
-  const progressPercentage = Math.round((completedStepsCount / 9) * 100);
+  const progressPercentage = Math.round((completedStepsCount / 11) * 100);
 
-  // Save changes locally to browser cache (localStorage) on every edit
+  // Detect unsaved changes
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -2380,6 +2491,9 @@ export function PdcaDialog({
       ishikawas,
       targetVsActual,
       targetVsActualUnit,
+      kpiFinalResultData,
+      kpiFinalResultUnit,
+      gembaFinalImage,
       paretoDataMap,
       paretoDrillDowns,
       paretoUnit,
@@ -2394,21 +2508,24 @@ export function PdcaDialog({
     };
 
     const draftStr = JSON.stringify(newDraft);
+
+    if (skipNextAutosave.current) {
+      skipNextAutosave.current = false;
+      if (!hasUnsavedChanges) {
+        lastSavedRef.current = draftStr;
+        return;
+      }
+    }
+
     if (draftStr === lastSavedRef.current) {
-      localStorage.removeItem(`pdca_draft_${data.id}`);
       setHasUnsavedChanges(false);
       return;
     }
 
-    try {
-      localStorage.setItem(`pdca_draft_${data.id}`, draftStr);
-      setHasUnsavedChanges(true);
-    } catch (e) {
-      console.error("Error al guardar en el caché local:", e);
-    }
+    setHasUnsavedChanges(true);
   }, [
     titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones,
-    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin
+    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin
   ]);
 
   // Upload all cached changes to Firestore database
@@ -2431,9 +2548,17 @@ export function PdcaDialog({
       ishikawas,
       targetVsActual,
       targetVsActualUnit,
+      kpiFinalResultData,
+      kpiFinalResultUnit,
+      gembaFinalImage,
       paretoDataMap,
       paretoDrillDowns,
       paretoUnit,
+      hasFlavorCorrelation,
+      flavorCorrelationData,
+      hasGopThemes,
+      gopThemesData,
+      processMappingImage,
       vpoCheckpoints,
       definicionMeta,
       participantes,
@@ -2449,7 +2574,6 @@ export function PdcaDialog({
     try {
       await savePdcaToFirestore(updatedPdca);
       lastSavedRef.current = JSON.stringify(updatedPdca);
-      localStorage.removeItem(`pdca_draft_${data.id}`);
       setHasUnsavedChanges(false);
       toast.success("¡Todos los cambios del PDCA se subieron a la base de datos!");
     } catch (err) {
@@ -2458,7 +2582,7 @@ export function PdcaDialog({
     } finally {
       setIsSaving(false);
     }
-  }, [data, titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin, currentUser]);
+  }, [data, titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin, currentUser]);
 
   const nextPhase = phases[Math.min(phases.indexOf(tab) + 1, 3)];
 
@@ -2484,7 +2608,7 @@ export function PdcaDialog({
                 </span>
               ) : hasUnsavedChanges ? (
                 <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
-                  <Save className="size-3" /> Cambios guardados en Caché
+                  <Save className="size-3" /> Cambios sin guardar
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
@@ -2521,7 +2645,7 @@ export function PdcaDialog({
             )}>
               {progressPercentage}%
             </span>
-            <span className="text-xs text-muted-foreground font-medium">({completedStepsCount}/9 pasos)</span>
+            <span className="text-xs text-muted-foreground font-medium">({completedStepsCount}/11 pasos)</span>
           </div>
         </div>
 
@@ -2651,12 +2775,94 @@ export function PdcaDialog({
                 isStepCompleted={completedSteps.has("step-5")}
                 onToggleStep={() => toggleStepComplete("step-5")}
               />
+              {hasFlavorCorrelation ? (
+                <div className="relative group/flavor pt-4 border-t border-border/40 mt-4">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="absolute right-0 top-0 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
+                      >
+                        <X className="size-3 mr-1" /> Eliminar Correlación
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar sección?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          ¿Estás seguro de que deseas eliminar la sección de Correlación de Flavors? Esta acción ocultará la sección, pero los datos se mantendrán hasta que guardes.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => setHasFlavorCorrelation(false)}>Eliminar</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <FlavorCorrelationSection 
+                    isStepCompleted={completedSteps.has("step-flavor")}
+                    onToggleStep={() => toggleStepComplete("step-flavor")}
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center border-t border-border/60 pt-6 mt-4">
+                  <Button onClick={() => setHasFlavorCorrelation(true)} variant="outline" className="gap-2 shadow-sm bg-card hover:bg-card/80">
+                    <Plus className="size-4" /> Agregar Análisis de Flavors
+                  </Button>
+                </div>
+              )}
+
+              {hasGopThemes ? (
+                <div className="relative group/gop pt-4 border-t border-border/40 mt-4">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="absolute right-0 top-0 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
+                      >
+                        <X className="size-3 mr-1" /> Eliminar Temas de GOP
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>¿Eliminar sección?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          ¿Estás seguro de que deseas eliminar la sección de Temas de GOP? Esta acción ocultará la tabla.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => setHasGopThemes(false)}>Eliminar</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <GopThemesSection 
+                    data={gopThemesData}
+                    onChange={setGopThemesData}
+                    isStepCompleted={completedSteps.has("step-gop")}
+                    onToggleStep={() => toggleStepComplete("step-gop")}
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center border-t border-border/60 pt-6 mt-4">
+                  <Button onClick={() => setHasGopThemes(true)} variant="outline" className="gap-2 shadow-sm bg-card hover:bg-card/80">
+                    <Plus className="size-4" /> Agregar Temas de GOP
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
           {/* FASE 3: CAUSA RAÍZ */}
           {tab === "Check" && (
             <div className="space-y-6">
+              <ProcessMappingSection
+                image={processMappingImage}
+                onChange={setProcessMappingImage}
+              />
+
               <IshikawaSection 
                 ishikawas={ishikawas} 
                 onChange={setIshikawas} 
@@ -2725,6 +2931,31 @@ export function PdcaDialog({
                   </Button>
                 </div>
               </div>
+
+              {/* PASO 10: KPI FINAL RESULT */}
+              <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+                <TimeSeriesYTD
+                  value={kpiFinalResultData}
+                  onChange={setKpiFinalResultData}
+                  unit={kpiFinalResultUnit}
+                  onUnitChange={setKpiFinalResultUnit}
+                  isStepCompleted={completedSteps.has("step-10")}
+                  onToggleStep={() => toggleStepComplete("step-10")}
+                  title="PASO 10: KPI FINAL RESULT"
+                  chartTitle="KPI FINAL RESULT"
+                />
+              </div>
+
+              {/* PASO 11: GEMBA FINAL */}
+              <ProcessMappingSection
+                image={gembaFinalImage}
+                onChange={setGembaFinalImage}
+                title="PASO 11: GEMBA FINAL"
+                subtitle="Gestión de Evidencias Gemba"
+                description="Sube archivos, fotos del Gemba o documentos que respalden la estandarización del proceso final."
+                isStepCompleted={completedSteps.has("step-11")}
+                onToggleStep={() => toggleStepComplete("step-11")}
+              />
             </div>
           )}
         </div>
@@ -2760,6 +2991,211 @@ export function PdcaDialog({
             {tab === "Act" ? "Finalizar PDCA" : "Siguiente Paso"} <ArrowRight className="size-4 ml-2" />
           </Button>
         </div>
+    </div>
+  );
+}
+export function FlavorCorrelationSection({
+  isStepCompleted,
+  onToggleStep,
+}: {
+  isStepCompleted?: boolean;
+  onToggleStep?: () => void;
+}) {
+  const [data, setData] = useState({
+    cleanEndFinish: [
+      { id: 1, x: 30, y: 6.3 }, { id: 2, x: 8, y: 6.1 }, { id: 3, x: 10, y: 6.2 }, { id: 4, x: 70, y: 7.7 }, { id: 5, x: 85, y: 7.1 }
+    ],
+    esters: [
+      { id: 6, x: 10, y: 6.2 }, { id: 7, x: 2, y: 6.1 }, { id: 8, x: 5, y: 6.1 }, { id: 9, x: 30, y: 7.2 }, { id: 10, x: 55, y: 7.7 }
+    ],
+    lingerBitter: [
+      { id: 11, x: 30, y: 7.8 }, { id: 12, x: 50, y: 7.1 }, { id: 13, x: 60, y: 6.4 }, { id: 14, x: 135, y: 6.1 }
+    ],
+    smokeyPhenolic: [
+      { id: 15, x: 2, y: 7.7 }, { id: 16, x: 25, y: 7.2 }, { id: 17, x: 65, y: 6.2 }, { id: 18, x: 70, y: 6.2 }
+    ],
+    astringentDrying: [
+      { id: 19, x: 30, y: 6.2 }, { id: 20, x: 50, y: 6.2 }, { id: 21, x: 60, y: 6.3 }, { id: 22, x: 50, y: 7.2 }
+    ]
+  });
+
+  const [positiveTitle, setPositiveTitle] = useState("Sensory (Global Panel) vs % of tasters who identify the positive attributes");
+  const [negativeTitle, setNegativeTitle] = useState("Sensory (Global Panel) vs % of tasters who identify the Negative Attributes");
+
+
+  const updatePoint = (series: keyof typeof data, id: number, field: "x" | "y", value: number) => {
+    setData(prev => ({
+      ...prev,
+      [series]: prev[series].map(p => p.id === id ? { ...p, [field]: value } : p)
+    }));
+  };
+
+  const addPoint = (series: keyof typeof data) => {
+    setData(prev => ({
+      ...prev,
+      [series]: [...prev[series], { id: Date.now(), x: 0, y: 6.0 }]
+    }));
+  };
+
+  const removePoint = (series: keyof typeof data, id: number) => {
+    setData(prev => ({
+      ...prev,
+      [series]: prev[series].filter(p => p.id !== id)
+    }));
+  };
+
+  const SeriesEditor = ({ name, series, label }: { name: keyof typeof data, series: any[], label: string }) => (
+    <div className="border rounded p-3 space-y-2">
+      <div className="font-bold text-sm flex justify-between items-center">
+        {label}
+        <Button variant="outline" size="sm" onClick={() => addPoint(name)} className="h-6 text-xs px-2"><Plus className="size-3 mr-1"/> Añadir</Button>
+      </div>
+      <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+        {series.map(p => (
+          <div key={p.id} className="flex items-center gap-1 bg-secondary/30 p-1 rounded">
+            <span className="text-[10px] font-bold w-3">X:</span>
+            <Input type="number" value={p.x} onChange={e => updatePoint(name, p.id, "x", Number(e.target.value))} className="h-6 text-xs px-1" />
+            <span className="text-[10px] font-bold w-3 ml-1">Y:</span>
+            <Input type="number" step="0.1" value={p.y} onChange={e => updatePoint(name, p.id, "y", Number(e.target.value))} className="h-6 text-xs px-1" />
+            <Button variant="ghost" size="icon" onClick={() => removePoint(name, p.id)} className="h-6 w-6 text-destructive shrink-0"><X className="size-3"/></Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+      <div className="flex items-center gap-3 mb-2">
+        {onToggleStep && (
+          <button
+            type="button"
+            onClick={onToggleStep}
+            className={cn(
+              "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
+              isStepCompleted
+                ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
+                : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
+            )}
+          >
+            <Check className="size-4" />
+          </button>
+        )}
+        <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
+          <span>Correlación de Flavors</span>
+          {isStepCompleted && (
+            <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
+              Completado
+            </span>
+          )}
+        </h3>
+        <div className="flex items-center gap-2 ml-auto">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8">
+                <FileText className="size-4 mr-2" /> Editar Puntos
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <h3 className="text-lg font-bold">Editar Puntos de Correlación</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <SeriesEditor name="cleanEndFinish" series={data.cleanEndFinish} label="Clean-End-Finish" />
+                <SeriesEditor name="esters" series={data.esters} label="Esters" />
+                <SeriesEditor name="lingerBitter" series={data.lingerBitter} label="Linger-Bitter" />
+                <SeriesEditor name="smokeyPhenolic" series={data.smokeyPhenolic} label="Smokey-Phenolic" />
+                <SeriesEditor name="astringentDrying" series={data.astringentDrying} label="Astringent-Drying" />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+      
+      <div className="grid xl:grid-cols-2 gap-6">
+        {/* CHART 1: POSITIVE */}
+        <div className="space-y-2">
+          <input 
+            value={positiveTitle} 
+            onChange={(e) => setPositiveTitle(e.target.value)} 
+            className="w-full text-sm font-semibold text-center bg-transparent border border-transparent hover:border-border focus:border-border focus:bg-background outline-none transition-colors px-2 py-0.5 rounded"
+          />
+          <div className="h-64 border bg-white relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
+                <CartesianGrid />
+                <XAxis type="number" dataKey="x" domain={[0, 180]} tickCount={10} />
+                <YAxis type="number" dataKey="y" domain={[6.0, 8.5]} tickCount={6} />
+                <ZAxis type="number" range={[100, 100]} />
+                <RTooltip cursor={{ strokeDasharray: '3 3' }} />
+                
+                {/* Quadrants - approximate colors based on image */}
+                <ReferenceArea x1={0} x2={40} y1={6.0} y2={7.5} fill="#f8d7da" fillOpacity={0.5} />
+                <ReferenceArea x1={40} x2={180} y1={6.0} y2={7.5} fill="#fff3cd" fillOpacity={0.5} />
+                <ReferenceArea x1={0} x2={40} y1={7.5} y2={8.5} fill="#e2e3e5" fillOpacity={0.5} />
+                <ReferenceArea x1={40} x2={180} y1={7.5} y2={8.5} fill="#d4edda" fillOpacity={0.5} />
+                
+                <Scatter name="Clean-End-Finish" data={data.cleanEndFinish} fill="#000" stroke="#f1c40f" strokeWidth={2} />
+                <Scatter name="Esters" data={data.esters} fill="#f1c40f" stroke="#000" strokeWidth={1} />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 mt-2 items-end">
+            <span className="font-bold text-sm mb-1">Pearson Correlation</span>
+            <div className="flex flex-col items-center">
+              <span className="flex items-center gap-1 text-xs font-semibold"><div className="w-3 h-3 rounded-full bg-black border border-yellow-400"></div> Clean-End-Finish</span>
+              <span className="bg-amber-400 font-bold px-4 py-0.5 text-black mt-1">0.760</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="flex items-center gap-1 text-xs font-semibold"><div className="w-3 h-3 rounded-full bg-yellow-400 border border-black"></div> Esters</span>
+              <span className="bg-amber-400 font-bold px-4 py-0.5 text-black mt-1">0.998</span>
+            </div>
+          </div>
+        </div>
+
+        {/* CHART 2: NEGATIVE */}
+        <div className="space-y-2">
+          <input 
+            value={negativeTitle} 
+            onChange={(e) => setNegativeTitle(e.target.value)} 
+            className="w-full text-sm font-semibold text-center bg-transparent border border-transparent hover:border-border focus:border-border focus:bg-background outline-none transition-colors px-2 py-0.5 rounded"
+          />
+          <div className="h-64 border bg-white relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
+                <CartesianGrid />
+                <XAxis type="number" dataKey="x" domain={[0, 180]} tickCount={10} />
+                <YAxis type="number" dataKey="y" domain={[6.0, 8.5]} tickCount={6} />
+                <ZAxis type="number" range={[100, 100]} />
+                <RTooltip cursor={{ strokeDasharray: '3 3' }} />
+                
+                {/* Quadrants */}
+                <ReferenceArea x1={0} x2={40} y1={6.0} y2={7.5} fill="#fff3cd" fillOpacity={0.5} />
+                <ReferenceArea x1={40} x2={180} y1={6.0} y2={7.5} fill="#f8d7da" fillOpacity={0.5} />
+                <ReferenceArea x1={0} x2={40} y1={7.5} y2={8.5} fill="#d4edda" fillOpacity={0.5} />
+                <ReferenceArea x1={40} x2={180} y1={7.5} y2={8.5} fill="#e2e3e5" fillOpacity={0.5} />
+                
+                <Scatter name="Linger-Bitter" data={data.lingerBitter} fill="#4a2e00" stroke="#000" strokeWidth={1} />
+                <Scatter name="Smokey-Phenolic" data={data.smokeyPhenolic} fill="#f1c40f" stroke="#000" strokeWidth={1} />
+                <Scatter name="Astringent-Drying" data={data.astringentDrying} fill="#654321" stroke="#f1c40f" strokeWidth={1} />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-2 items-end">
+            <span className="font-bold text-sm mb-1">Pearson Correlation</span>
+            <div className="flex flex-col items-center">
+              <span className="flex items-center gap-1 text-xs font-semibold"><div className="w-3 h-3 rounded-full bg-[#4a2e00] border border-black"></div> Linger-Bitter</span>
+              <span className="bg-amber-400 font-bold px-3 py-0.5 text-black mt-1">-0.900</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="flex items-center gap-1 text-xs font-semibold"><div className="w-3 h-3 rounded-full bg-yellow-400 border border-black"></div> Smokey-Phenolic</span>
+              <span className="bg-amber-400 font-bold px-3 py-0.5 text-black mt-1">-0.994</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="flex items-center gap-1 text-xs font-semibold"><div className="w-3 h-3 rounded-full bg-[#654321] border border-yellow-400"></div> Astringent-Drying</span>
+              <span className="bg-amber-400 font-bold px-3 py-0.5 text-black mt-1">-0.355</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -49,6 +49,13 @@ function AuthPage() {
     e.preventDefault();
     setLoginLoading(true);
     setLoginError(null);
+    
+    if (!loginEmail || !loginPassword) {
+      setLoginError("Por favor, completa todos los campos.");
+      setLoginLoading(false);
+      return;
+    }
+    
     try {
       await login(loginEmail, loginPassword);
       navigate({ to: "/dashboard" });
@@ -62,6 +69,11 @@ function AuthPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegError(null);
+
+    if (!nombre || !paterno || !materno || !regEmail || !regPassword || !confirmPassword) {
+      setRegError("Por favor, completa todos los campos.");
+      return;
+    }
 
     if (regPassword !== confirmPassword) {
       setRegError("Las contraseñas no coinciden.");
@@ -161,7 +173,7 @@ function AuthPage() {
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-5" noValidate>
               {loginError && (
                 <div className="flex items-center gap-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
                   <AlertCircle className="size-4 shrink-0" />
@@ -249,7 +261,7 @@ function AuthPage() {
               </p>
             </div>
 
-            <form onSubmit={handleRegister} className="space-y-5">
+            <form onSubmit={handleRegister} className="space-y-5" noValidate>
               {regError && (
                 <div className="flex items-center gap-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
                   <AlertCircle className="size-4 shrink-0" />
