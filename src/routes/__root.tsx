@@ -125,6 +125,7 @@ function RootShell({ children }: { children: ReactNode }) {
 import { AppLayout } from "../components/layout";
 import { AuthProvider } from "@/context/auth-context";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PdcaProvider } from "@/context/pdca-context";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -133,9 +134,12 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         <AuthProvider>
-          <AppLayout>
-            <Outlet />
-          </AppLayout>
+          {/* Single Firestore listener — feeds layout, dashboard, index, etc. */}
+          <PdcaProvider>
+            <AppLayout>
+              <Outlet />
+            </AppLayout>
+          </PdcaProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

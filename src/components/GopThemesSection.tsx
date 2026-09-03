@@ -1,4 +1,5 @@
 import React from "react";
+import { StepCard } from "@/components/ui/step-card";
 import { Plus, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -67,31 +68,11 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-      <div className="flex items-center gap-3 mb-2">
-        {onToggleStep && (
-          <button
-            type="button"
-            onClick={onToggleStep}
-            className={cn(
-              "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-              isStepCompleted
-                ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-            )}
-          >
-            <Check className="size-4" />
-          </button>
-        )}
-        <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-          <span>Temas de GOP Aplicables</span>
-          {isStepCompleted && (
-            <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
-              Completado
-            </span>
-          )}
-        </h3>
-      </div>
+    <StepCard 
+      title="Temas de GOP Aplicables"
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
+    >
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-border text-sm">
@@ -180,6 +161,6 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
           <Plus className="size-4" /> Agregar Tema
         </Button>
       </div>
-    </div>
+    </StepCard>
   );
 }

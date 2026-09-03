@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useEffect } from "react";
-import { Plus, Search, Filter, Calendar, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Search, Filter, Calendar, Trash2, CalendarClock, X } from "lucide-react";
+import { format, isValid, isBefore, startOfDay } from "date-fns";
+import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,16 +24,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { PhaseBadge } from "@/components/pdca-badge";
 
 import { PdcaDialog } from "@/components/pdca-dialog";
 import { 
-  subscribeToPdcas, 
-  deletePdcaFromFirestore 
+  deletePdcaFromFirestore,
+  updatePdcaDeadline,
 } from "@/services/pdca-service";
-import { phases, type Pdca, type Phase } from "@/data/pdca";
-
+import { phases, type Phase } from "@/data/pdca";
 import { useAuth } from "@/context/auth-context";
+import { usePdcas } from "@/context/pdca-context";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,35 +62,23 @@ export const Route = createFileRoute("/")({
 
 function MisPdcas() {
   const { currentUser } = useAuth();
-  const [pdcaList, setPdcaList] = useState<Pdca[]>([]);
+  // ← Single shared listener from PdcaProvider, no duplicate subscription
+  const { pdcaList, allPdcas } = usePdcas();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Phase | "Todas">("Todas");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deadlinePickerOpenId, setDeadlinePickerOpenId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = subscribeToPdcas((updatedPdcas) => {
-      setPdcaList(updatedPdcas);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const userPdcas = useMemo(() => {
-    if (!currentUser) return pdcaList;
-    if (currentUser.role === "admin") return pdcaList;
-
-    const userEmailLower = currentUser.email.toLowerCase();
-    return pdcaList.filter((p) => {
-      if (!p.autorEmail) return true;
-      return p.autorEmail.toLowerCase() === userEmailLower || p.autor === currentUser.name;
-    });
-  }, [pdcaList, currentUser]);
+  const isAdmin = currentUser?.role === "admin";
+  // Admin sees all PDCAs; regular user sees only their own (already filtered by context)
+  const userPdcas = isAdmin ? allPdcas : pdcaList;
 
   const selected = useMemo(() => {
     if (!selectedId) return null;
-    return pdcaList.find((p) => p.id === selectedId) || null;
-  }, [selectedId, pdcaList]);
+    return userPdcas.find((p) => p.id === selectedId) || null;
+  }, [selectedId, userPdcas]);
 
   const rows = useMemo(
     () =>
@@ -115,6 +107,17 @@ function MisPdcas() {
       await deletePdcaFromFirestore(deleteId);
       setDeleteId(null);
     }
+  };
+
+  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined) => {
+    const formatted = date && isValid(date) ? format(date, "dd/MM/yyyy", { locale: es }) : "";
+    await updatePdcaDeadline(pdcaId, formatted || null);
+    setDeadlinePickerOpenId(null);
+  };
+
+  const handleRemoveDeadline = async (e: React.MouseEvent, pdcaId: string) => {
+    e.stopPropagation();
+    await updatePdcaDeadline(pdcaId, null);
   };
 
   const openPdca = (p: Pdca | null) => {
@@ -257,13 +260,80 @@ function MisPdcas() {
                   <PhaseBadge phase={p.fase} />
                 </TableCell>
                 <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
-                  {p.fechaFinalizacion ? (
-                    <span className="inline-flex items-center gap-1.5 text-foreground font-medium">
-                      <Calendar className="size-3.5 text-brand-yellow" /> {p.fechaFinalizacion}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground/50 italic text-xs">Sin asignar</span>
-                  )}
+                  {(() => {
+                    const deadlineStr = p.fechaFinalizacion?.trim();
+                    let deadlineDate: Date | undefined;
+                    if (deadlineStr) {
+                      const parts = deadlineStr.split("/");
+                      if (parts.length === 3) {
+                        const parsed = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+                        if (isValid(parsed)) deadlineDate = parsed;
+                      }
+                    }
+                    const isExpired = deadlineDate ? isBefore(startOfDay(deadlineDate), startOfDay(new Date())) : false;
+
+                    if (isAdmin) {
+                      return (
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Popover
+                            open={deadlinePickerOpenId === p.id}
+                            onOpenChange={(open) => setDeadlinePickerOpenId(open ? p.id : null)}
+                          >
+                            <PopoverTrigger asChild>
+                              <button
+                                className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors hover:bg-secondary border ${
+                                  isExpired
+                                    ? "border-red-400/50 text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
+                                    : deadlineDate
+                                    ? "border-border text-foreground bg-transparent"
+                                    : "border-dashed border-muted-foreground/40 text-muted-foreground/60 italic"
+                                }`}
+                              >
+                                <CalendarClock className="size-3.5 shrink-0" />
+                                {deadlineDate ? (
+                                  <>
+                                    {deadlineStr}
+                                    {isExpired && <span className="ml-1 text-[10px] font-bold uppercase bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1 rounded">Vencida</span>}
+                                  </>
+                                ) : (
+                                  "Asignar fecha"
+                                )}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start" side="bottom">
+                              <CalendarUI
+                                mode="single"
+                                selected={deadlineDate}
+                                onSelect={(date) => handleDeadlineChange(p.id, date)}
+                                locale={es}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          {deadlineDate && (
+                            <button
+                              title="Quitar fecha límite"
+                              onClick={(e) => handleRemoveDeadline(e, p.id)}
+                              className="rounded p-0.5 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            >
+                              <X className="size-3" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Non-admin: read-only display
+                    return deadlineDate ? (
+                      <span className={`inline-flex items-center gap-1.5 font-medium ${isExpired ? "text-red-500" : "text-foreground"}`}>
+                        <Calendar className={`size-3.5 ${isExpired ? "text-red-500" : "text-brand-yellow"}`} />
+                        {deadlineStr}
+                        {isExpired && <span className="text-[10px] font-bold uppercase bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1 rounded">Vencida</span>}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground/50 italic text-xs">Sin asignar</span>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
                   <span className="inline-flex items-center gap-1.5 text-xs">

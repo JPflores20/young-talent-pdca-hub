@@ -27,6 +27,7 @@ export type Pdca = {
   fechaFinalizacion?: string;
   kpiNodes?: any[];
   kpiEdges?: any[];
+  kpiTreeImage?: string;
   completedPhases?: string[];
   completedSteps?: string[];
   ishikawaCauses?: Record<string, string[]>;
@@ -37,6 +38,7 @@ export type Pdca = {
   paretoDataMap?: Record<string, ParetoItem[]>;
   paretoDrillDowns?: string[];
   paretoUnit?: string;
+  paretoTitles?: Record<string, string>;
   autor?: string;
   autorEmail?: string;
   vpoCheckpoints?: VpoCheckpointItem[];
@@ -67,6 +69,8 @@ export type GopThemeItem = {
 
 export type ImpactMatrixRow = {
   id: string;
+  issue?: string;
+  rootCause?: string;
   accion: string;
   seguridad: number | "";
   calidadHigiene: number | "";
@@ -83,6 +87,7 @@ export type IshikawaItem = {
   causes: Record<string, string[]>;
   prioritization: any[];
   customLabels?: Record<string, string>;
+  images?: string[];
 };
 
 export type FiveWhysTableData = {

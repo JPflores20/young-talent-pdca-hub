@@ -209,53 +209,29 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
   };
 
   return (
-    <div className={cn(
-      "space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all duration-300",
-      isFullscreen && "fixed inset-0 z-50 rounded-none border-none"
-    )}>
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            {onToggleStep && (
-              <button
-                type="button"
-                onClick={onToggleStep}
-                title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
-                className={cn(
-                  "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-                  isStepCompleted
-                    ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                    : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-                )}
-              >
-                <Check className="size-4" />
-              </button>
-            )}
-            <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-              <span>PASO 4: KPI TREE</span>
-              {isStepCompleted && (
-                <span className="text-xs font-normal normal-case px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                  Completado
-                </span>
-              )}
-            </h3>
-          </div>
-          {!isFullscreen && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Arma el árbol arrastrando los nodos. Conecta los indicadores arrastrando desde el punto inferior al superior.
-              <br />
-              <span className="font-medium text-primary">Tip:</span> Selecciona un nodo para cambiar su color o eliminarlo. Haz clic en una línea de conexión para alternar entre sólida, punteada y animada.
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={addNode}>
-            <Plus className="size-4 mr-2" /> Agregar Nodo
+    <StepCard 
+      className={cn(
+        "transition-all duration-300",
+        isFullscreen && "fixed inset-0 z-50 rounded-none border-none bg-background shadow-none p-4"
+      )}
+      title="PASO 4: KPI TREE (IP)"
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
+      headerRight={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); addNode(); }}>
+            <Plus className="mr-2 size-4" /> Agregar Nodo
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setIsFullscreen(!isFullscreen)} title={isFullscreen ? "Minimizar" : "Maximizar"}>
+          <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); setIsFullscreen(!isFullscreen); }}>
             {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </Button>
         </div>
+      }
+    >
+      <div className="flex flex-col gap-1 mb-4">
+        <p className="text-xs text-muted-foreground ml-[36px]">
+          Desglosa el KPI en Indicadores de Proceso (IP). Haz doble clic en un nodo o enlace para eliminarlo. Haz clic normal en el enlace para cambiar su estilo.
+        </p>
       </div>
 
       <div className={cn(
@@ -279,6 +255,6 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
           <Background color="var(--color-muted-foreground)" gap={16} />
         </ReactFlow>
       </div>
-    </div>
+    </StepCard>
   );
 }

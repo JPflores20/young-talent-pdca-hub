@@ -196,13 +196,13 @@ export function ActionKanban({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+    <div className="space-y-3 pt-2">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-display text-base font-semibold uppercase tracking-wide">
-            Plan de Acción (Kanban)
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-sm font-medium text-foreground">
+            Tablero Kanban
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Arrastra las tarjetas para cambiar su estatus.
           </p>
         </div>

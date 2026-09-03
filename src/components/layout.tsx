@@ -15,8 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { ThemeToggle } from "./theme-toggle";
-import { subscribeToPdcas } from "@/services/pdca-service";
-import { type Pdca } from "@/data/pdca";
+import { usePdcas } from "@/context/pdca-context";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -25,24 +24,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { currentUser, logout, loading } = useAuth();
   const currentPath = router.location.pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pdcaList, setPdcaList] = useState<Pdca[]>([]);
-
-  useEffect(() => {
-    if (currentUser?.role === "admin") {
-      const unsubscribe = subscribeToPdcas((pdcas) => {
-        setPdcaList(pdcas);
-      });
-      return () => {
-        unsubscribe();
-      };
-    }
-    return undefined;
-  }, [currentUser?.role]);
+  const { allPdcas } = usePdcas();
 
   const pendingDeadlinePdcas = useMemo(() => {
     if (currentUser?.role !== "admin") return [];
-    return pdcaList.filter((p) => !p.fechaFinalizacion || p.fechaFinalizacion.trim() === "");
-  }, [pdcaList, currentUser?.role]);
+    return allPdcas.filter((p) => !p.fechaFinalizacion || p.fechaFinalizacion.trim() === "");
+  }, [allPdcas, currentUser?.role]);
   
   const publicRoutes = ["/login", "/register", "/forgot-password"];
   const isPublicRoute = publicRoutes.includes(currentPath);

@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { ClipboardList, CheckCircle2, Clock, Target, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { type Pdca } from "@/data/pdca";
-import { subscribeToPdcas } from "@/services/pdca-service";
+import { usePdcas } from "@/context/pdca-context";
 import { useAuth } from "@/context/auth-context";
 
 export const Route = createFileRoute("/dashboard")({
@@ -30,25 +29,8 @@ export const Route = createFileRoute("/dashboard")({
 
 function Dashboard() {
   const { currentUser } = useAuth();
-  const [pdcaList, setPdcaList] = useState<Pdca[]>([]);
-
-  useEffect(() => {
-    const unsubscribe = subscribeToPdcas((updatedPdcas) => {
-      setPdcaList(updatedPdcas);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const userPdcas = useMemo(() => {
-    if (!currentUser) return pdcaList;
-    if (currentUser.role === "admin") return pdcaList;
-
-    const userEmailLower = currentUser.email.toLowerCase();
-    return pdcaList.filter((p) => {
-      if (!p.autorEmail) return true;
-      return p.autorEmail.toLowerCase() === userEmailLower || p.autor === currentUser.name;
-    });
-  }, [pdcaList, currentUser]);
+  // Use the shared context — no additional Firestore subscription needed
+  const { pdcaList: userPdcas } = usePdcas();
 
   const activos = useMemo(() => userPdcas.filter((p) => p.fase !== "Act").length, [userPdcas]);
   const cerrados = useMemo(() => userPdcas.filter((p) => p.fase === "Act").length, [userPdcas]);

@@ -142,3 +142,23 @@ export async function deletePdcaFromFirestore(id: string): Promise<void> {
     console.error("Error deleting PDCA from Firestore:", error);
   }
 }
+
+/**
+ * Updates ONLY the fechaFinalizacion field of a PDCA document.
+ * Used by admins from the list view without opening the full dialog.
+ */
+export async function updatePdcaDeadline(id: string, fechaFinalizacion: string | null): Promise<void> {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, { fechaFinalizacion: fechaFinalizacion ?? "" });
+    // Patch the cache so the next save doesn't consider it changed
+    const cached = pdcaCache.get(id);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      parsed.fechaFinalizacion = fechaFinalizacion ?? "";
+      pdcaCache.set(id, JSON.stringify(parsed));
+    }
+  } catch (error) {
+    console.error("Error updating PDCA deadline:", error);
+  }
+}

@@ -76,7 +76,7 @@ import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@
 import { KpiTreeInteractive } from "./kpi-tree";
 import { ActionKanban } from "./action-kanban";
 import { GopThemesSection } from "./GopThemesSection";
-import { ProcessMappingSection } from "./ProcessMappingSection";
+import { ImageUploadSection } from "./image-upload-section";
 import { DatePicker } from "@/components/ui/date-picker";
 import { savePdcaToFirestore } from "@/services/pdca-service";
 import { useAuth } from "@/context/auth-context";
@@ -488,15 +488,17 @@ function IshikawaInteractive({
   );
 
   return (
-    <div className="space-y-6 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="flex items-center justify-between mb-2 gap-4">
+    <StepCard 
+      className="overflow-hidden"
+      title={
         <Input 
           value={title ?? `ISHIKAWA${titleSuffix}`} 
           onChange={(e) => setTitle?.(e.target.value)}
           placeholder={`ISHIKAWA${titleSuffix}`}
           className="text-sm font-bold text-muted-foreground uppercase tracking-wider bg-transparent border-transparent hover:border-border focus-visible:border-border px-2 py-0 h-8 w-64 shadow-none"
         />
-        
+      }
+      headerRight={
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="h-8 gap-2">
@@ -508,12 +510,13 @@ function IshikawaInteractive({
             {fishboneDiagram}
           </DialogContent>
         </Dialog>
+      }
+    >
+      <div className="space-y-6">
+        {fishboneDiagram}
+        <PrioritizationMatrix value={prioritizationCauses} onChange={setPrioritizationCauses} />
       </div>
-
-      {fishboneDiagram}
-      
-      <PrioritizationMatrix value={prioritizationCauses} onChange={setPrioritizationCauses} />
-    </div>
+    </StepCard>
   );
 }
 
@@ -595,48 +598,44 @@ function ParetoInteractive({
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] col-span-full animate-in fade-in zoom-in-95">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            {level === 0 && onToggleStep && (
-              <button
-                type="button"
-                onClick={onToggleStep}
-                title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
-                className={cn(
-                  "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-                  isStepCompleted
-                    ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                    : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-                )}
-              >
-                <Check className="size-4" />
-              </button>
-            )}
-            <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", level === 0 && isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-              {level > 0 && <ArrowRight className="size-4 text-muted-foreground" />} {title}
-              {level === 0 && isStepCompleted && (
-                <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
-                  Completado
-                </span>
-              )}
-            </h3>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1 mb-2">
-            {subtitle} {onBarClick && "Haz clic en una barra para desglosarla."}
-          </p>
-        </div>
+    <StepCard 
+      className="col-span-full animate-in fade-in zoom-in-95"
+      title={<>{level > 0 && <ArrowRight className="size-4 text-muted-foreground" />} {title}</>}
+      isStepCompleted={level === 0 ? isStepCompleted : undefined}
+      onToggleStep={level === 0 ? onToggleStep : undefined}
+      headerRight={
         <div className="flex gap-2">
           {onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground hover:text-destructive">
-              <X className="size-4 mr-2" /> Cerrar
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+                  <X className="size-4 mr-2" /> Cerrar
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Eliminar Pareto?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    ¿Estás seguro de que deseas eliminar este Pareto de nivel {level + 1}? Esta acción no se puede deshacer.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={onClose}>Eliminar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
-          <Button variant="outline" size="sm" onClick={addRow}>
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); addRow(); }}>
             <Plus className="size-4 mr-2" /> Agregar
           </Button>
         </div>
+      }
+    >
+      <div className="flex flex-col gap-1 mb-4">
+        <p className="text-sm text-muted-foreground ml-[36px]">
+          {subtitle} {onBarClick && "Haz clic en una barra para desglosarla."}
+        </p>
       </div>
       
       {level === 0 && (
@@ -743,7 +742,7 @@ function ParetoInteractive({
           </ResponsiveContainer>
         </div>
       </div>
-    </div>
+    </StepCard>
   );
 }
 
@@ -1140,37 +1139,17 @@ function TimeSeriesYTD({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] col-span-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {onToggleStep && (
-            <button
-              type="button"
-              onClick={onToggleStep}
-              title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
-              className={cn(
-                "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-                isStepCompleted
-                  ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                  : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-              )}
-            >
-              <Check className="size-4" />
-            </button>
-          )}
-          <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-            <span>{title}</span>
-            {isStepCompleted && (
-              <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
-                Completado
-              </span>
-            )}
-          </h3>
-        </div>
-        <Button variant="secondary" size="sm" onClick={() => toast.success("Series temporales actualizadas desde InfluxDB")}>
+    <StepCard 
+      className="col-span-full"
+      title={title}
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
+      headerRight={
+        <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); toast.success("Series temporales actualizadas desde InfluxDB"); }}>
           <RefreshCw className="size-3.5 mr-2" /> Sincronizar Grafana
         </Button>
-      </div>
+      }
+    >
 
       <div className="bg-[#1F497D] text-white p-2.5 text-xs leading-relaxed font-sans rounded-sm shadow-sm">
         <p className="mb-1">Instrucciones:</p>
@@ -1353,7 +1332,7 @@ function TimeSeriesYTD({
           </ResponsiveContainer>
         </div>
       </div>
-    </div>
+    </StepCard>
   );
 }
 
@@ -1403,27 +1382,15 @@ function ImpactMatrixTable({
   ] as const;
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          {onToggleStep && (
-            <button type="button" onClick={onToggleStep}
-              title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
-              className={cn("shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-                isStepCompleted ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm" : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-              )}>
-              <Check className="size-4" />
-            </button>
-          )}
-          <div>
-            <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-              <span>PASO 8.1: MATRIZ DE IMPACTO</span>
-              {isStepCompleted && <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">Completado</span>}
-            </h3>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={addRow}><Plus className="mr-2 size-4" /> Agregar Acción</Button>
-      </div>
+    <StepCard 
+      className="overflow-hidden"
+      title="PASO 8.1: MATRIZ DE IMPACTO"
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
+      headerRight={
+        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); addRow(); }}><Plus className="mr-2 size-4" /> Agregar Acción</Button>
+      }
+    >
 
       <StepInstructions>
         <p className="mb-1">1. Elige la causa raíz eliminando las acciones a ser analizadas en base a los pasos anteriores.</p>
@@ -1508,7 +1475,7 @@ function ImpactMatrixTable({
           );
         })}
       </div>
-    </div>
+    </StepCard>
   );
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1543,34 +1510,12 @@ function FiveWhysSection({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          {onToggleStep && (
-            <button
-              type="button"
-              onClick={onToggleStep}
-              title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
-              className={cn(
-                "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-                isStepCompleted
-                  ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                  : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-              )}
-            >
-              <Check className="size-4" />
-            </button>
-          )}
-          <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-            <span>PASO 7: 5 WHYS</span>
-            {isStepCompleted && (
-              <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
-                Completado
-              </span>
-            )}
-          </h3>
-        </div>
-      </div>
+    <StepCard 
+      className="overflow-hidden"
+      title="PASO 7: 5 WHYS"
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
+    >
 
       <div className="space-y-8">
         {tables.map((table, index) => (
@@ -1618,7 +1563,7 @@ function FiveWhysSection({
           <Plus className="size-4 mr-2" /> Agregar otra tabla 5 Whys
         </Button>
       </div>
-    </div>
+    </StepCard>
   );
 }
 
@@ -2006,15 +1951,12 @@ function VpoCheckpointTable({
   const scorePct = Math.round((yesCount / checkpoints.length) * 100);
 
   return (
-    <div className="space-y-5 rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <StepHeader
-          stepId="step-2"
-          title="PASO 2: PHASE SDCA CHECKLIST"
-          completedSteps={completedSteps}
-          onToggleStep={onToggleStep}
-        />
-        
+    <StepCard 
+      title="PASO 2: PHASE SDCA CHECKLIST"
+      isStepCompleted={completedSteps.has("step-2")}
+      onToggleStep={() => onToggleStep("step-2")}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <StepInstructions>
           <p className="mb-2"><strong>PHASE SDCA CHECKLIST:</strong> Este checklist evalúa la madurez y estandarización del proceso afectado según los pilares del Sistema de Gestión VPO de Grupo Modelo.</p>
           <p>Evalúa cada punto en el contexto de tu problema. Registra las evidencias o comentarios de soporte para cada ítem y selecciona el status correspondiente (YES / NO / N/A). La brecha identificada servirá para alimentar el plan de acción (Kanban).</p>
@@ -2170,7 +2112,7 @@ function VpoCheckpointTable({
           </TableBody>
         </Table>
       </div>
-    </div>
+    </StepCard>
   );
 }
 
@@ -2186,6 +2128,24 @@ export function PdcaDialog({
   const data = useMemo(() => pdca ?? getEmptyDraft(), [pdca]);
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.role === "admin";
+
+  // Deadline lock: non-admins cannot edit once the deadline has passed
+  const isDeadlineLocked = useMemo(() => {
+    if (isAdmin) return false;
+    const deadlineStr = data.fechaFinalizacion?.trim();
+    if (!deadlineStr) return false;
+    const parts = deadlineStr.split("/");
+    if (parts.length !== 3) return false;
+    const d = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+    if (isNaN(d.getTime())) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0);
+    return d < today;
+  }, [isAdmin, data.fechaFinalizacion]);
+
+  // Combine: user can edit only if they are admin, or deadline is not locked
+  const canEdit = isAdmin || !isDeadlineLocked;
 
   const [tab, setTab] = useState<Phase>(data.fase);
   const [titulo, setTitulo] = useState<string>(data.titulo || "");
@@ -2213,12 +2173,12 @@ export function PdcaDialog({
   const [targetVsActual, setTargetVsActual] = useState<{ mes: string; target: number; actual: number | null }[]>(
     data.targetVsActual || DEFAULT_TARGET_VS_ACTUAL
   );
-  const [targetVsActualUnit, setTargetVsActualUnit] = useState<string>(data.targetVsActualUnit || "$");
+  const [targetVsActualUnit, setTargetVsActualUnit] = useState<string>(data.targetVsActualUnit || "");
 
   const [kpiFinalResultData, setKpiFinalResultData] = useState<{ mes: string; target: number; actual: number | null }[]>(
     data.kpiFinalResultData || DEFAULT_TARGET_VS_ACTUAL
   );
-  const [kpiFinalResultUnit, setKpiFinalResultUnit] = useState<string>(data.kpiFinalResultUnit || "$");
+  const [kpiFinalResultUnit, setKpiFinalResultUnit] = useState<string>(data.kpiFinalResultUnit || "");
   const [gembaFinalImage, setGembaFinalImage] = useState<string | null>(data.gembaFinalImage || null);
 
   const [hasFlavorCorrelation, setHasFlavorCorrelation] = useState<boolean>(data.hasFlavorCorrelation || false);
@@ -2441,7 +2401,8 @@ export function PdcaDialog({
       }];
     });
     setTargetVsActual(initialData.targetVsActual || DEFAULT_TARGET_VS_ACTUAL);
-    setTargetVsActualUnit(initialData.targetVsActualUnit || "$");
+    setTargetVsActualUnit(initialData.targetVsActualUnit || "");
+    setKpiFinalResultUnit(initialData.kpiFinalResultUnit || "");
     setParetoDrillDowns(initialData.paretoDrillDowns || []);
     setParetoDataMap(initialData.paretoDataMap || DEFAULT_PARETO_DATA_MAP);
     setParetoUnit(initialData.paretoUnit || "");
@@ -2620,10 +2581,10 @@ export function PdcaDialog({
             <Button
               size="sm"
               onClick={handleSaveToFirestore}
-              disabled={isSaving}
+              disabled={isSaving || !canEdit}
               className={cn(
                 "font-semibold text-xs h-8 gap-1.5 transition-all shadow-sm",
-                hasUnsavedChanges
+                hasUnsavedChanges && canEdit
                   ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               )}
@@ -2670,16 +2631,27 @@ export function PdcaDialog({
       <div className="flex-1 space-y-6 pb-20">
           <CustomStepper current={tab} onSelect={setTab} completedPhases={completedPhases} onToggleComplete={togglePhaseComplete} completedSteps={completedSteps} />
 
+          {/* Deadline Locked Banner */}
+          {isDeadlineLocked && (
+            <div className="flex items-start gap-3 rounded-xl border border-red-400/50 bg-red-50/80 dark:bg-red-950/20 p-4 text-red-700 dark:text-red-300 shadow-sm">
+              <span className="shrink-0 mt-0.5 text-red-500">🔒</span>
+              <div>
+                <p className="font-semibold text-sm">PDCA bloqueado — Fecha límite vencida</p>
+                <p className="text-xs mt-0.5 text-red-600/80 dark:text-red-400/80">
+                  La fecha límite <strong>{data.fechaFinalizacion}</strong> ya pasó. Solo un administrador puede editar este PDCA. Contacta a tu admin si necesitas actualizarlo.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* FASE 1: DEFINICIÓN Y ESTANDARIZACIÓN */}
           {tab === "Plan" && (
             <div className="space-y-6">
-              <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-                <StepHeader
-                  stepId="step-1"
-                  title="Paso 1: Problem Statement"
-                  completedSteps={completedSteps}
-                  onToggleStep={toggleStepComplete}
-                />
+              <StepCard 
+                title="Paso 1: Problem Statement"
+                isStepCompleted={completedSteps.has("step-1")}
+                onToggleStep={() => toggleStepComplete("step-1")}
+              >
                 <StepInstructions>
                   <p className="mb-2">Instrucciones: Revisar la situación actual con todos los miembros del equipo. Esto se puede hacer utilizando los dashboards de KPI, GapAs, T&M slides, Análisis de pérdidas y desperdicios, etc. El objetivo es familiarizar a todos con el tema que se les pide que aborden.</p>
                   <p>A partir de ahí, rellene las secciones de abajo. Evite las suposiciones y saltar a conclusiones. Es probable que regrese y perfeccione la descripción del problema, los KPI, los PI, el objetivo y los miembros del equipo.</p>
@@ -2741,7 +2713,7 @@ export function PdcaDialog({
                     readOnly={!isAdmin} 
                   />
                 </div>
-              </div>
+              </StepCard>
 
               <VpoCheckpointTable
                 checkpoints={vpoCheckpoints}
@@ -2858,9 +2830,10 @@ export function PdcaDialog({
           {/* FASE 3: CAUSA RAÍZ */}
           {tab === "Check" && (
             <div className="space-y-6">
-              <ProcessMappingSection
+              <ImageUploadSection
                 image={processMappingImage}
                 onChange={setProcessMappingImage}
+                title="Mapeo de Proceso"
               />
 
               <IshikawaSection 
@@ -2889,26 +2862,21 @@ export function PdcaDialog({
                 onToggleStep={() => toggleStepComplete("step-8")}
               />
 
-              {/* PASO 8.2: PLAN DE ACCIÓN */}
-              <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-                <div className="flex items-center gap-3 mb-4">
-                  <h3 className="font-display text-base font-semibold uppercase tracking-wide">PASO 8.2: PLAN DE ACCIÓN</h3>
-                </div>
+              <StepCard title="PASO 8.2: PLAN DE ACCIÓN">
                 <StepInstructions>
                   <p className="mb-1">1. Use esto como cualquier otro registro de acción en su MCRS.</p>
                   <p>2. Si una acción particular tuvo éxito en la eliminación de un síntoma o causa de raíz, indique si se necesita una herramienta SDCA o necesita ser actualizada para estandarizar el resultado.</p>
                 </StepInstructions>
-              </div>
-              <ActionKanban acciones={acciones} setAcciones={setAcciones} />
+                <div className="mt-4">
+                  <ActionKanban acciones={acciones} setAcciones={setAcciones} />
+                </div>
+              </StepCard>
 
-              {/* PASO 9: GEMBA (EVIDENCIAS) */}
-              <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] space-y-4">
-                <StepHeader
-                  stepId="step-9"
-                  title="PASO 9: GEMBA (EVIDENCIAS)"
-                  completedSteps={completedSteps}
-                  onToggleStep={toggleStepComplete}
-                />
+              <StepCard 
+                title="PASO 9: GEMBA (EVIDENCIAS)"
+                isStepCompleted={completedSteps.has("step-9")}
+                onToggleStep={() => toggleStepComplete("step-9")}
+              >
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700">
                     <span className="size-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
@@ -2930,24 +2898,22 @@ export function PdcaDialog({
                     Subir Evidencia
                   </Button>
                 </div>
-              </div>
+              </StepCard>
 
               {/* PASO 10: KPI FINAL RESULT */}
-              <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-                <TimeSeriesYTD
-                  value={kpiFinalResultData}
-                  onChange={setKpiFinalResultData}
-                  unit={kpiFinalResultUnit}
-                  onUnitChange={setKpiFinalResultUnit}
-                  isStepCompleted={completedSteps.has("step-10")}
-                  onToggleStep={() => toggleStepComplete("step-10")}
-                  title="PASO 10: KPI FINAL RESULT"
-                  chartTitle="KPI FINAL RESULT"
-                />
-              </div>
+              <TimeSeriesYTD
+                value={kpiFinalResultData}
+                onChange={setKpiFinalResultData}
+                unit={kpiFinalResultUnit}
+                onUnitChange={setKpiFinalResultUnit}
+                isStepCompleted={completedSteps.has("step-10")}
+                onToggleStep={() => toggleStepComplete("step-10")}
+                title="PASO 10: KPI FINAL RESULT"
+                chartTitle="KPI FINAL RESULT"
+              />
 
               {/* PASO 11: GEMBA FINAL */}
-              <ProcessMappingSection
+              <ImageUploadSection
                 image={gembaFinalImage}
                 onChange={setGembaFinalImage}
                 title="PASO 11: GEMBA FINAL"
@@ -2964,10 +2930,10 @@ export function PdcaDialog({
           <Button 
             variant="outline" 
             onClick={handleSaveToFirestore}
-            disabled={isSaving}
+            disabled={isSaving || !canEdit}
             className={cn(
               "font-semibold transition-all",
-              hasUnsavedChanges && "border-emerald-500 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400"
+              hasUnsavedChanges && canEdit && "border-emerald-500 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400"
             )}
           >
             <UploadCloud className="size-4 mr-2" />
@@ -2975,8 +2941,9 @@ export function PdcaDialog({
           </Button>
           <Button
             className="bg-primary hover:bg-brand-dark font-semibold"
-            disabled={false}
+            disabled={!canEdit}
             onClick={async () => {
+              if (!canEdit) return;
               await handleSaveToFirestore();
 
               if (tab === "Act") {
@@ -3065,37 +3032,17 @@ export function FlavorCorrelationSection({
   );
 
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-      <div className="flex items-center gap-3 mb-2">
-        {onToggleStep && (
-          <button
-            type="button"
-            onClick={onToggleStep}
-            className={cn(
-              "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-              isStepCompleted
-                ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-            )}
-          >
-            <Check className="size-4" />
-          </button>
-        )}
-        <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-          <span>Correlación de Flavors</span>
-          {isStepCompleted && (
-            <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
-              Completado
-            </span>
-          )}
-        </h3>
-        <div className="flex items-center gap-2 ml-auto">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                <FileText className="size-4 mr-2" /> Editar Puntos
-              </Button>
-            </DialogTrigger>
+    <StepCard 
+      title="Correlación de Flavors"
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
+      headerRight={
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8">
+              <FileText className="size-4 mr-2" /> Editar Puntos
+            </Button>
+          </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <h3 className="text-lg font-bold">Editar Puntos de Correlación</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -3107,9 +3054,9 @@ export function FlavorCorrelationSection({
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
-      
+      }
+    >
+
       <div className="grid xl:grid-cols-2 gap-6">
         {/* CHART 1: POSITIVE */}
         <div className="space-y-2">
@@ -3196,6 +3143,6 @@ export function FlavorCorrelationSection({
           </div>
         </div>
       </div>
-    </div>
+    </StepCard>
   );
 }

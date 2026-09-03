@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Configuración de Firebase usando variables de entorno o valores dummy de respaldo
 const firebaseConfig = {
@@ -22,6 +23,7 @@ const secondaryApp = getApps().find(app => app.name === "Secondary")
 export const primaryAuth = getAuth(primaryApp);
 export const secondaryAuth = getAuth(secondaryApp);
 export const db = getFirestore(primaryApp);
+export const storage = getStorage(primaryApp);
 
 // Habilitar caché offline nativo
 enableIndexedDbPersistence(db).catch((err) => {
