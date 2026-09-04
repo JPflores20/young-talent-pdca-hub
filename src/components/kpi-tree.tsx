@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
-  MiniMap,
   Controls,
   Background,
   useNodesState,
@@ -248,11 +247,10 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
           onEdgeClick={onEdgeClick}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.2 }}
+          fitViewOptions={{ padding: 0.3 }}
           deleteKeyCode={['Backspace', 'Delete']}
         >
           <Controls />
-          <MiniMap zoomable pannable />
           <Background color="var(--color-muted-foreground)" gap={16} />
         </ReactFlow>
       </div>
