@@ -3315,18 +3315,7 @@ export function PdcaDialog({
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5">
-          <Button 
-            variant="outline" 
-            onClick={handleSaveToFirestore}
-            disabled={isSaving || !canEdit}
-            className={cn(
-              "font-semibold transition-all",
-              hasUnsavedChanges && canEdit && "border-emerald-500 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400"
-            )}
-          >
-            <UploadCloud className="size-4 mr-2" />
-            {isSaving ? "Guardando..." : "Guardar PDCA"}
-          </Button>
+
           <Button
             className="bg-primary hover:bg-brand-dark font-semibold"
             disabled={!canEdit}
