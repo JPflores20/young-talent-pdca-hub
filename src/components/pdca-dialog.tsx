@@ -1562,8 +1562,8 @@ function ImpactMatrixTable({
               return (
                 <tr key={row.id} className="border-b border-border last:border-0 group">
                   <td className="p-0 border-r border-border">
-                    <Textarea value={row.accion} onChange={e => updateRow(row.id, "accion", e.target.value)}
-                      className="min-h-[36px] rounded-none border-none shadow-none bg-transparent text-xs resize-none p-2 focus-visible:ring-1 focus-visible:ring-black/20"
+                    <AutoResizeTextarea value={row.accion} onChange={val => updateRow(row.id, "accion", val)}
+                      className="w-full min-h-[36px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs resize-none p-2 dark:text-foreground overflow-hidden"
                       placeholder="Acción..." />
                   </td>
                   {COLS.map(c => (
@@ -1599,9 +1599,25 @@ function ImpactMatrixTable({
                   </td>
                   <td className="p-1 text-center">
                     {rows.length > 1 && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
-                        <X className="size-3.5" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive mx-auto block">
+                            <X className="size-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar fila?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              ¿Estás seguro que deseas eliminar esta fila? Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => removeRow(row.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Eliminar</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </td>
                 </tr>
