@@ -203,7 +203,12 @@ export function ImageUploadSection({
                           </Button>
                         </div>
                         <TransformComponent wrapperClass="w-full h-[90vh] !flex items-center justify-center cursor-move">
-                          <img src={image} alt={title} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg" />
+                          <img 
+                            src={image} 
+                            alt={title} 
+                            className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg" 
+                            style={{ willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
+                          />
                         </TransformComponent>
                       </>
                     )}
@@ -514,7 +519,12 @@ export function MultiImageUploadSection({
                               </Button>
                             </div>
                             <TransformComponent wrapperClass="w-full h-[90vh] !flex items-center justify-center cursor-move">
-                              <img src={img} alt={`Evidencia ${i + 1}`} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg" />
+                              <img 
+                                src={img} 
+                                alt={`Evidencia ${i + 1}`} 
+                                className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg"
+                                style={{ willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
+                              />
                             </TransformComponent>
                           </>
                         )}
