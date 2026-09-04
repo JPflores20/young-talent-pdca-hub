@@ -666,7 +666,7 @@ function ParetoInteractive({
         fontSize={9} 
         textAnchor="start" 
         fontWeight="bold"
-        transform={`rotate(-90 ${x + width / 2} ${y - 5})`}
+        transform={`rotate(-45 ${x + width / 2} ${y - 5})`}
       >
         {formatValue(value)}
       </text>
@@ -1335,7 +1335,7 @@ function TimeSeriesYTD({
         fontSize={9} 
         textAnchor="start" 
         fontWeight="bold"
-        transform={`rotate(-90 ${x + width / 2} ${y - 5})`}
+        transform={`rotate(-45 ${x + width / 2} ${y - 5})`}
       >
         {formatValue(value)}
       </text>
