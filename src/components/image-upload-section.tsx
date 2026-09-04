@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
-import { UploadCloud, Image as ImageIcon, X, Plus } from "lucide-react";
+import { UploadCloud, Image as ImageIcon, X, Plus, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -184,9 +185,30 @@ export function ImageUploadSection({
                   title="Clic para ver imagen completa"
                 />
               </DialogTrigger>
-              <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+              <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
                 <DialogTitle className="sr-only">Ver imagen completa</DialogTitle>
-                <img src={image} alt={title} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md" />
+                <div className="relative w-full h-full flex items-center justify-center bg-black/40 rounded-lg overflow-hidden">
+                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} centerZoomedOut={true}>
+                    {({ zoomIn, zoomOut, resetTransform }) => (
+                      <>
+                        <div className="absolute bottom-4 right-4 z-50 flex gap-2 bg-background/80 backdrop-blur-sm p-1.5 rounded-md border shadow-sm">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => zoomIn()}>
+                            <ZoomIn className="size-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => zoomOut()}>
+                            <ZoomOut className="size-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => resetTransform()}>
+                            <RotateCcw className="size-4" />
+                          </Button>
+                        </div>
+                        <TransformComponent wrapperClass="w-full h-[90vh] !flex items-center justify-center cursor-move">
+                          <img src={image} alt={title} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg" />
+                        </TransformComponent>
+                      </>
+                    )}
+                  </TransformWrapper>
+                </div>
               </DialogContent>
             </Dialog>
             <AlertDialog>
@@ -474,9 +496,30 @@ export function MultiImageUploadSection({
                       title="Clic para ver imagen completa"
                     />
                   </DialogTrigger>
-                  <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+                  <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
                     <DialogTitle className="sr-only">Ver evidencia {i + 1}</DialogTitle>
-                    <img src={img} alt={`Evidencia ${i + 1}`} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md" />
+                    <div className="relative w-full h-full flex items-center justify-center bg-black/40 rounded-lg overflow-hidden">
+                      <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} centerZoomedOut={true}>
+                        {({ zoomIn, zoomOut, resetTransform }) => (
+                          <>
+                            <div className="absolute bottom-4 right-4 z-50 flex gap-2 bg-background/80 backdrop-blur-sm p-1.5 rounded-md border shadow-sm">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => zoomIn()}>
+                                <ZoomIn className="size-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => zoomOut()}>
+                                <ZoomOut className="size-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => resetTransform()}>
+                                <RotateCcw className="size-4" />
+                              </Button>
+                            </div>
+                            <TransformComponent wrapperClass="w-full h-[90vh] !flex items-center justify-center cursor-move">
+                              <img src={img} alt={`Evidencia ${i + 1}`} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg" />
+                            </TransformComponent>
+                          </>
+                        )}
+                      </TransformWrapper>
+                    </div>
                   </DialogContent>
                 </Dialog>
               )}
