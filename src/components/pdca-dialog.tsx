@@ -78,6 +78,8 @@ import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_
 import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "./kpi-tree";
 import { ActionKanban } from "./action-kanban";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { GopThemesSection } from "./GopThemesSection";
 import { ImageUploadSection, MultiImageUploadSection } from "./image-upload-section";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -2497,6 +2499,26 @@ export function PdcaDialog({
   const [causaRaiz, setCausaRaiz] = useState<string>(data.causaRaiz || "");
   const [acciones, setAcciones] = useState<ActionItem[]>(data.acciones);
   const [fechaFin, setFechaFin] = useState<Date | undefined>(() => parseDateString(data.fechaFinalizacion));
+  const [autor, setAutor] = useState<string>(data.autor || currentUser?.name || "Usuario");
+  const [autorEmail, setAutorEmail] = useState<string>(data.autorEmail || currentUser?.email || "");
+  const [usersList, setUsersList] = useState<{name: string, email: string}[]>([]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
+        const list: {name: string, email: string}[] = [];
+        snapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          list.push({
+            name: d.name || "Usuario",
+            email: d.email || "",
+          });
+        });
+        setUsersList(list);
+      });
+      return () => unsub();
+    }
+  }, [isAdmin]);
   
   // Paso 2 VPO Checkpoints state
   const [vpoCheckpoints, setVpoCheckpoints] = useState<VpoCheckpointItem[]>(
@@ -2877,8 +2899,8 @@ export function PdcaDialog({
       completedSteps: Array.from(completedSteps),
       fechaFinalizacion: formatDateToString(fechaFin),
       actualizado: new Date().toLocaleDateString("es-ES", { day: 'numeric', month: 'short', year: 'numeric' }),
-      autor: data.autor || currentUser?.name || "Usuario",
-      autorEmail: data.autorEmail || currentUser?.email || "",
+      autor: autor,
+      autorEmail: autorEmail,
     };
 
     try {
@@ -3005,7 +3027,7 @@ export function PdcaDialog({
                   <p className="mb-2">Instrucciones: Revisar la situación actual con todos los miembros del equipo. Esto se puede hacer utilizando los dashboards de KPI, GapAs, T&M slides, Análisis de pérdidas y desperdicios, etc. El objetivo es familiarizar a todos con el tema que se les pide que aborden.</p>
                   <p>A partir de ahí, rellene las secciones de abajo. Evite las suposiciones y saltar a conclusiones. Es probable que regrese y perfeccione la descripción del problema, los KPI, los PI, el objetivo y los miembros del equipo.</p>
                 </StepInstructions>
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className={cn("grid gap-4", isAdmin ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3")}>
                   <div className="space-y-2">
                     <Label htmlFor="titulo">Título del proyecto</Label>
                     <Input 
@@ -3037,6 +3059,31 @@ export function PdcaDialog({
                       disabled={!isAdmin}
                     />
                   </div>
+                  {isAdmin && (
+                    <div className="space-y-2">
+                      <Label>Asignado a (Autor)</Label>
+                      <Select 
+                        value={autorEmail} 
+                        onValueChange={(val) => {
+                          setAutorEmail(val);
+                          const user = usersList.find(u => u.email === val);
+                          if (user) setAutor(user.name);
+                        }}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Seleccionar usuario" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={currentUser?.email || "admin@example.com"}>{currentUser?.name || "Yo"}</SelectItem>
+                          {usersList.filter(u => u.email !== currentUser?.email).map(u => (
+                            <SelectItem key={u.email} value={u.email}>
+                              {u.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
                 <TeamMembersInput members={equipo} onChange={setEquipo} />
                 <div className="space-y-2">
