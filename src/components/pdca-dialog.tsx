@@ -1494,6 +1494,13 @@ function calcImpact(row: ImpactMatrixRow): number {
   return Math.max(...nums);
 }
 
+function calcProduct(row: ImpactMatrixRow): number {
+  const vals = [row.seguridad, row.calidadHigiene, row.costo, row.medioAmbiente, row.servicio];
+  const nums = vals.filter((v): v is number => typeof v === "number" && v !== 0);
+  if (nums.length === 0) return 0;
+  return nums.reduce((acc, val) => acc * val, 1);
+}
+
 function ImpactMatrixTable({
   rows,
   onChange,
@@ -1550,6 +1557,7 @@ function ImpactMatrixTable({
           <tbody>
             {rows.map((row) => {
               const impact = calcImpact(row);
+              const product = calcProduct(row);
               const impactLevel = impact === 5 ? "5" : impact === 3 ? "3" : impact === 1 ? "1" : "";
               return (
                 <tr key={row.id} className="border-b border-border last:border-0 group">
@@ -1570,11 +1578,14 @@ function ImpactMatrixTable({
                       </select>
                     </td>
                   ))}
-                  <td className="p-1 border-r border-border text-center">
+                  <td className="p-1 border-r border-border text-center align-middle">
                     {impactLevel ? (
-                      <span className={cn("inline-block px-2 py-0.5 rounded text-xs font-bold", SCORE_COLORS[impactLevel])}>
-                        {SCORE_LABELS[impactLevel]}
-                      </span>
+                      <div className="flex flex-col items-center justify-center gap-0.5">
+                        <span className={cn("inline-block px-2 py-0.5 rounded text-[11px] font-bold w-full", SCORE_COLORS[impactLevel])}>
+                          {SCORE_LABELS[impactLevel]}
+                        </span>
+                        <span className="text-[9px] font-bold text-muted-foreground/80 leading-none">Prod: {product}</span>
+                      </div>
                     ) : <span className="text-muted-foreground text-xs">—</span>}
                   </td>
                   <td className="p-1 border-r border-border text-center">
