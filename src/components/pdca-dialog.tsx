@@ -86,6 +86,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { StepCard } from "@/components/ui/step-card";
 
 const PHASE_STEPS_MAP: Record<Phase, string[]> = {
   Plan: ["step-1", "step-2"],
