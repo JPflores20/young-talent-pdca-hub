@@ -57,6 +57,7 @@ export type Pdca = {
   kpiFinalResultData?: { mes: string; target: number; actual: number | null }[];
   kpiFinalResultUnit?: string;
   gembaFinalImage?: string;
+  kpiDocuments?: string[];
 };
 
 export type GopThemeItem = {

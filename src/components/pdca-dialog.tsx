@@ -2182,6 +2182,7 @@ export function PdcaDialog({
   const [kpiFinalResultUnit, setKpiFinalResultUnit] = useState<string>(data.kpiFinalResultUnit || "");
   const [gembaFinalImage, setGembaFinalImage] = useState<string | null>(data.gembaFinalImage || null);
   const [evidencias, setEvidencias] = useState<string[]>(data.evidencias || []);
+  const [kpiDocuments, setKpiDocuments] = useState<string[]>(data.kpiDocuments || []);
 
   const [hasFlavorCorrelation, setHasFlavorCorrelation] = useState<boolean>(data.hasFlavorCorrelation || false);
   const [flavorCorrelationData, setFlavorCorrelationData] = useState<any>(data.flavorCorrelationData || null);
@@ -2458,6 +2459,7 @@ export function PdcaDialog({
       kpiFinalResultUnit,
       gembaFinalImage,
       evidencias,
+      kpiDocuments,
       paretoDataMap,
       paretoDrillDowns,
       paretoUnit,
@@ -2489,7 +2491,7 @@ export function PdcaDialog({
     setHasUnsavedChanges(true);
   }, [
     titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones,
-    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, evidencias, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin
+    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, evidencias, kpiDocuments, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin
   ]);
 
   // Upload all cached changes to Firestore database
@@ -2516,6 +2518,7 @@ export function PdcaDialog({
       kpiFinalResultUnit,
       gembaFinalImage,
       evidencias,
+      kpiDocuments,
       paretoDataMap,
       paretoDrillDowns,
       paretoUnit,
@@ -2547,7 +2550,7 @@ export function PdcaDialog({
     } finally {
       setIsSaving(false);
     }
-  }, [data, titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin, currentUser]);
+  }, [data, titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones, kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, kpiDocuments, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin, currentUser]);
 
   const nextPhase = phases[Math.min(phases.indexOf(tab) + 1, 3)];
 
@@ -2740,7 +2743,16 @@ export function PdcaDialog({
                 isStepCompleted={completedSteps.has("step-3")} 
                 onToggleStep={() => toggleStepComplete("step-3")} 
               />
-              <KpiTreeInteractive initialNodes={kpiNodes} initialEdges={kpiEdges} onChange={handleKpiChange} isStepCompleted={completedSteps.has("step-4")} onToggleStep={() => toggleStepComplete("step-4")} />
+              <MultiImageUploadSection
+                images={kpiDocuments}
+                onChange={setKpiDocuments}
+                title="PASO 4: KPI TREE (IP)"
+                subtitle="Documentación del KPI Tree"
+                description="Sube hasta 6 fotos o un PDF con tu análisis de KPI Tree (Indicadores de Proceso)."
+                maxImages={6}
+                isStepCompleted={completedSteps.has("step-4")}
+                onToggleStep={() => toggleStepComplete("step-4")}
+              />
               <ParetoSection 
                 drillDowns={paretoDrillDowns}
                 setDrillDowns={setParetoDrillDowns}

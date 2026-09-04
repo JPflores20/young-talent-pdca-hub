@@ -279,7 +279,7 @@ export function MultiImageUploadSection({
   const [isDragging, setIsDragging] = React.useState(false);
   
   const processFiles = async (files: File[]) => {
-    const validFiles = files.filter(f => f.type.startsWith('image/'));
+    const validFiles = files.filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
     if (!validFiles.length) return;
 
     const remainingSlots = maxImages - images.length;
@@ -336,12 +336,18 @@ export function MultiImageUploadSection({
 
       for (const file of filesToUpload) {
         const uniqueId = Date.now().toString() + Math.random().toString(36).substring(7);
-        const compressedFile = await compressImage(file);
-        const fileExt = file.name.split('.').pop() || 'jpg';
+        let finalFile: Blob = file;
+        let fileExt = file.name.split('.').pop() || 'file';
+
+        if (file.type.startsWith('image/')) {
+          finalFile = await compressImage(file);
+          fileExt = file.name.split('.').pop() || 'jpg';
+        }
+
         const fileName = `uploads/pdca_images/${uniqueId}.${fileExt}`;
         const storageRef = ref(storage, fileName);
 
-        const uploadTask = await uploadBytesResumable(storageRef, compressedFile);
+        const uploadTask = await uploadBytesResumable(storageRef, finalFile);
         const downloadURL = await getDownloadURL(uploadTask.ref);
         newUrls.push(downloadURL);
       }
@@ -410,7 +416,7 @@ export function MultiImageUploadSection({
         type="file" 
         ref={fileInputRef} 
         onChange={handleFileChange} 
-        accept="image/*" 
+        accept="image/*,application/pdf" 
         multiple
         className="hidden" 
       />
@@ -445,20 +451,35 @@ export function MultiImageUploadSection({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {images.map((img, i) => (
             <div key={i} className="relative aspect-video rounded-xl overflow-hidden border bg-black/5 group shadow-sm">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <img 
-                    src={img} 
-                    alt={`Evidencia ${i + 1}`} 
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                    title="Clic para ver imagen completa"
-                  />
-                </DialogTrigger>
-                <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
-                  <DialogTitle className="sr-only">Ver evidencia {i + 1}</DialogTitle>
-                  <img src={img} alt={`Evidencia ${i + 1}`} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md" />
-                </DialogContent>
-              </Dialog>
+              {img.toLowerCase().includes('.pdf') ? (
+                <div 
+                  className="w-full h-full flex flex-col items-center justify-center bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors"
+                  onClick={() => window.open(img, '_blank')}
+                  title="Clic para abrir PDF en nueva pestaña"
+                >
+                  <div className="size-10 rounded-full bg-red-100 flex items-center justify-center mb-2">
+                    <span className="text-red-600 font-bold text-xs">PDF</span>
+                  </div>
+                  <span className="text-xs font-medium text-foreground px-2 text-center break-all line-clamp-1">
+                    Documento PDF
+                  </span>
+                </div>
+              ) : (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <img 
+                      src={img} 
+                      alt={`Evidencia ${i + 1}`} 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                      title="Clic para ver imagen completa"
+                    />
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+                    <DialogTitle className="sr-only">Ver evidencia {i + 1}</DialogTitle>
+                    <img src={img} alt={`Evidencia ${i + 1}`} className="max-w-full max-h-[90vh] object-contain bg-white rounded-md" />
+                  </DialogContent>
+                </Dialog>
+              )}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button 
