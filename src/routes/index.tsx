@@ -150,9 +150,13 @@ function MisPdcas() {
     }
   };
 
-  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined) => {
-    const formatted = date && isValid(date) ? format(date, "dd/MM/yyyy", { locale: es }) : "";
-    await updatePdcaDeadline(pdcaId, formatted || null);
+  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined, isNoLimit = false) => {
+    if (isNoLimit) {
+      await updatePdcaDeadline(pdcaId, "Sin límite");
+    } else {
+      const formatted = date && isValid(date) ? format(date, "dd/MM/yyyy", { locale: es }) : "";
+      await updatePdcaDeadline(pdcaId, formatted || null);
+    }
     setDeadlinePickerOpenId(null);
   };
 
@@ -355,8 +359,9 @@ function MisPdcas() {
                 <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
                   {(() => {
                     const deadlineStr = p.fechaFinalizacion?.trim();
+                    const isNoLimit = deadlineStr === "Sin límite";
                     let deadlineDate: Date | undefined;
-                    if (deadlineStr) {
+                    if (deadlineStr && !isNoLimit) {
                       const parts = deadlineStr.split("/");
                       if (parts.length === 3) {
                         const parsed = new Date(+parts[2], +parts[1] - 1, +parts[0]);
@@ -377,13 +382,15 @@ function MisPdcas() {
                                 className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors hover:bg-secondary border ${
                                   isExpired
                                     ? "border-red-400/50 text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
-                                    : deadlineDate
+                                    : deadlineDate || isNoLimit
                                     ? "border-border text-foreground bg-transparent"
                                     : "border-dashed border-muted-foreground/40 text-muted-foreground/60 italic"
                                 }`}
                               >
                                 <CalendarClock className="size-3.5 shrink-0" />
-                                {deadlineDate ? (
+                                {isNoLimit ? (
+                                  "Sin límite"
+                                ) : deadlineDate ? (
                                   <>
                                     {deadlineStr}
                                     {isExpired && <span className="ml-1 text-[10px] font-bold uppercase bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1 rounded">Vencida</span>}
@@ -401,6 +408,16 @@ function MisPdcas() {
                                 locale={es}
                                 initialFocus
                               />
+                              <div className="p-2 border-t border-border">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start text-xs font-normal text-muted-foreground"
+                                  onClick={() => handleDeadlineChange(p.id, undefined, true)}
+                                >
+                                  Sin límite de tiempo
+                                </Button>
+                              </div>
                             </PopoverContent>
                           </Popover>
                           {deadlineDate && (
@@ -417,7 +434,12 @@ function MisPdcas() {
                     }
 
                     // Non-admin: read-only display
-                    return deadlineDate ? (
+                    return isNoLimit ? (
+                      <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                        <CalendarClock className="size-3.5" />
+                        Sin límite
+                      </span>
+                    ) : deadlineDate ? (
                       <span className={`inline-flex items-center gap-1.5 font-medium ${isExpired ? "text-red-500" : "text-foreground"}`}>
                         <Calendar className={`size-3.5 ${isExpired ? "text-red-500" : "text-brand-yellow"}`} />
                         {deadlineStr}

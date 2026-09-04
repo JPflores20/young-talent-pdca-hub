@@ -31,9 +31,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { allPdcas } = usePdcas();
   const [deadlinePickerOpenId, setDeadlinePickerOpenId] = useState<string | null>(null);
 
-  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined) => {
-    const formatted = date && isValid(date) ? format(date, "dd/MM/yyyy", { locale: es }) : "";
-    await updatePdcaDeadline(pdcaId, formatted || null);
+  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined, isNoLimit = false) => {
+    if (isNoLimit) {
+      await updatePdcaDeadline(pdcaId, "Sin límite");
+    } else {
+      const formatted = date && isValid(date) ? format(date, "dd/MM/yyyy", { locale: es }) : "";
+      await updatePdcaDeadline(pdcaId, formatted || null);
+    }
     setDeadlinePickerOpenId(null);
   };
 
@@ -242,6 +246,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
                               locale={es}
                               initialFocus
                             />
+                            <div className="p-2 border-t border-border">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start text-xs font-normal text-muted-foreground"
+                                onClick={() => handleDeadlineChange(p.id, undefined, true)}
+                              >
+                                Sin límite de tiempo
+                              </Button>
+                            </div>
                           </PopoverContent>
                         </Popover>
                       ))
