@@ -23,9 +23,11 @@ const secondaryApp = getApps().find(app => app.name === "Secondary")
 export const primaryAuth = getAuth(primaryApp);
 export const secondaryAuth = getAuth(secondaryApp);
 
-// Habilitar caché offline nativo usando la nueva API
-export const db = initializeFirestore(primaryApp, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-});
+// Habilitar caché offline nativo usando la nueva API, solo en el navegador
+export const db = initializeFirestore(primaryApp, 
+  typeof window !== "undefined" 
+    ? { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }
+    : {}
+);
 
 export const storage = getStorage(primaryApp);
