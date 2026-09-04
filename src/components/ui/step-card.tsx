@@ -24,13 +24,36 @@ export function StepCard({
   className,
   headerRight
 }: StepCardProps) {
-  const [isExpanded, setIsExpanded] = React.useState(defaultExpanded);
+  const storageKey = React.useMemo(() => {
+    if (typeof title === "string") {
+      return `pdca_step_${title.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}`;
+    }
+    return null;
+  }, [title]);
+
+  const [isExpanded, setIsExpanded] = React.useState(() => {
+    if (storageKey) {
+      const stored = localStorage.getItem(storageKey);
+      if (stored !== null) {
+        return stored === "true";
+      }
+    }
+    return defaultExpanded;
+  });
+
+  const toggleExpanded = () => {
+    const nextState = !isExpanded;
+    setIsExpanded(nextState);
+    if (storageKey) {
+      localStorage.setItem(storageKey, String(nextState));
+    }
+  };
 
   return (
     <div className={cn("rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all", className)}>
       <div 
         className="flex items-center justify-between cursor-pointer select-none group"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={toggleExpanded}
       >
         <div className="flex items-center gap-3">
           {onToggleStep !== undefined && (
