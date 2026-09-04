@@ -1807,6 +1807,7 @@ function FiveWhysInteractive({
             ))}
             <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">CAUSA RAÍZ</th>
             <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[150px] border-r border-white/20">ACCION(ES)</th>
+            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">EVIDENCIA</th>
             <th className="w-8"></th>
           </tr>
         </thead>
@@ -1865,11 +1866,72 @@ function FiveWhysInteractive({
                     className="w-full min-h-[80px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground overflow-hidden"
                   />
                 </td>
+                <td rowSpan={2} className="bg-background align-middle text-center border-r border-white/20 p-1">
+                  <div className="flex flex-col items-center justify-center min-h-[40px]">
+                    {row.evidencia ? (
+                      <div className="relative group flex justify-center">
+                        {row.evidencia.includes('application/pdf') ? (
+                          <a href={row.evidencia} target="_blank" rel="noreferrer" className="flex items-center justify-center size-10 rounded bg-red-100 text-red-600 hover:bg-red-200" title="Ver PDF">
+                            <span className="text-[10px] font-bold">PDF</span>
+                          </a>
+                        ) : (
+                          <a href={row.evidencia} target="_blank" rel="noreferrer" title="Ver Imagen">
+                            <img src={row.evidencia} alt="Evidencia" className="size-10 object-cover rounded shadow-sm border border-border" />
+                          </a>
+                        )}
+                        <Button 
+                          variant="destructive" 
+                          size="icon" 
+                          className="absolute -top-2 -right-2 size-5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-0"
+                          onClick={() => updateRow(row.id, "evidencia", "")}
+                        >
+                          <X className="size-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer text-muted-foreground hover:text-blue-600 flex flex-col items-center">
+                        <Paperclip className="size-4" />
+                        <span className="text-[9px] mt-1 text-center leading-tight">Añadir<br/>Evidencia</span>
+                        <input 
+                          type="file" 
+                          accept="image/*,application/pdf" 
+                          className="hidden" 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                updateRow(row.id, "evidencia", ev.target?.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </td>
                 <td rowSpan={2} className="bg-background align-middle">
                   {(value?.length || 0) > 1 && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive mx-auto block" onClick={() => removeRow(row.id)}>
-                      <X className="size-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive mx-auto block">
+                          <X className="size-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Eliminar fila?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            ¿Estás seguro que deseas eliminar esta fila? Esta acción no se puede deshacer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => removeRow(row.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Eliminar</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                 </td>
               </tr>
