@@ -1566,40 +1566,14 @@ function FiveWhysSection({
 
       <div className="space-y-8">
         {tables.map((table, index) => (
-          <div key={table.id} className="relative group/fivewhys pt-4">
-            {tables.length > 1 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="absolute -right-2 top-0 z-20 h-6 px-2 text-[10px] uppercase font-bold transition-opacity rounded-full shadow-md"
-                  >
-                    <X className="size-3 mr-1" /> Eliminar Tabla
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>¿Eliminar tabla 5 Whys?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta acción no se puede deshacer. Se eliminarán permanentemente todas las preguntas y respuestas registradas en esta tabla.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => removeTable(table.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                      Eliminar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+          <div key={table.id} className="pt-4">
             <FiveWhysInteractive
               value={table.rows}
               onChange={(rows) => updateTable(table.id, rows)}
               title={table.title}
               onTitleChange={(title) => updateTitle(table.id, title)}
               index={index}
+              onRemoveTable={tables.length > 1 ? () => removeTable(table.id) : undefined}
             />
           </div>
         ))}
@@ -1626,6 +1600,7 @@ function FiveWhysInteractive({
   title?: string;
   onTitleChange?: (title: string) => void;
   index: number;
+  onRemoveTable?: () => void;
 }) {
   const updateRow = (id: number, field: string, val: string) => {
     if (!value || !onChange) return;
@@ -1697,6 +1672,29 @@ function FiveWhysInteractive({
           <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={addRow}>
             <Plus className="mr-1 size-3" /> Añadir Causa
           </Button>
+          {onRemoveTable && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 font-bold">
+                  <X className="mr-1 size-3" /> Eliminar Tabla
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Eliminar tabla 5 Whys?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción no se puede deshacer. Se eliminarán permanentemente todas las preguntas y respuestas registradas en esta tabla.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={onRemoveTable} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                    Eliminar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <span className="text-[11px] font-bold text-[#0078D7] uppercase">TEMA {String(index + 1).padStart(2, '0')}</span>
         </div>
       </div>
