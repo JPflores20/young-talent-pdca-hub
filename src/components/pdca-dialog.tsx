@@ -1694,6 +1694,8 @@ function FiveWhysInteractive({
   index: number;
   onRemoveTable?: () => void;
 }) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const updateRow = (id: number, field: string, val: string) => {
     if (!value || !onChange) return;
     onChange(value.map((r: any) => r.id === id ? { ...r, [field]: val } : r));
@@ -1740,8 +1742,8 @@ function FiveWhysInteractive({
     }
   };
 
-  return (
-    <div className="overflow-x-auto border border-[#0078D7] rounded-sm bg-white dark:bg-background shadow-sm">
+  const tableContent = (
+    <div className={cn("overflow-x-auto border border-[#0078D7] rounded-sm bg-white dark:bg-background shadow-sm flex-1", isFullscreen ? "flex flex-col h-full" : "")}>
       <div className="flex justify-between items-center px-2 py-1 bg-white dark:bg-background border-b border-[#0078D7]">
         <input 
           type="text" 
@@ -1786,6 +1788,11 @@ function FiveWhysInteractive({
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+          )}
+          {!isFullscreen && (
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={() => setIsFullscreen(true)}>
+              <Maximize2 className="mr-1 size-3" /> Expandir
+            </Button>
           )}
           <span className="text-[11px] font-bold text-[#0078D7] uppercase">TEMA {String(index + 1).padStart(2, '0')}</span>
         </div>
@@ -1888,6 +1895,20 @@ function FiveWhysInteractive({
         </tbody>
       </table>
     </div>
+  );
+
+  return (
+    <>
+      {!isFullscreen && tableContent}
+      <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+        <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-2 sm:p-6 flex flex-col gap-2 overflow-hidden bg-muted/20">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{title || "5 WHYS"}</DialogTitle>
+          </DialogHeader>
+          {tableContent}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
