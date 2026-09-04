@@ -1594,6 +1594,7 @@ function FiveWhysInteractive({
   title,
   onTitleChange,
   index,
+  onRemoveTable,
 }: {
   value?: any[];
   onChange?: (whys: any[]) => void;
