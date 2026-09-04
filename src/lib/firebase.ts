@@ -25,11 +25,13 @@ export const secondaryAuth = getAuth(secondaryApp);
 export const db = getFirestore(primaryApp);
 export const storage = getStorage(primaryApp);
 
-// Habilitar caché offline nativo
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-    console.warn("Múltiples pestañas abiertas, la persistencia offline solo funciona en una.");
-  } else if (err.code === 'unimplemented') {
-    console.warn("El navegador no soporta persistencia offline de Firestore.");
-  }
-});
+// Habilitar caché offline nativo solo en el cliente
+if (typeof window !== "undefined") {
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn("Múltiples pestañas abiertas, la persistencia offline solo funciona en una.");
+    } else if (err.code === 'unimplemented') {
+      console.warn("El navegador no soporta persistencia offline de Firestore.");
+    }
+  });
+}
