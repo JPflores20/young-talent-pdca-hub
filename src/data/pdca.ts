@@ -15,6 +15,7 @@ export type PdcaComment = {
   userName: string;
   text: string;
   timestamp: string;
+  stepTitle?: string;
 };
 
 export type PdcaHistoryEvent = {

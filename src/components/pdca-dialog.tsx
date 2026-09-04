@@ -3381,13 +3381,14 @@ export function PdcaDialog({
             {bottomTab === "comments" && (
               <PdcaComments
                 comments={comentarios}
-                onAddComment={(text) => {
+                onAddComment={(text, stepTitle) => {
                   const newComment: PdcaComment = {
                     id: crypto.randomUUID(),
                     userId: currentUser?.email || "anonymous",
                     userName: currentUser?.name || "Usuario Anónimo",
                     text,
                     timestamp: new Date().toISOString(),
+                    stepTitle,
                   };
                   setComentarios([...comentarios, newComment]);
                   setHasUnsavedChanges(true);
