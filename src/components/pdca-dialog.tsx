@@ -2500,7 +2500,7 @@ export function PdcaDialog({
   // Combine: user can edit only if they are admin, or deadline is not locked
   const canEdit = isAdmin || !isDeadlineLocked;
 
-  const [tab, setTab] = useState<Phase>(data.fase);
+  const [tab, setTab] = useState<Phase>("Plan");
   const [titulo, setTitulo] = useState<string>(data.titulo || "");
   const [area, setArea] = useState<string>(data.area || "cocimientos");
   const [problema, setProblema] = useState<string>(data.problema || "");
@@ -2765,7 +2765,7 @@ export function PdcaDialog({
       }
       return [{ id: "fivewhys-1", title: "MÉTODO", rows: [{ id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" }] }];
     });
-    setTab(initialData.fase);
+    setTab("Plan");
     setAcciones(initialData.acciones || []);
     setKpiNodes(initialData.kpiNodes || []);
     setKpiEdges(initialData.kpiEdges || []);
