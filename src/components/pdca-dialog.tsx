@@ -554,6 +554,7 @@ function ParetoInteractive({
 }) {
   const [isPasteOpen, setIsPasteOpen] = useState(false);
   const [pasteData, setPasteData] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleImportExcel = () => {
     if (!pasteData.trim()) return;
@@ -821,33 +822,77 @@ function ParetoInteractive({
           </Table>
         </div>
 
-        <div className="h-64 border rounded-md p-3 flex flex-col justify-center">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={paretoData} margin={{ top: 25, right: 15, bottom: 5, left: -10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-              <XAxis dataKey="area" tick={{ fontSize: 10 }} stroke="var(--color-muted-foreground)" />
-              <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" tickFormatter={(val) => formatValue(val)} />
-              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" domain={[0, 100]} tickFormatter={(val) => Math.round(val) + "%"} />
-              <RTooltip
-                contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12, backgroundColor: "var(--color-card)", color: "var(--color-foreground)", padding: "8px 12px" }}
-                formatter={(val: number, name: string) => [name === "Acumulado" ? val.toFixed(2) + "%" : formatValue(val), name]}
-              />
-              <Bar 
-                yAxisId="left" 
-                dataKey="gap" 
-                name="Valor" 
-                fill="#4285f4" 
-                radius={[4, 4, 0, 0]} 
-                maxBarSize={40} 
-                onClick={(payload) => { if (onBarClick && payload.area) onBarClick(payload.area); }}
-                className={onBarClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
-                label={<CustomBarLabel />}
-              />
-              <Line yAxisId="right" type="monotone" dataKey="cumPct" name="Acumulado" stroke="#ff4d4f" strokeWidth={2} dot={{ r: 4, fill: "var(--color-card)", stroke: "#ff4d4f", strokeWidth: 2 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+        {!isFullscreen && (
+          <div className="h-64 border rounded-md p-3 flex flex-col justify-center relative mt-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="absolute top-1 right-1 h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold z-10" 
+              onClick={() => setIsFullscreen(true)}
+            >
+              <Maximize2 className="mr-1 size-3" /> Expandir
+            </Button>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={paretoData} margin={{ top: 25, right: 15, bottom: 5, left: -10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <XAxis dataKey="area" tick={{ fontSize: 10 }} stroke="var(--color-muted-foreground)" />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" tickFormatter={(val) => formatValue(val)} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" domain={[0, 100]} tickFormatter={(val) => Math.round(val) + "%"} />
+                <RTooltip
+                  contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12, backgroundColor: "var(--color-card)", color: "var(--color-foreground)", padding: "8px 12px" }}
+                  formatter={(val: number, name: string) => [name === "Acumulado" ? val.toFixed(2) + "%" : formatValue(val), name]}
+                />
+                <Bar 
+                  yAxisId="left" 
+                  dataKey="gap" 
+                  name="Valor" 
+                  fill="#4285f4" 
+                  radius={[4, 4, 0, 0]} 
+                  maxBarSize={40} 
+                  onClick={(payload) => { if (onBarClick && payload.area) onBarClick(payload.area); }}
+                  className={onBarClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
+                  label={<CustomBarLabel />}
+                />
+                <Line yAxisId="right" type="monotone" dataKey="cumPct" name="Acumulado" stroke="#ff4d4f" strokeWidth={2} dot={{ r: 4, fill: "var(--color-card)", stroke: "#ff4d4f", strokeWidth: 2 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
+
+      <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-[90vh] p-4 sm:p-6 flex flex-col bg-background">
+          <DialogHeader>
+            <DialogTitle>{title || "Pareto"}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 w-full h-full relative pt-4 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={paretoData} margin={{ top: 25, right: 15, bottom: 5, left: -10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <XAxis dataKey="area" tick={{ fontSize: 10 }} stroke="var(--color-muted-foreground)" />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" tickFormatter={(val) => formatValue(val)} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" domain={[0, 100]} tickFormatter={(val) => Math.round(val) + "%"} />
+                <RTooltip
+                  contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12, backgroundColor: "var(--color-card)", color: "var(--color-foreground)", padding: "8px 12px" }}
+                  formatter={(val: number, name: string) => [name === "Acumulado" ? val.toFixed(2) + "%" : formatValue(val), name]}
+                />
+                <Bar 
+                  yAxisId="left" 
+                  dataKey="gap" 
+                  name="Valor" 
+                  fill="#4285f4" 
+                  radius={[4, 4, 0, 0]} 
+                  maxBarSize={60} 
+                  onClick={(payload) => { if (onBarClick && payload.area) onBarClick(payload.area); setIsFullscreen(false); }}
+                  className={onBarClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
+                  label={<CustomBarLabel />}
+                />
+                <Line yAxisId="right" type="monotone" dataKey="cumPct" name="Acumulado" stroke="#ff4d4f" strokeWidth={2} dot={{ r: 4, fill: "var(--color-card)", stroke: "#ff4d4f", strokeWidth: 2 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </DialogContent>
+      </Dialog>
     </StepCard>
   );
 }
