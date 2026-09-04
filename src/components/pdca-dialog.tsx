@@ -1145,11 +1145,6 @@ function TimeSeriesYTD({
       title={title}
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
-      headerRight={
-        <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); toast.success("Series temporales actualizadas desde InfluxDB"); }}>
-          <RefreshCw className="size-3.5 mr-2" /> Sincronizar Grafana
-        </Button>
-      }
     >
 
       <div className="bg-[#1F497D] text-white p-2.5 text-xs leading-relaxed font-sans rounded-sm shadow-sm">
