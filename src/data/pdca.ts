@@ -9,6 +9,22 @@ export type ActionItem = {
   done: boolean;
 };
 
+export type PdcaComment = {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  timestamp: string;
+};
+
+export type PdcaHistoryEvent = {
+  id: string;
+  userId: string;
+  userName: string;
+  action: string;
+  timestamp: string;
+};
+
 export type Pdca = {
   id: string;
   titulo: string;
@@ -58,6 +74,8 @@ export type Pdca = {
   kpiFinalResultUnit?: string;
   gembaFinalImage?: string;
   kpiDocuments?: string[];
+  comentarios?: PdcaComment[];
+  historial?: PdcaHistoryEvent[];
 };
 
 export type GopThemeItem = {

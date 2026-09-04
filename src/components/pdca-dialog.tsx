@@ -40,6 +40,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { PdcaComments } from "./pdca-comments";
+import { PdcaHistory } from "./pdca-history";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -2500,6 +2503,10 @@ export function PdcaDialog({
   const [problema, setProblema] = useState<string>(data.problema || "");
   const [causaRaiz, setCausaRaiz] = useState<string>(data.causaRaiz || "");
   const [acciones, setAcciones] = useState<ActionItem[]>(data.acciones);
+  const [comentarios, setComentarios] = useState<PdcaComment[]>(data.comentarios || []);
+  const [historial, setHistorial] = useState<PdcaHistoryEvent[]>(data.historial || []);
+
+  const [bottomTab, setBottomTab] = useState<"comments" | "history">("comments");
   const [fechaFin, setFechaFin] = useState<Date | undefined>(() => parseDateString(data.fechaFinalizacion));
   const [autor, setAutor] = useState<string>(data.autor || currentUser?.name || "Usuario");
   const [autorEmail, setAutorEmail] = useState<string>(data.autorEmail || currentUser?.email || "");
@@ -2863,6 +2870,37 @@ export function PdcaDialog({
   // Upload all cached changes to Firestore database
   const handleSaveToFirestore = useCallback(async (phaseToSave?: Phase) => {
     setIsSaving(true);
+    
+    const newHistorial = [...historial];
+    const timestamp = new Date().toISOString();
+    const userName = currentUser?.name || "Usuario Anónimo";
+    const userId = currentUser?.email || "anonymous";
+
+    if (phaseToSave && phaseToSave !== data.fase) {
+      newHistorial.push({
+        id: crypto.randomUUID(),
+        userId,
+        userName,
+        action: `Avanzó el PDCA a la fase ${phaseToSave}`,
+        timestamp,
+      });
+    } else if (!phaseToSave && data.id && data.titulo) {
+      newHistorial.push({
+        id: crypto.randomUUID(),
+        userId,
+        userName,
+        action: `Actualizó el PDCA`,
+        timestamp,
+      });
+    } else if (!data.id) {
+       newHistorial.push({
+        id: crypto.randomUUID(),
+        userId,
+        userName,
+        action: `Creó el PDCA`,
+        timestamp,
+      });
+    }
 
     const updatedPdca: Pdca = {
       ...data,
@@ -2884,14 +2922,16 @@ export function PdcaDialog({
       kpiFinalResultUnit,
       gembaFinalImage,
       evidencias,
-      kpiDocuments,
       paretoDataMap,
       paretoDrillDowns,
       paretoUnit,
       hasFlavorCorrelation,
       flavorCorrelationData,
-      hasGopThemes,
-      gopThemesData,
+      hasGopThemes: data.hasGopThemes || false,
+      gopThemesData: data.gopThemesData || [],
+      kpiDocuments: kpiDocuments || [],
+      comentarios: comentarios,
+      historial: newHistorial,
       processMappingImage,
       vpoCheckpoints,
       definicionMeta,
@@ -2909,6 +2949,7 @@ export function PdcaDialog({
       await savePdcaToFirestore(updatedPdca);
       lastSavedRef.current = JSON.stringify(updatedPdca);
       setHasUnsavedChanges(false);
+      setHistorial(newHistorial);
       toast.success("¡Todos los cambios del PDCA se subieron a la base de datos!");
     } catch (err) {
       console.error("Error al subir a la base de datos:", err);
@@ -3090,12 +3131,11 @@ export function PdcaDialog({
                 <TeamMembersInput members={equipo} onChange={setEquipo} />
                 <div className="space-y-2">
                   <Label htmlFor="problema">Descripción del Problema</Label>
-                  <Textarea
-                    id="problema"
-                    rows={3}
+                  <RichTextEditor
                     value={problema}
-                    onChange={(e) => setProblema(e.target.value)}
-                    placeholder="Describe el problema con datos, magnitud e impacto."
+                    onChange={setProblema}
+                    placeholder="Describe el problema con datos, magnitud e impacto..."
+                    disabled={!isAdmin}
                   />
                 </div>
 
@@ -3314,6 +3354,55 @@ export function PdcaDialog({
               />
             </div>
           )}
+
+          {/* Secciones de Colaboración y Auditoría */}
+          <div className="mt-12 border-t border-border pt-8" data-html2canvas-ignore>
+            <div className="flex items-center gap-4 border-b border-border mb-6">
+              <button
+                className={cn(
+                  "px-4 py-2 font-semibold text-sm border-b-2 transition-colors",
+                  bottomTab === "comments" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                )}
+                onClick={() => setBottomTab("comments")}
+              >
+                Comentarios y Foro
+              </button>
+              <button
+                className={cn(
+                  "px-4 py-2 font-semibold text-sm border-b-2 transition-colors",
+                  bottomTab === "history" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                )}
+                onClick={() => setBottomTab("history")}
+              >
+                Historial de Actividad
+              </button>
+            </div>
+            
+            {bottomTab === "comments" && (
+              <PdcaComments
+                comments={comentarios}
+                onAddComment={(text) => {
+                  const newComment: PdcaComment = {
+                    id: crypto.randomUUID(),
+                    userId: currentUser?.email || "anonymous",
+                    userName: currentUser?.name || "Usuario Anónimo",
+                    text,
+                    timestamp: new Date().toISOString(),
+                  };
+                  setComentarios([...comentarios, newComment]);
+                  setHasUnsavedChanges(true);
+                }}
+                onDeleteComment={(id) => {
+                  setComentarios(comentarios.filter((c) => c.id !== id));
+                  setHasUnsavedChanges(true);
+                }}
+              />
+            )}
+
+            {bottomTab === "history" && (
+              <PdcaHistory history={historial} />
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5" data-html2canvas-ignore>
