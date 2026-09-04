@@ -22,6 +22,8 @@ interface AuthContextType {
   setMockUsers: React.Dispatch<React.SetStateAction<UserProfile[]>>;
   mockUsers: UserProfile[];
   addMockUser: (user: UserProfile & { pass: string }) => void;
+  // Cached users list for admins
+  usersList: {name: string, email: string}[];
 }
 
 // Fallback users for when Firebase is down or not configured
@@ -54,6 +56,7 @@ const isAdminEmail = (email: string) => {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [usersList, setUsersList] = useState<{name: string, email: string}[]>([]);
   
   // Local state for fallback users (allows Admin to add to it)
   const [mockUsers, setMockUsers] = useState<UserProfile[]>(
@@ -123,6 +126,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => unsub();
   }, []);
+
+  useEffect(() => {
+    if (currentUser?.role === "admin") {
+      import("firebase/firestore").then(({ collection, onSnapshot }) => {
+        const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
+          const list: {name: string, email: string}[] = [];
+          snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            list.push({
+              name: d.name || "Usuario",
+              email: d.email || "",
+            });
+          });
+          setUsersList(list);
+        });
+        return () => unsub();
+      });
+    } else {
+      setUsersList([]);
+    }
+  }, [currentUser?.role]);
 
   const persistSession = (user: UserProfile | null) => {
     if (user && isAdminEmail(user.email)) {
@@ -211,7 +235,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Simplified mock management for UI purposes
       setMockUsers(action);
     },
-    addMockUser
+    addMockUser,
+    usersList
   };
 
   return (

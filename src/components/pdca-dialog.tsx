@@ -86,7 +86,7 @@ import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_
 import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "./kpi-tree";
 import { ActionKanban } from "./action-kanban";
-import { collection, onSnapshot } from "firebase/firestore";
+// Removed firestore imports
 import { db } from "@/lib/firebase";
 import { GopThemesSection } from "./GopThemesSection";
 import { ImageUploadSection, MultiImageUploadSection } from "./image-upload-section";
@@ -2479,7 +2479,7 @@ export function PdcaDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const data = useMemo(() => pdca ?? getEmptyDraft(), [pdca]);
-  const { currentUser } = useAuth();
+  const { currentUser, usersList } = useAuth();
   const isAdmin = currentUser?.role === "admin";
 
   // Deadline lock: non-admins cannot edit once the deadline has passed
@@ -2514,24 +2514,7 @@ export function PdcaDialog({
   const [autor, setAutor] = useState<string>(data.autor || currentUser?.name || "Usuario");
   const [autorEmail, setAutorEmail] = useState<string>(data.autorEmail || currentUser?.email || "");
   const [asignados, setAsignados] = useState<{name: string, email: string}[]>(data.asignados || []);
-  const [usersList, setUsersList] = useState<{name: string, email: string}[]>([]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-        const list: {name: string, email: string}[] = [];
-        snapshot.forEach((docSnap) => {
-          const d = docSnap.data();
-          list.push({
-            name: d.name || "Usuario",
-            email: d.email || "",
-          });
-        });
-        setUsersList(list);
-      });
-      return () => unsub();
-    }
-  }, [isAdmin]);
+  // usersList comes from AuthContext now
   
   // Paso 2 VPO Checkpoints state
   const [vpoCheckpoints, setVpoCheckpoints] = useState<VpoCheckpointItem[]>(

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 // Configuración de Firebase usando variables de entorno o valores dummy de respaldo
@@ -22,16 +22,10 @@ const secondaryApp = getApps().find(app => app.name === "Secondary")
 
 export const primaryAuth = getAuth(primaryApp);
 export const secondaryAuth = getAuth(secondaryApp);
-export const db = getFirestore(primaryApp);
-export const storage = getStorage(primaryApp);
 
-// Habilitar caché offline nativo solo en el cliente
-if (typeof window !== "undefined") {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      console.warn("Múltiples pestañas abiertas, la persistencia offline solo funciona en una.");
-    } else if (err.code === 'unimplemented') {
-      console.warn("El navegador no soporta persistencia offline de Firestore.");
-    }
-  });
-}
+// Habilitar caché offline nativo usando la nueva API
+export const db = initializeFirestore(primaryApp, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+
+export const storage = getStorage(primaryApp);
