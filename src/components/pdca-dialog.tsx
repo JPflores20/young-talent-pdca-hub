@@ -2859,7 +2859,7 @@ export function PdcaDialog({
   ]);
 
   // Upload all cached changes to Firestore database
-  const handleSaveToFirestore = useCallback(async () => {
+  const handleSaveToFirestore = useCallback(async (phaseToSave?: Phase) => {
     setIsSaving(true);
 
     const updatedPdca: Pdca = {
@@ -2870,7 +2870,7 @@ export function PdcaDialog({
       causaRaiz: causaRaiz,
       fiveWhysTables,
       impactMatrix,
-      fase: tab,
+      fase: phaseToSave || tab,
       progreso: progressPercentage,
       acciones,
       kpiNodes,
@@ -3332,12 +3332,13 @@ export function PdcaDialog({
             disabled={!canEdit}
             onClick={async () => {
               if (!canEdit) return;
-              await handleSaveToFirestore();
 
               if (tab === "Act") {
+                await handleSaveToFirestore();
                 toast.success("¡PDCA Finalizado y Guardado en la Base de Datos!");
                 onOpenChange(false);
               } else if (nextPhase) {
+                await handleSaveToFirestore(nextPhase);
                 setTab(nextPhase);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
