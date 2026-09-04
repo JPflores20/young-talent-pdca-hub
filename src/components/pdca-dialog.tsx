@@ -546,6 +546,7 @@ function ParetoInteractive({
   onUnitChange?: (newUnit: string) => void;
   isStepCompleted?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
+  onAddRoot?: () => void;
 }) {
   const addRow = () => {
     if (onDataChange) {
@@ -617,7 +618,7 @@ function ParetoInteractive({
                 <AlertDialogHeader>
                   <AlertDialogTitle>¿Eliminar Pareto?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    ¿Estás seguro de que deseas eliminar este Pareto de nivel {level + 1}? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar este Pareto? Esta acción no se puede deshacer y eliminará también sus desgloses.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -627,8 +628,13 @@ function ParetoInteractive({
               </AlertDialogContent>
             </AlertDialog>
           )}
+          {onAddRoot && (
+            <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); onAddRoot(); }}>
+              <Plus className="size-4 mr-2" /> Nuevo Pareto
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); addRow(); }}>
-            <Plus className="size-4 mr-2" /> Agregar
+            <Plus className="size-4 mr-2" /> Agregar Fila
           </Button>
         </div>
       }
@@ -766,11 +772,16 @@ function ParetoSection({
   isStepCompleted?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
 }) {
-  const handleBarClick = (category: string, level: number) => {
+  const rootKeys = Object.keys(dataMap).filter(k => k === "root" || k.startsWith("root-")).sort();
+  if (rootKeys.length === 0) rootKeys.push("root");
+
+  const handleBarClick = (category: string, level: number, parentPath: string) => {
     if (category) {
-      const newPath = `level-${level + 1}-${category}`;
+      const newPath = parentPath === "root" 
+        ? `level-${level + 1}-${category}` 
+        : `${parentPath}-level-${level + 1}-${category}`;
       
-      const isLegacy = drillDowns.length > 0 && !drillDowns[0].startsWith("level-");
+      const isLegacy = drillDowns.length > 0 && !drillDowns[0].includes("level-");
       const currentDrills = isLegacy ? drillDowns.map((d, i) => `level-${i + 1}-${d}`) : [...drillDowns];
       
       if (!currentDrills.includes(newPath)) {
@@ -785,47 +796,87 @@ function ParetoSection({
   };
 
   const handleClose = (pathToRemove: string) => {
-    const isLegacy = drillDowns.length > 0 && !drillDowns[0].startsWith("level-");
+    const isLegacy = drillDowns.length > 0 && !drillDowns[0].includes("level-");
     const currentDrills = isLegacy ? drillDowns.map((d, i) => `level-${i + 1}-${d}`) : [...drillDowns];
-    setDrillDowns(currentDrills.filter(p => p !== pathToRemove));
+    setDrillDowns(currentDrills.filter(p => p !== pathToRemove && !p.startsWith(`${pathToRemove}-`)));
+    
+    // Also remove from dataMap
+    const newDataMap = { ...dataMap };
+    Object.keys(newDataMap).forEach(k => {
+      if (k === pathToRemove || k.startsWith(`${pathToRemove}-`)) {
+        delete newDataMap[k];
+      }
+    });
+    setDataMap(newDataMap);
+  };
+
+  const handleCloseRoot = (rootKey: string) => {
+    const currentDrills = drillDowns.filter(p => !p.startsWith(`${rootKey}-`));
+    setDrillDowns(currentDrills);
+
+    const newDataMap = { ...dataMap };
+    Object.keys(newDataMap).forEach(k => {
+      if (k === rootKey || k.startsWith(`${rootKey}-`)) {
+        delete newDataMap[k];
+      }
+    });
+    setDataMap(newDataMap);
   };
 
   const updateData = (path: string, newData: ParetoItem[]) => {
     setDataMap({ ...dataMap, [path]: newData });
   };
 
+  const handleAddRoot = () => {
+    const newRootKey = `root-${Date.now()}`;
+    setDataMap({ ...dataMap, [newRootKey]: [] });
+  };
+
+  const parseDrillDownPath = (path: string, index: number) => {
+    if (!path.includes("level-")) {
+      return { actualPath: `level-${index + 1}-${path}`, level: index + 1, category: path };
+    }
+    if (path.includes("-level-")) {
+      const parts = path.split("-level-");
+      const restParts = parts[1].split("-");
+      return { actualPath: path, level: parseInt(restParts[0], 10), category: restParts.slice(1).join("-") };
+    }
+    const parts = path.split("-");
+    return { actualPath: path, level: parseInt(parts[1], 10), category: parts.slice(2).join("-") };
+  };
+
   return (
     <div className="space-y-4">
-      <ParetoInteractive 
-        title="PASO 5: PARETO"
-        level={0}
-        data={dataMap["root"] || []}
-        onDataChange={(d) => updateData("root", d)}
-        onBarClick={(cat) => handleBarClick(cat, 0)} 
-        unit={unit}
-        {...(onUnitChange ? { onUnitChange } : {})}
-        isStepCompleted={isStepCompleted}
-        {...(onToggleStep ? { onToggleStep } : {})}
-      />
+      {rootKeys.map((rootKey, idx) => (
+        <ParetoInteractive 
+          key={rootKey}
+          title={idx === 0 ? "PASO 5: PARETO" : `PASO 5: PARETO INDEPENDIENTE ${idx + 1}`}
+          level={0}
+          data={dataMap[rootKey] || []}
+          onDataChange={(d) => updateData(rootKey, d)}
+          onBarClick={(cat) => handleBarClick(cat, 0, rootKey)} 
+          unit={unit}
+          onAddRoot={idx === 0 ? handleAddRoot : undefined}
+          onClose={idx > 0 ? () => handleCloseRoot(rootKey) : undefined}
+          {...(onUnitChange ? { onUnitChange } : {})}
+          isStepCompleted={idx === 0 ? isStepCompleted : undefined}
+          {...(idx === 0 && onToggleStep ? { onToggleStep } : {})}
+        />
+      ))}
       
       {drillDowns.map((drillStr, index) => {
-        const isLegacy = !drillStr.startsWith("level-");
-        const path = isLegacy ? `level-${index + 1}-${drillStr}` : drillStr;
-        
-        const parts = path.split("-");
-        const level = parseInt(parts[1], 10) || (index + 1);
-        const category = parts.slice(2).join("-");
+        const { actualPath, level, category } = parseDrillDownPath(drillStr, index);
 
         return (
           <ParetoInteractive 
-            key={path}
+            key={actualPath}
             level={level}
             title={`Sub-Pareto: ${category}`}
             subtitle={`Desglose específico (Nivel ${level + 1}) de la categoría ${category}.`}
-            data={dataMap[path] || []}
-            onDataChange={(d) => updateData(path, d)}
-            onBarClick={(cat) => handleBarClick(cat, level)}
-            onClose={() => handleClose(path)}
+            data={dataMap[actualPath] || []}
+            onDataChange={(d) => updateData(actualPath, d)}
+            onBarClick={(cat) => handleBarClick(cat, level, actualPath)}
+            onClose={() => handleClose(actualPath)}
             unit={unit}
             {...(onUnitChange ? { onUnitChange } : {})}
           />
