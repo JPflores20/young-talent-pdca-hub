@@ -534,6 +534,7 @@ function ParetoInteractive({
   onUnitChange,
   isStepCompleted,
   onToggleStep,
+  onAddRoot,
 }: {
   title?: string;
   subtitle?: string;
