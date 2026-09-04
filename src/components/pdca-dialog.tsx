@@ -53,6 +53,9 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -549,6 +552,67 @@ function ParetoInteractive({
   onToggleStep?: (() => void) | undefined;
   onAddRoot?: () => void;
 }) {
+  const [isPasteOpen, setIsPasteOpen] = useState(false);
+  const [pasteData, setPasteData] = useState("");
+
+  const handleImportExcel = () => {
+    if (!pasteData.trim()) return;
+    
+    const lines = pasteData.split('\n');
+    const aggregated: Record<string, number> = {};
+    
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const parts = line.split('\t');
+      
+      let cat = "";
+      let val = 0;
+
+      if (parts.length >= 2) {
+        cat = parts[0].trim();
+        val = parseFloat(parts[1].replace(/,/g, '').trim()) || 0;
+      } else {
+        const fallbackParts = line.split(',');
+        if (fallbackParts.length >= 2) {
+          cat = fallbackParts[0].trim();
+          val = parseFloat(fallbackParts[1].replace(/,/g, '').trim()) || 0;
+        } else {
+          cat = line.trim();
+          val = 1;
+        }
+      }
+      
+      if (cat) {
+        aggregated[cat] = (aggregated[cat] || 0) + val;
+      }
+    }
+    
+    if (onDataChange) {
+      const existingAgg: Record<string, number> = {};
+      data.forEach(item => {
+        if (item.area && item.area.trim()) {
+           existingAgg[item.area.trim()] = (existingAgg[item.area.trim()] || 0) + (item.gap || 0);
+        }
+      });
+      
+      for (const cat in aggregated) {
+        existingAgg[cat] = (existingAgg[cat] || 0) + aggregated[cat];
+      }
+      
+      const combinedItems = Object.keys(existingAgg).map(cat => ({
+        id: Date.now() + Math.random(),
+        area: cat,
+        gap: existingAgg[cat]
+      }));
+
+      onDataChange(combinedItems.length > 0 ? combinedItems : data);
+    }
+    
+    setIsPasteOpen(false);
+    setPasteData("");
+    toast.success("Datos importados y agrupados correctamente");
+  };
+
   const addRow = () => {
     if (onDataChange) {
       onDataChange([...data, { id: Date.now(), area: "", gap: 0 }]);
@@ -634,9 +698,35 @@ function ParetoInteractive({
               <Plus className="size-4 mr-2" /> Nuevo Pareto
             </Button>
           )}
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setIsPasteOpen(true); }}>
+            <FileText className="size-4 mr-2" /> Importar Excel
+          </Button>
           <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); addRow(); }}>
             <Plus className="size-4 mr-2" /> Agregar Fila
           </Button>
+          
+          <Dialog open={isPasteOpen} onOpenChange={setIsPasteOpen}>
+            <DialogContent className="max-w-xl">
+              <DialogHeader>
+                <DialogTitle>Importar Datos (Copiar y Pegar desde Excel)</DialogTitle>
+                <DialogDescription>
+                  Copia dos columnas de tu Excel (Categoría y Frecuencia/Costo) y pégalas aquí. Los datos se agruparán automáticamente por categoría. Soporta miles de filas.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <Textarea
+                  value={pasteData}
+                  onChange={(e) => setPasteData(e.target.value)}
+                  placeholder="Ejemplo:&#10;Falla A&#9;10&#10;Falla B&#9;5&#10;Falla A&#9;15"
+                  className="min-h-[200px] text-xs font-mono whitespace-pre"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsPasteOpen(false)}>Cancelar</Button>
+                  <Button onClick={handleImportExcel}>Importar y Generar</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       }
     >
