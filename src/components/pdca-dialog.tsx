@@ -11,7 +11,8 @@ import {
   X,
   RefreshCw,
   FileText,
-  Maximize2
+  Maximize2,
+  CheckCircle2
 } from "lucide-react";
 import {
   Bar,
@@ -41,6 +42,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PdcaComments } from "./pdca-comments";
 import { PdcaHistory } from "./pdca-history";
 import {
