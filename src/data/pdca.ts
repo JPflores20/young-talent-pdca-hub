@@ -58,6 +58,7 @@ export type Pdca = {
   paretoTitles?: Record<string, string>;
   autor?: string;
   autorEmail?: string;
+  asignados?: { name: string; email: string }[];
   vpoCheckpoints?: VpoCheckpointItem[];
   definicionMeta?: DefinicionMeta;
   participantes?: ParticipantesData;

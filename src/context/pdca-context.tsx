@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { subscribeToPdcas } from "@/services/pdca-service";
 import { type Pdca } from "@/data/pdca";
 import { useAuth } from "@/context/auth-context";
@@ -57,11 +57,19 @@ export function PdcaProvider({ children }: { children: ReactNode }) {
     if (currentUser.role === "admin") return rawPdcas;
     const emailLower = currentUser.email.toLowerCase();
     return rawPdcas.filter((p) => {
-      if (!p.autorEmail) return true;
-      return (
-        p.autorEmail.toLowerCase() === emailLower ||
-        p.autor === currentUser.name
-      );
+      // Si el PDCA no tiene asignados, usamos la lógica original
+      if (!p.asignados || p.asignados.length === 0) {
+        if (!p.autorEmail) return true;
+        return (
+          p.autorEmail.toLowerCase() === emailLower ||
+          p.autor === currentUser.name
+        );
+      }
+      
+      // Si tiene asignados, verificamos si el usuario actual está en la lista o es el autor original
+      const isAssigned = p.asignados.some(a => a.email.toLowerCase() === emailLower);
+      const isAuthor = (p.autorEmail?.toLowerCase() === emailLower) || (p.autor === currentUser.name);
+      return isAssigned || isAuthor;
     });
   })();
 

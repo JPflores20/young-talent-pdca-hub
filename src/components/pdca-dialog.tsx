@@ -2510,6 +2510,7 @@ export function PdcaDialog({
   const [fechaFin, setFechaFin] = useState<Date | undefined>(() => parseDateString(data.fechaFinalizacion));
   const [autor, setAutor] = useState<string>(data.autor || currentUser?.name || "Usuario");
   const [autorEmail, setAutorEmail] = useState<string>(data.autorEmail || currentUser?.email || "");
+  const [asignados, setAsignados] = useState<{name: string, email: string}[]>(data.asignados || []);
   const [usersList, setUsersList] = useState<{name: string, email: string}[]>([]);
 
   useEffect(() => {
@@ -3103,29 +3104,83 @@ export function PdcaDialog({
                     />
                   </div>
                   {isAdmin && (
-                    <div className="space-y-2">
-                      <Label>Asignado a (Autor)</Label>
-                      <Select 
-                        value={autorEmail} 
-                        onValueChange={(val) => {
-                          setAutorEmail(val);
-                          const user = usersList.find(u => u.email === val);
-                          if (user) setAutor(user.name);
-                        }}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Seleccionar usuario" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={currentUser?.email || "admin@example.com"}>{currentUser?.name || "Yo"}</SelectItem>
-                          {usersList.filter(u => u.email !== currentUser?.email).map(u => (
-                            <SelectItem key={u.email} value={u.email}>
-                              {u.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <>
+                      <div className="space-y-2">
+                        <Label>Autor Original</Label>
+                        <Select 
+                          value={autorEmail} 
+                          onValueChange={(val) => {
+                            setAutorEmail(val);
+                            const user = usersList.find(u => u.email === val);
+                            if (user) setAutor(user.name);
+                            setHasUnsavedChanges(true);
+                          }}
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Seleccionar usuario" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={currentUser?.email || "admin@example.com"}>{currentUser?.name || "Yo"}</SelectItem>
+                            {usersList.filter(u => u.email !== currentUser?.email).map(u => (
+                              <SelectItem key={u.email} value={u.email}>
+                                {u.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2 col-span-full sm:col-span-1 md:col-span-2">
+                        <Label>Usuarios Asignados (Co-responsables)</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start text-left font-normal min-h-[36px] h-auto p-2">
+                              {asignados.length === 0 ? (
+                                <span className="text-muted-foreground">Seleccionar usuarios...</span>
+                              ) : (
+                                <div className="flex flex-wrap gap-1">
+                                  {asignados.map(a => (
+                                    <Badge key={a.email} variant="secondary" className="text-xs">
+                                      {a.name}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] p-0" align="start">
+                            <div className="max-h-[300px] overflow-y-auto p-2 space-y-1">
+                              {usersList.length === 0 ? (
+                                <p className="text-sm text-center py-2 text-muted-foreground">No hay otros usuarios.</p>
+                              ) : (
+                                usersList.map(u => {
+                                  const isSelected = asignados.some(a => a.email === u.email);
+                                  return (
+                                    <div 
+                                      key={u.email} 
+                                      className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          setAsignados(asignados.filter(a => a.email !== u.email));
+                                        } else {
+                                          setAsignados([...asignados, { name: u.name, email: u.email }]);
+                                        }
+                                        setHasUnsavedChanges(true);
+                                      }}
+                                    >
+                                      <div className={`flex items-center justify-center size-4 border rounded-sm ${isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-input'}`}>
+                                        {isSelected && <CheckCircle2 className="size-3" />}
+                                      </div>
+                                      <span className="text-sm font-medium leading-none">{u.name}</span>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </>
                   )}
                 </div>
                 <TeamMembersInput members={equipo} onChange={setEquipo} />
