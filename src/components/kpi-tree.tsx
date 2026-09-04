@@ -30,6 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { StepCard } from "@/components/ui/step-card";
 
 const CustomNode = ({ id, data, selected }: { id: string; data: any; selected: boolean }) => {
   const { setNodes } = useReactFlow();
