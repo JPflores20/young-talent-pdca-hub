@@ -1580,12 +1580,9 @@ function ImpactMatrixTable({
                   ))}
                   <td className="p-1 border-r border-border text-center align-middle">
                     {impactLevel ? (
-                      <div className="flex flex-col items-center justify-center gap-0.5">
-                        <span className={cn("inline-block px-2 py-0.5 rounded text-[11px] font-bold w-full", SCORE_COLORS[impactLevel])}>
-                          {SCORE_LABELS[impactLevel]}
-                        </span>
-                        <span className="text-[9px] font-bold text-muted-foreground/80 leading-none">Prod: {product}</span>
-                      </div>
+                      <span className={cn("inline-block px-2 py-1.5 rounded text-[11px] font-bold w-full", SCORE_COLORS[impactLevel])}>
+                        {product}-{SCORE_LABELS[impactLevel]}
+                      </span>
                     ) : <span className="text-muted-foreground text-xs">—</span>}
                   </td>
                   <td className="p-1 border-r border-border text-center">
