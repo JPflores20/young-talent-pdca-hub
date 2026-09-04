@@ -1798,6 +1798,7 @@ function FiveWhysInteractive({
                 {i + 1}º POR QUÉ
               </th>
             ))}
+            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">CAUSA RAÍZ</th>
             <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[150px] border-r border-white/20">ACCION(ES)</th>
             <th className="w-8"></th>
           </tr>
@@ -1808,7 +1809,11 @@ function FiveWhysInteractive({
               {/* Fila de Preguntas */}
               <tr className="border-b border-white group">
                 {Array.from({ length: whysCount }).map((_, i) => (
-                  <td key={`q-${i}`} className="bg-blue-100/50 dark:bg-blue-900/20 p-0 border-r border-white align-top">
+                  <td key={`q-${i}`} className={cn("p-0 border-r border-white align-top",
+                    row.isRootCause === "Sí" ? "bg-red-50 dark:bg-red-950/30" :
+                    row.isRootCause === "No" ? "bg-green-50 dark:bg-green-950/30" :
+                    "bg-blue-100/50 dark:bg-blue-900/20"
+                  )}>
                     <AutoResizeTextarea
                       value={row[`q${i + 1}`] || ""}
                       onChange={(val) => updateRow(row.id, `q${i + 1}`, val)}
@@ -1817,7 +1822,36 @@ function FiveWhysInteractive({
                     />
                   </td>
                 ))}
-                <td rowSpan={2} className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white align-top">
+                <td rowSpan={2} className={cn(
+                  "p-1 border-r border-white align-middle text-center min-w-[80px]",
+                  row.isRootCause === "Sí" ? "bg-red-100 dark:bg-red-900/40" :
+                  row.isRootCause === "No" ? "bg-green-100 dark:bg-green-900/40" :
+                  "bg-[#E2E2E2] dark:bg-secondary"
+                )}>
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    <Button 
+                      variant={row.isRootCause === "Sí" ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => updateRow(row.id, "isRootCause", row.isRootCause === "Sí" ? "" : "Sí")}
+                      className={cn("h-6 w-12 text-[10px] px-0", row.isRootCause === "Sí" ? "bg-red-600 hover:bg-red-700 text-white border-red-600" : "hover:bg-red-50 hover:text-red-600")}
+                    >
+                      SÍ
+                    </Button>
+                    <Button 
+                      variant={row.isRootCause === "No" ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => updateRow(row.id, "isRootCause", row.isRootCause === "No" ? "" : "No")}
+                      className={cn("h-6 w-12 text-[10px] px-0", row.isRootCause === "No" ? "bg-green-600 hover:bg-green-700 text-white border-green-600" : "hover:bg-green-50 hover:text-green-600")}
+                    >
+                      NO
+                    </Button>
+                  </div>
+                </td>
+                <td rowSpan={2} className={cn("p-0 border-r border-white align-top",
+                  row.isRootCause === "Sí" ? "bg-red-50 dark:bg-red-950/30" :
+                  row.isRootCause === "No" ? "bg-green-50 dark:bg-green-950/30" :
+                  "bg-[#E2E2E2] dark:bg-secondary"
+                )}>
                   <AutoResizeTextarea
                     value={row.accion || ""}
                     onChange={(val) => updateRow(row.id, "accion", val)}
@@ -1835,7 +1869,11 @@ function FiveWhysInteractive({
               {/* Fila de Respuestas */}
               <tr className="border-b-[3px] border-[#0078D7] group">
                 {Array.from({ length: whysCount }).map((_, i) => (
-                  <td key={`w-${i}`} className="bg-[#E2E2E2] dark:bg-secondary p-0 border-r border-white align-top">
+                  <td key={`w-${i}`} className={cn("p-0 border-r border-white align-top",
+                    row.isRootCause === "Sí" ? "bg-red-100 dark:bg-red-900/40" :
+                    row.isRootCause === "No" ? "bg-green-100 dark:bg-green-900/40" :
+                    "bg-[#E2E2E2] dark:bg-secondary"
+                  )}>
                     <AutoResizeTextarea
                       value={row[`w${i + 1}`] || ""}
                       onChange={(val) => updateRow(row.id, `w${i + 1}`, val)}
