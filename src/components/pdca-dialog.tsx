@@ -31,6 +31,8 @@ import {
   YAxis,
   Legend
 } from "recharts";
+import { format, parseISO, isValid } from "date-fns";
+import html2pdf from "html2pdf.js";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -2919,8 +2921,8 @@ export function PdcaDialog({
   const nextPhase = phases[Math.min(phases.indexOf(tab) + 1, 3)];
 
   return (
-    <div className="flex flex-col w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="space-y-4 border-b border-border pb-5 mb-5 text-left">
+    <div id="pdca-content" className="flex flex-col w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="space-y-4 border-b border-border pb-5 mb-5 text-left" data-html2canvas-ignore>
         <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="-ml-2 mb-2 text-muted-foreground hover:text-foreground">
           <ArrowRight className="size-4 mr-2 rotate-180" /> Volver a Mis PDCAs
         </Button>
@@ -3314,7 +3316,28 @@ export function PdcaDialog({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5">
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-5" data-html2canvas-ignore>
+
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const element = document.getElementById("pdca-content");
+              if (!element) return;
+              
+              const opt = {
+                margin:       10,
+                filename:     `PDCA_${data.id || 'Report'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+              };
+              
+              html2pdf().set(opt).from(element).save();
+            }}
+            className="font-semibold text-primary border-primary hover:bg-primary/10"
+          >
+            📄 Exportar PDF
+          </Button>
 
           <Button
             className="bg-primary hover:bg-brand-dark font-semibold"

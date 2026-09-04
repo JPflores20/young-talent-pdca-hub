@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, Filter, Calendar, Trash2, CalendarClock, X } from "lucide-react";
-import { format, isValid, isBefore, startOfDay } from "date-fns";
+import { Plus, Search, Filter, Calendar, Trash2, CalendarClock, X, Target, CheckCircle2, Clock, AlertTriangle, Building, LayoutDashboard, Snowflake, Flame } from "lucide-react";
+import { format, isValid, isBefore, startOfDay, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,47 @@ function MisPdcas() {
     if (!selectedId) return null;
     return userPdcas.find((p) => p.id === selectedId) || null;
   }, [selectedId, userPdcas]);
+
+  const metrics = useMemo(() => {
+    let activos = 0;
+    let cerrados = 0;
+    let bloqueFrio = 0;
+    let cocimientos = 0;
+    let vencidos = 0;
+    let aTiempo = 0;
+
+    const today = startOfDay(new Date());
+
+    userPdcas.forEach(p => {
+      const isClosed = p.fase === "Act" && p.progreso === 100;
+      if (isClosed) {
+        cerrados++;
+      } else {
+        activos++;
+        if (p.fechaFinalizacion) {
+          try {
+            const deadlineDate = parse(p.fechaFinalizacion, "dd/MM/yyyy", new Date());
+            if (isValid(deadlineDate)) {
+              if (isBefore(deadlineDate, today)) {
+                vencidos++;
+              } else {
+                aTiempo++;
+              }
+            }
+          } catch (e) {}
+        }
+      }
+
+      const areaStr = p.area.toLowerCase();
+      if (areaStr.includes("frio") || areaStr.includes("frío")) {
+        bloqueFrio++;
+      } else if (areaStr.includes("cocimiento")) {
+        cocimientos++;
+      }
+    });
+
+    return { activos, cerrados, bloqueFrio, cocimientos, vencidos, aTiempo };
+  }, [userPdcas]);
 
   const rows = useMemo(
     () =>
@@ -195,6 +236,58 @@ function MisPdcas() {
           );
         })}
       </div>
+
+      {userPdcas.length > 0 && (
+        <div className="mt-8 mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+              <Target className="size-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">PDCAs Activos</p>
+              <h3 className="text-2xl font-bold">{metrics.activos}</h3>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <CheckCircle2 className="size-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">PDCAs Cerrados</p>
+              <h3 className="text-2xl font-bold">{metrics.cerrados}</h3>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+              <Building className="size-6" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground mb-1">Por Área (Activos)</p>
+              <div className="flex items-center gap-3 text-sm font-semibold">
+                <span className="flex items-center gap-1 text-cyan-600 dark:text-cyan-400"><Snowflake className="size-3"/> {metrics.bloqueFrio}</span>
+                <span className="text-border">|</span>
+                <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400"><Flame className="size-3"/> {metrics.cocimientos}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+              <AlertTriangle className="size-6" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground mb-1">Tiempos (Activos)</p>
+              <div className="flex items-center gap-3 text-sm font-semibold">
+                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><Clock className="size-3"/> {metrics.aTiempo}</span>
+                <span className="text-border">|</span>
+                <span className="flex items-center gap-1 text-red-600 dark:text-red-400"><CalendarClock className="size-3"/> {metrics.vencidos}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 space-y-4 rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
