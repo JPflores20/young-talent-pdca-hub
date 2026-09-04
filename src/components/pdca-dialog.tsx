@@ -76,7 +76,7 @@ import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@
 import { KpiTreeInteractive } from "./kpi-tree";
 import { ActionKanban } from "./action-kanban";
 import { GopThemesSection } from "./GopThemesSection";
-import { ImageUploadSection } from "./image-upload-section";
+import { ImageUploadSection, MultiImageUploadSection } from "./image-upload-section";
 import { DatePicker } from "@/components/ui/date-picker";
 import { savePdcaToFirestore } from "@/services/pdca-service";
 import { useAuth } from "@/context/auth-context";
@@ -2181,6 +2181,7 @@ export function PdcaDialog({
   );
   const [kpiFinalResultUnit, setKpiFinalResultUnit] = useState<string>(data.kpiFinalResultUnit || "");
   const [gembaFinalImage, setGembaFinalImage] = useState<string | null>(data.gembaFinalImage || null);
+  const [evidencias, setEvidencias] = useState<string[]>(data.evidencias || []);
 
   const [hasFlavorCorrelation, setHasFlavorCorrelation] = useState<boolean>(data.hasFlavorCorrelation || false);
   const [flavorCorrelationData, setFlavorCorrelationData] = useState<any>(data.flavorCorrelationData || null);
@@ -2456,6 +2457,7 @@ export function PdcaDialog({
       kpiFinalResultData,
       kpiFinalResultUnit,
       gembaFinalImage,
+      evidencias,
       paretoDataMap,
       paretoDrillDowns,
       paretoUnit,
@@ -2487,7 +2489,7 @@ export function PdcaDialog({
     setHasUnsavedChanges(true);
   }, [
     titulo, area, problema, causaRaiz, fiveWhysTables, impactMatrix, tab, progressPercentage, acciones,
-    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin
+    kpiNodes, kpiEdges, ishikawas, targetVsActual, targetVsActualUnit, kpiFinalResultData, kpiFinalResultUnit, gembaFinalImage, evidencias, paretoDataMap, paretoDrillDowns, paretoUnit, vpoCheckpoints, definicionMeta, participantes, equipo, completedPhases, completedSteps, fechaFin
   ]);
 
   // Upload all cached changes to Firestore database
@@ -2513,6 +2515,7 @@ export function PdcaDialog({
       kpiFinalResultData,
       kpiFinalResultUnit,
       gembaFinalImage,
+      evidencias,
       paretoDataMap,
       paretoDrillDowns,
       paretoUnit,
@@ -2873,33 +2876,16 @@ export function PdcaDialog({
                 </div>
               </StepCard>
 
-              <StepCard 
+              <MultiImageUploadSection
+                images={evidencias}
+                onChange={setEvidencias}
                 title="PASO 9: GEMBA (EVIDENCIAS)"
+                subtitle="Gestión de Evidencias Gemba"
+                description="Sube fotos del Gemba o documentos que respalden que el plan de acción se ejecutó correctamente."
+                maxImages={10}
                 isStepCompleted={completedSteps.has("step-9")}
                 onToggleStep={() => toggleStepComplete("step-9")}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700">
-                    <span className="size-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
-                    Estamos trabajando en la opción de subir archivos
-                  </span>
-                </div>
-                <StepInstructions>
-                  <p>Registra las evidencias de que el plan de acción se ejecutó correctamente y que los resultados se mantienen (GEMBA). Puedes adjuntar fotos, documentos o enlaces relevantes.</p>
-                </StepInstructions>
-                <div className="mt-4 p-8 border-2 border-dashed border-border rounded-xl text-center text-muted-foreground flex flex-col items-center justify-center gap-3 bg-secondary/20">
-                  <div className="size-12 rounded-full bg-background border shadow-sm flex items-center justify-center">
-                    <UploadCloud className="size-5 text-primary/60" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground">Gestión de Evidencias Gemba</h4>
-                    <p className="text-sm max-w-sm mx-auto mt-1 text-muted-foreground">Sube archivos, fotos del Gemba o documentos que respalden la estandarización del proceso.</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="mt-2" onClick={() => toast.info("Funcionalidad en desarrollo")}>
-                    Subir Evidencia
-                  </Button>
-                </div>
-              </StepCard>
+              />
 
               {/* PASO 10: KPI FINAL RESULT */}
               <TimeSeriesYTD
