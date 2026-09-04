@@ -17,6 +17,10 @@ import { useAuth } from "@/context/auth-context";
 import { ThemeToggle } from "./theme-toggle";
 import { usePdcas } from "@/context/pdca-context";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { format, isValid } from "date-fns";
+import { es } from "date-fns/locale";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
+import { updatePdcaDeadline } from "@/services/pdca-service";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const router = useRouterState();
@@ -25,6 +29,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const currentPath = router.location.pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { allPdcas } = usePdcas();
+  const [deadlinePickerOpenId, setDeadlinePickerOpenId] = useState<string | null>(null);
+
+  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined) => {
+    const formatted = date && isValid(date) ? format(date, "dd/MM/yyyy", { locale: es }) : "";
+    await updatePdcaDeadline(pdcaId, formatted || null);
+    setDeadlinePickerOpenId(null);
+  };
 
   const pendingDeadlinePdcas = useMemo(() => {
     if (currentUser?.role !== "admin") return [];
@@ -199,25 +210,40 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   {currentUser.role === "admin" ? (
                     pendingDeadlinePdcas.length > 0 ? (
                       pendingDeadlinePdcas.map((p) => (
-                        <Link
+                        <Popover
                           key={p.id}
-                          to="/"
-                          className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/70 border border-transparent hover:border-border transition-all group"
+                          open={deadlinePickerOpenId === p.id}
+                          onOpenChange={(open) => setDeadlinePickerOpenId(open ? p.id : null)}
                         >
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 mt-0.5">
-                            <Calendar className="size-4 text-amber-600 dark:text-amber-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate leading-snug">{p.titulo || "Sin título"}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                              {p.autor || "Usuario"} · <span className="text-foreground/60">{p.area}</span>
-                            </p>
-                            <div className="flex items-center gap-1 mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
-                              <span>Asignar fecha límite</span>
-                              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                          <PopoverTrigger asChild>
+                            <div
+                              className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/70 border border-transparent hover:border-border transition-all group cursor-pointer"
+                            >
+                              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 mt-0.5">
+                                <Calendar className="size-4 text-amber-600 dark:text-amber-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate leading-snug">{p.titulo || "Sin título"}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                                  {p.autor || "Usuario"} · <span className="text-foreground/60">{p.area}</span>
+                                </p>
+                                <div className="flex items-center gap-1 mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+                                  <span>Asignar fecha límite</span>
+                                  <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </Link>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="end" side="left">
+                            <CalendarUI
+                              mode="single"
+                              selected={undefined}
+                              onSelect={(date) => handleDeadlineChange(p.id, date)}
+                              locale={es}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       ))
                     ) : (
                       <div className="py-10 text-center">
