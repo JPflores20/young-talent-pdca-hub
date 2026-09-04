@@ -12,6 +12,7 @@ import {
 import { Target, Info } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format, parseISO, isValid } from "date-fns";
+import TextareaAutosize from "react-textarea-autosize";
 
 export const DEFAULT_DEFINICION_META: DefinicionMeta = {
   kpi: "PÉRDIDA DE EXTRACTO",
@@ -286,7 +287,7 @@ export function PdcaParticipants({
                 PARTICIPANTES LOCALES
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 w-[30%] border border-[#174373]/20">
-                <Textarea
+                <TextareaAutosize
                   value={value.localesNombres}
                   onChange={(e) => updateField("localesNombres", e.target.value)}
                   disabled={readOnly}
@@ -299,7 +300,7 @@ export function PdcaParticipants({
                 <span className="text-white/80">(No el título del trabajo de la persona... ¿cuál es su rol en el equipo? Ejemplos... facilitador, analista de datos/experto en Excel, experto en la materia, perspectiva de primera línea, ojos externos, etc.)</span>
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 w-[30%] border border-[#174373]/20">
-                <Textarea
+                <TextareaAutosize
                   value={value.localesRoles}
                   onChange={(e) => updateField("localesRoles", e.target.value)}
                   disabled={readOnly}
@@ -315,12 +316,12 @@ export function PdcaParticipants({
                 RECURSOS EXTERNOS
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 border border-[#174373]/20">
-                <Textarea
+                <TextareaAutosize
                   value={value.externosNombres}
                   onChange={(e) => updateField("externosNombres", e.target.value)}
                   disabled={readOnly}
-                  className="min-h-[70px] w-full resize-none border-none shadow-none bg-transparent font-medium text-xs text-center focus-visible:ring-1 focus-visible:ring-black/20 p-2"
-                  placeholder="Nombres..."
+                  className="min-h-[100px] w-full resize-none border-none shadow-none bg-transparent font-medium text-xs text-center focus-visible:ring-1 focus-visible:ring-black/20 p-2"
+                  placeholder="Ej. Manuel Pérez"
                 />
               </td>
               <td className="bg-[#174373] text-white p-3 text-[10px] leading-tight text-left border border-white/20">
@@ -328,12 +329,12 @@ export function PdcaParticipants({
                 <span className="text-white/80">(No el título del trabajo de la persona... ¿cuál es su papel en el equipo? Ejemplos... Consultor, Fabricante Equipo Original, experto técnico para el tema xx, entrenador del método PDCA, etc)</span>
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 border border-[#174373]/20">
-                <Textarea
+                <TextareaAutosize
                   value={value.externosRoles}
                   onChange={(e) => updateField("externosRoles", e.target.value)}
                   disabled={readOnly}
-                  className="min-h-[70px] w-full resize-none border-none shadow-none bg-transparent font-medium text-xs text-center focus-visible:ring-1 focus-visible:ring-black/20 p-2"
-                  placeholder="Roles..."
+                  className="min-h-[100px] w-full resize-none border-none shadow-none bg-transparent font-medium text-xs text-center focus-visible:ring-1 focus-visible:ring-black/20 p-2"
+                  placeholder="Ej. REGIONAL"
                 />
               </td>
             </tr>
