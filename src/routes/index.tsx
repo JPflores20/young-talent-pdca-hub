@@ -33,7 +33,7 @@ import {
   deletePdcaFromFirestore,
   updatePdcaDeadline,
 } from "@/services/pdca-service";
-import { phases, type Phase } from "@/data/pdca";
+import { phases, type Phase, type Pdca } from "@/data/pdca";
 import { useAuth } from "@/context/auth-context";
 import { usePdcas } from "@/context/pdca-context";
 
@@ -363,7 +363,7 @@ function MisPdcas() {
                     let deadlineDate: Date | undefined;
                     if (deadlineStr && !isNoLimit) {
                       const parts = deadlineStr.split("/");
-                      if (parts.length === 3) {
+                      if (parts.length === 3 && parts[0] && parts[1] && parts[2]) {
                         const parsed = new Date(+parts[2], +parts[1] - 1, +parts[0]);
                         if (isValid(parsed)) deadlineDate = parsed;
                       }

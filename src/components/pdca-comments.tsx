@@ -60,12 +60,12 @@ export function PdcaComments({ comments, onAddComment, onDeleteComment }: PdcaCo
           comments.map((c) => (
             <div key={c.id} className="flex gap-3 bg-secondary/30 p-3 rounded-lg border border-border/50 text-sm">
               <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary font-bold shadow-sm">
-                {c.userName.charAt(0).toUpperCase()}
+                {(c.userName || c.user_name || "U").charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold truncate">{c.userName}</span>
+                    <span className="font-semibold truncate">{c.userName || c.user_name || "Usuario"}</span>
                     {c.stepTitle && (
                       <Badge variant="outline" className="text-[10px] py-0 h-4 bg-background">
                         {c.stepTitle}

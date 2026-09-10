@@ -116,16 +116,27 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
                     )}
                     onClick={() => toggleMonth(item.id, mIndex)}
                   >
-                    <div className="w-10 h-full min-h-[60px]"></div>
+                    <div className="w-10 h-full min-h-[60px] flex items-center justify-center">{isActive && <span className="text-white font-bold text-[10px]">100%</span>}</div>
                   </td>
                 ))}
                 <td className="border border-border p-0">
-                  <Input 
-                    value={item.focusItems}
-                    onChange={(e) => updateRow(item.id, "focusItems", e.target.value)}
-                    className="border-0 focus-visible:ring-0 text-center rounded-none bg-transparent h-full min-h-[60px]"
-                  />
-                </td>
+                    <div className="flex h-full min-h-[60px] items-center">
+                      <select
+                        value={item.focusType || "#"}
+                        onChange={(e) => updateRow(item.id, "focusType", e.target.value)}
+                        className="border-0 bg-transparent text-xs w-10 text-center focus-visible:ring-0 cursor-pointer outline-none font-bold"
+                      >
+                        <option value="#">#</option>
+                        <option value="%">%</option>
+                      </select>
+                      <Input 
+                        value={item.focusItems}
+                        onChange={(e) => updateRow(item.id, "focusItems", e.target.value)}
+                        className="border-0 focus-visible:ring-0 text-left rounded-none bg-transparent h-full flex-1 px-1"
+                        placeholder="Valor..."
+                      />
+                    </div>
+                  </td>
                 <td className="border border-border p-1">
                   <select 
                     value={item.status}

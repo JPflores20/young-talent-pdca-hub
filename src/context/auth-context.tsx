@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             const autoProfile: UserProfile = {
               uid: user.uid,
-              name: user.displayName || (user.email ? user.email.split("@")[0] : "Usuario"),
+              name: user.displayName || (user.email ? (user.email.split("@")[0] ?? "Usuario") : "Usuario"),
               email: user.email || "",
               role: isAutoAdmin ? "admin" : "user",
               area: "Usuario",
@@ -135,8 +135,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           snapshot.forEach((docSnap) => {
             const d = docSnap.data();
             list.push({
-              name: d.name || "Usuario",
-              email: d.email || "",
+              name: (d as any).name || "Usuario",
+              email: (d as any).email || "",
             });
           });
           setUsersList(list);
