@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 import { PdcaPhaseAct } from "../pdca_phase_act";
 
 describe("PdcaPhaseAct", () => {
-  it("debe renderizar el Kanban del Paso 8 y la Estandarización del Paso 9", () => {
+  it("debe renderizar los pasos 8.2, 9, 10 y 11 de la fase de Ejecución", () => {
     render(
       <PdcaPhaseAct
         action_items={[]}
@@ -13,6 +13,8 @@ describe("PdcaPhaseAct", () => {
         on_kpi_final_result_change={vi.fn()}
         kpi_final_result_unit="%"
         on_kpi_final_result_unit_change={vi.fn()}
+        gemba_evidencias={[]}
+        on_gemba_evidencias_change={vi.fn()}
         gemba_final_image={null}
         on_gemba_final_image_change={vi.fn()}
         completed_steps={new Set()}
@@ -21,7 +23,9 @@ describe("PdcaPhaseAct", () => {
       />
     );
 
-    expect(screen.getByText(/PASO 8: PLAN DE ACCIÓN/i)).toBeDefined();
-    expect(screen.getByText(/PASO 9: ESTANDARIZACIÓN/i)).toBeDefined();
+    expect(screen.getByText(/PASO 8.2: PLAN DE ACCIÓN/i)).toBeDefined();
+    expect(screen.getByText(/PASO 9: GEMBA/i)).toBeDefined();
+    expect(screen.getByText(/PASO 10: KPI FINAL RESULT/i)).toBeDefined();
+    expect(screen.getByText(/PASO 11: GEMBA FINAL/i)).toBeDefined();
   });
 });

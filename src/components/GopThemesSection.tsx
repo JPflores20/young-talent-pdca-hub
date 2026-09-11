@@ -42,9 +42,11 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
         id: Date.now(),
         tema: "",
         meses: Array(12).fill(false),
+        mesesValues: Array(12).fill("100%"), // Almacena los porcentajes
+        mesesColors: Array(12).fill("red"),  // Almacena el color (rojo o verde)
         focusItems: "",
         status: ""
-      }
+      } as GopThemeItem
     ]);
   };
 
@@ -56,12 +58,45 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
     onChange(data.map(item => item.id === id ? { ...item, [field]: value } : item));
   };
 
+  // Ciclo de clics: Transparente (false) -> Rojo (true) -> Verde (true) -> Transparente (false)
   const toggleMonth = (id: number, monthIndex: number) => {
     onChange(data.map(item => {
       if (item.id === id) {
+        const localItem = item as any;
         const newMeses = [...item.meses];
-        newMeses[monthIndex] = !newMeses[monthIndex];
-        return { ...item, meses: newMeses };
+        const newMesesValues = localItem.mesesValues ? [...localItem.mesesValues] : Array(12).fill("100%");
+        const newMesesColors = localItem.mesesColors ? [...localItem.mesesColors] : Array(12).fill("red");
+        
+        const isActive = newMeses[monthIndex];
+        const currentColor = newMesesColors[monthIndex];
+
+        if (!isActive) {
+          // 1. Estaba apagado, lo encendemos en rojo
+          newMeses[monthIndex] = true;
+          newMesesColors[monthIndex] = "red";
+        } else if (currentColor === "red") {
+          // 2. Estaba en rojo, lo pasamos a verde
+          newMeses[monthIndex] = true;
+          newMesesColors[monthIndex] = "green";
+        } else {
+          // 3. Estaba en verde, lo apagamos
+          newMeses[monthIndex] = false;
+          newMesesColors[monthIndex] = "red"; // Reseteamos a rojo para la próxima vez
+        }
+        
+        return { ...item, meses: newMeses, mesesValues: newMesesValues, mesesColors: newMesesColors };
+      }
+      return item;
+    }));
+  };
+
+  const updateMonthValue = (id: number, monthIndex: number, value: string) => {
+    onChange(data.map(item => {
+      if (item.id === id) {
+        const localItem = item as any;
+        const newMesesValues = localItem.mesesValues ? [...localItem.mesesValues] : Array(12).fill("100%");
+        newMesesValues[monthIndex] = value;
+        return { ...item, mesesValues: newMesesValues };
       }
       return item;
     }));
@@ -69,7 +104,7 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
 
   return (
     <StepCard 
-      title="Temas de GOP Aplicables"
+      title="Cumplimiento de GOPs Aplicables"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
     >
@@ -79,7 +114,7 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
           <thead>
             <tr className="bg-muted">
               <th className="border border-border p-2 w-10 text-center">#</th>
-              <th className="border border-border p-2 min-w-[300px]">TEMAS DE GOP APLICABLES</th>
+              <th className="border border-border p-2 min-w-[300px]">CUMPLIMIENTO DE GOPS APLICABLES</th>
               {MONTHS.map(m => (
                 <th key={m} className="border border-border p-2 w-10 text-center text-xs bg-[#0070c0] text-white font-bold">{m}</th>
               ))}
@@ -107,23 +142,44 @@ export function GopThemesSection({ data, onChange, isStepCompleted, onToggleStep
                     placeholder="Describe el tema..."
                   />
                 </td>
-                {item.meses.map((isActive, mIndex) => (
-                  <td 
-                    key={mIndex} 
-                    className={cn(
-                      "border border-border p-0 cursor-pointer transition-colors duration-200",
-                      isActive ? "bg-[#c00000]" : "bg-transparent hover:bg-secondary"
-                    )}
-                    onClick={() => toggleMonth(item.id, mIndex)}
-                  >
-                    <div className="w-10 h-full min-h-[60px] flex items-center justify-center">{isActive && <span className="text-white font-bold text-[10px]">100%</span>}</div>
-                  </td>
-                ))}
+                {item.meses.map((isActive, mIndex) => {
+                  const localItem = item as any;
+                  const monthValue = localItem.mesesValues?.[mIndex] ?? "100%";
+                  const monthColor = localItem.mesesColors?.[mIndex] ?? "red";
+                  
+                  // Determinamos el color de fondo en base al estado
+                  let bgColorClass = "bg-transparent hover:bg-secondary";
+                  if (isActive) {
+                    bgColorClass = monthColor === "green" ? "bg-[#00b050]" : "bg-[#c00000]";
+                  }
+                  
+                  return (
+                    <td 
+                      key={mIndex} 
+                      className={cn(
+                        "border border-border p-0 cursor-pointer transition-colors duration-200",
+                        bgColorClass
+                      )}
+                      onClick={() => toggleMonth(item.id, mIndex)}
+                    >
+                      <div className="w-10 h-full min-h-[60px] flex items-center justify-center">
+                        {isActive && (
+                          <Input 
+                            value={monthValue}
+                            onChange={(e) => updateMonthValue(item.id, mIndex, e.target.value)}
+                            onClick={(e) => e.stopPropagation()} 
+                            className="h-8 w-full text-center text-white font-bold text-[10px] bg-transparent border-0 px-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-white/70"
+                          />
+                        )}
+                      </div>
+                    </td>
+                  );
+                })}
                 <td className="border border-border p-0">
                     <div className="flex h-full min-h-[60px] items-center">
                       <select
-                        value={item.focusType || "#"}
-                        onChange={(e) => updateRow(item.id, "focusType", e.target.value)}
+                        value={(item as any).focusType || "#"}
+                        onChange={(e) => updateRow(item.id, "focusType" as any, e.target.value)}
                         className="border-0 bg-transparent text-xs w-10 text-center focus-visible:ring-0 cursor-pointer outline-none font-bold"
                       >
                         <option value="#">#</option>

@@ -101,6 +101,54 @@ import {
 import { StepCard } from "@/components/ui/step-card";
 import { AutoResizeTextarea } from "./auto-resize-textarea";
 
+// ─── Comprimir imagen antes de subir ─────────────────────────────────────────
+function compressImage(file: File, maxWidth = 1600, quality = 0.82): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.src = ev.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, maxWidth / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Compresión fallida")), "image/jpeg", quality);
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+}
+
+// ─── Subir imagen a Firebase Storage ─────────────────────────────────────────
+async function uploadToFirebase(file: File): Promise<string> {
+  const { ref, uploadBytesResumable, getDownloadURL } = await import("firebase/storage");
+  const { storage } = await import("@/lib/firebase");
+
+  const uniqueId = Date.now().toString() + Math.random().toString(36).substring(7);
+  const fileExt = file.name.split(".").pop() || "jpg";
+  const fileName = `uploads/five_whys_evidencias/${uniqueId}.${fileExt}`;
+  const storageRef = ref(storage, fileName);
+
+  let blobToUpload: Blob = file;
+  if (file.type.startsWith("image/")) {
+    blobToUpload = await compressImage(file);
+  }
+
+  const uploadTask = uploadBytesResumable(storageRef, blobToUpload);
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on(
+      "state_changed",
+      null,
+      reject,
+      async () => resolve(await getDownloadURL(uploadTask.snapshot.ref))
+    );
+  });
+}
 
 export function FiveWhysSection({
   tables,
@@ -179,6 +227,7 @@ export function FiveWhysInteractive({
   onRemoveTable?: (() => void) | undefined;
 }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [uploadingRows, setUploadingRows] = useState<Set<number>>(new Set());
 
   const updateRow = (id: number, field: string, val: string) => {
     if (!value || !onChange) return;
@@ -375,6 +424,10 @@ export function FiveWhysInteractive({
                           <X className="size-3" />
                         </Button>
                       </div>
+                    ) : uploadingRows.has(row.id) ? (
+                      <div className="flex flex-col items-center">
+                        <RefreshCw className="size-4 animate-spin text-muted-foreground" />
+                      </div>
                     ) : (
                       <label className="cursor-pointer text-muted-foreground hover:text-blue-600 flex flex-col items-center">
                         <Paperclip className="size-4" />
@@ -383,14 +436,22 @@ export function FiveWhysInteractive({
                           type="file" 
                           accept="image/*,application/pdf" 
                           className="hidden" 
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (ev) => {
-                                updateRow(row.id, "evidencia", ev.target?.result as string);
-                              };
-                              reader.readAsDataURL(file);
+                              try {
+                                setUploadingRows(prev => new Set(prev).add(row.id));
+                                const url = await uploadToFirebase(file);
+                                updateRow(row.id, "evidencia", url);
+                              } catch (error) {
+                                console.error("Error subiendo evidencia:", error);
+                              } finally {
+                                setUploadingRows(prev => {
+                                  const next = new Set(prev);
+                                  next.delete(row.id);
+                                  return next;
+                                });
+                              }
                             }
                           }}
                         />

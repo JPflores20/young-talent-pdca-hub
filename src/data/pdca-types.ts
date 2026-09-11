@@ -8,11 +8,20 @@ export type Phase = "Plan" | "Do" | "Check" | "Act";
 
 export type ActionItem = {
   id: string;
-  what: string;
-  who: string;
-  when: string;
+  // Campos nuevos (tabla de Plan de Acción)
+  tema?: string;
+  causaRaiz?: string;
+  accion?: string;
+  comentarios?: string;
+  herramientaSdca?: string;
+  // Campos legacy (compatibilidad)
+  what?: string;
+  who?: string;
+  when?: string;
   status: "Pendiente" | "En progreso" | "Completada";
-  done: boolean;
+  responsable?: string;
+  fecha?: string;
+  done?: boolean;
 };
 
 export type PdcaComment = {
@@ -226,6 +235,8 @@ export type Pdca = {
   gopThemesData?: GopThemeItem[];
   process_mapping_image?: string | null;
   processMappingImage?: string | null;
+  process_mapping_files?: string[];
+  processMappingFiles?: string[];
   // Resultados finales
   kpi_final_result_data?: { mes: string; target: number; actual: number | null }[];
   kpiFinalResultData?: { mes: string; target: number; actual: number | null }[];

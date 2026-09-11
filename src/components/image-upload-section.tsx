@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { UploadCloud, Image as ImageIcon, X, Plus, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { UploadCloud, Image as ImageIcon, X, Plus, ZoomIn, ZoomOut, RotateCcw, FileSpreadsheet, FileText, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import {
@@ -280,6 +280,40 @@ export function ImageUploadSection({
   );
 }
 
+const OFFICE_MIME_TYPES = [
+  'application/pdf',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+];
+
+export const ALL_ACCEPT_STRING = 'image/*,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pdf,.xlsx,.xls,.pptx,.ppt';
+
+function getFileTypeInfo(url: string): { type: 'image' | 'pdf' | 'excel' | 'powerpoint' | 'document'; label: string } {
+  const lower = url.toLowerCase();
+  if (lower.includes('.pdf')) return { type: 'pdf', label: 'PDF' };
+  if (lower.includes('.xlsx') || lower.includes('.xls')) return { type: 'excel', label: 'Excel' };
+  if (lower.includes('.pptx') || lower.includes('.ppt')) return { type: 'powerpoint', label: 'PowerPoint' };
+  if (lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png') || lower.includes('.gif') || lower.includes('.webp') || lower.includes('.svg') || lower.includes('.bmp')) return { type: 'image', label: 'Imagen' };
+  // Firebase URLs may not have file extensions – check for common image hosting patterns
+  if (lower.includes('firebasestorage') && !lower.includes('.pdf') && !lower.includes('.xls') && !lower.includes('.ppt')) return { type: 'image', label: 'Imagen' };
+  return { type: 'document', label: 'Documento' };
+}
+
+function FileTypeIcon({ fileType, className }: { fileType: string; className?: string }) {
+  switch (fileType) {
+    case 'pdf':
+      return <div className={`rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center ${className}`}><FileText className="size-5 text-red-600 dark:text-red-400" /></div>;
+    case 'excel':
+      return <div className={`rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center ${className}`}><FileSpreadsheet className="size-5 text-green-600 dark:text-green-400" /></div>;
+    case 'powerpoint':
+      return <div className={`rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center ${className}`}><Presentation className="size-5 text-orange-600 dark:text-orange-400" /></div>;
+    default:
+      return <div className={`rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center ${className}`}><FileText className="size-5 text-gray-600 dark:text-gray-400" /></div>;
+  }
+}
+
 interface MultiImageUploadSectionProps {
   images: string[];
   onChange: (images: string[]) => void;
@@ -289,6 +323,8 @@ interface MultiImageUploadSectionProps {
   maxImages?: number;
   isStepCompleted?: boolean;
   onToggleStep?: () => void;
+  /** Custom accept string for the file input. When set, also updates file validation. */
+  acceptTypes?: string;
 }
 
 export function MultiImageUploadSection({ 
@@ -299,14 +335,25 @@ export function MultiImageUploadSection({
   description = "Adjunta fotos o imágenes (se comprimirán y guardarán automáticamente).",
   maxImages = 6,
   isStepCompleted,
-  onToggleStep
+  onToggleStep,
+  acceptTypes,
 }: MultiImageUploadSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
+
+  const resolvedAccept = acceptTypes || 'image/*,application/pdf';
   
   const processFiles = async (files: File[]) => {
-    const validFiles = files.filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+    const validFiles = files.filter(f => {
+      if (f.type.startsWith('image/')) return true;
+      if (f.type === 'application/pdf') return true;
+      if (acceptTypes && OFFICE_MIME_TYPES.includes(f.type)) return true;
+      // Fallback: check extension
+      const ext = f.name.split('.').pop()?.toLowerCase();
+      if (ext && ['pdf', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) return true;
+      return false;
+    });
     if (!validFiles.length) return;
 
     const remainingSlots = maxImages - images.length;
@@ -443,7 +490,7 @@ export function MultiImageUploadSection({
         type="file" 
         ref={fileInputRef} 
         onChange={handleFileChange} 
-        accept="image/*,application/pdf" 
+        accept={resolvedAccept} 
         multiple
         className="hidden" 
       />
@@ -476,19 +523,19 @@ export function MultiImageUploadSection({
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {images.map((img, i) => (
+          {images.map((img, i) => {
+            const fileInfo = getFileTypeInfo(img);
+            return (
             <div key={i} className="relative aspect-video rounded-xl overflow-hidden border bg-black/5 group shadow-sm">
-              {img.toLowerCase().includes('.pdf') ? (
+              {fileInfo.type !== 'image' ? (
                 <div 
                   className="w-full h-full flex flex-col items-center justify-center bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors"
                   onClick={() => window.open(img, '_blank')}
-                  title="Clic para abrir PDF en nueva pestaña"
+                  title={`Clic para abrir ${fileInfo.label} en nueva pestaña`}
                 >
-                  <div className="size-10 rounded-full bg-red-100 flex items-center justify-center mb-2">
-                    <span className="text-red-600 font-bold text-xs">PDF</span>
-                  </div>
-                  <span className="text-xs font-medium text-foreground px-2 text-center break-all line-clamp-1">
-                    Documento PDF
+                  <FileTypeIcon fileType={fileInfo.type} className="size-12 mb-2" />
+                  <span className="text-xs font-semibold text-foreground">
+                    {fileInfo.label}
                   </span>
                 </div>
               ) : (
@@ -558,7 +605,8 @@ export function MultiImageUploadSection({
                 </AlertDialogContent>
               </AlertDialog>
             </div>
-          ))}
+          );
+          })}
           
           {images.length < maxImages && (
             <div 

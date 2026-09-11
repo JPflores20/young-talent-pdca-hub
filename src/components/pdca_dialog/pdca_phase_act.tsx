@@ -1,6 +1,7 @@
 import React from "react";
-import { ActionKanban } from "../action-kanban";
+import { ActionPlanTable } from "../pdca-dialog/action-plan-table";
 import { TimeSeriesYTD } from "../pdca-dialog/time-series-ytd";
+import { GembaEvidenciasStep } from "../pdca-dialog/gemba-evidencias-step";
 import { ImageUploadSection } from "../image-upload-section";
 import { StepCard } from "@/components/ui/step-card";
 import { StepInstructions } from "../pdca-dialog/step-instructions";
@@ -13,6 +14,8 @@ interface PhaseActProps {
   on_kpi_final_result_change: (val: any) => void;
   kpi_final_result_unit: string;
   on_kpi_final_result_unit_change: (unit: string) => void;
+  gemba_evidencias: string[];
+  on_gemba_evidencias_change: (imgs: string[]) => void;
   gemba_final_image: string | null;
   on_gemba_final_image_change: (img: string | null) => void;
   completed_steps: Set<string>;
@@ -24,54 +27,53 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
   action_items, on_action_items_change,
   kpi_final_result_data, on_kpi_final_result_change,
   kpi_final_result_unit, on_kpi_final_result_unit_change,
+  gemba_evidencias, on_gemba_evidencias_change,
   gemba_final_image, on_gemba_final_image_change,
   completed_steps, on_toggle_step,
   is_editable,
 }) => {
   return (
     <div className="space-y-6">
-      <StepCard
-        title="PASO 8: PLAN DE ACCIÓN (KANBAN)"
+
+      {/* PASO 8.2: Plan de Acción (tabla) */}
+      <ActionPlanTable
+        items={action_items || []}
+        onChange={on_action_items_change}
         isStepCompleted={completed_steps.has("step-8")}
         onToggleStep={() => on_toggle_step("step-8")}
-      >
-        <StepInstructions>
-          <p className="mb-2"><strong>8. PLAN DE ACCIÓN:</strong> Gestiona las acciones acordadas para eliminar las causas raíz identificadas.</p>
-          <p>Arrastra las tarjetas entre columnas para actualizar su estatus.</p>
-        </StepInstructions>
-        <div className="mt-4">
-          <ActionKanban
-            acciones={action_items || []}
-            setAcciones={(updater) => on_action_items_change(updater(action_items || []))}
-          />
-        </div>
-      </StepCard>
+      />
 
-      <StepCard
-        title="PASO 9: ESTANDARIZACIÓN Y RESULTADOS FINALES"
+      {/* PASO 9: Gemba — Evidencias multi-foto */}
+      <GembaEvidenciasStep
+        images={gemba_evidencias}
+        onChange={on_gemba_evidencias_change}
         isStepCompleted={completed_steps.has("step-9")}
         onToggleStep={() => on_toggle_step("step-9")}
-      >
-        <StepInstructions>
-          <p className="mb-2"><strong>9. ESTANDARIZACIÓN:</strong> Registra los resultados finales y la evidencia de Gemba que valida la efectividad del PDCA.</p>
-        </StepInstructions>
+      />
 
-        <div className="space-y-6 mt-4">
-          <TimeSeriesYTD
-            value={kpi_final_result_data}
-            onChange={on_kpi_final_result_change}
-            unit={kpi_final_result_unit}
-            onUnitChange={on_kpi_final_result_unit_change}
-          />
+      {/* PASO 10: KPI Final Result */}
+      <TimeSeriesYTD
+        value={kpi_final_result_data}
+        onChange={on_kpi_final_result_change}
+        unit={kpi_final_result_unit}
+        onUnitChange={on_kpi_final_result_unit_change}
+        title="PASO 10: KPI FINAL RESULT"
+        chartTitle="KPI FINAL RESULT"
+        isStepCompleted={completed_steps.has("step-10")}
+        onToggleStep={() => on_toggle_step("step-10")}
+      />
 
-          <ImageUploadSection
-            image={gemba_final_image}
-            onChange={on_gemba_final_image_change}
-            title="Evidencia Final en Gemba"
-            description="Adjunta una fotografía o comprobante de la estandarización física en la línea de producción."
-          />
-        </div>
-      </StepCard>
+      {/* PASO 11: Gemba Final — imagen/archivo único */}
+      <ImageUploadSection
+        image={gemba_final_image}
+        onChange={on_gemba_final_image_change}
+        title="PASO 11: GEMBA FINAL"
+        subtitle="Gestión de Evidencias Gemba"
+        description="Sube archivos, fotos del Gemba o documentos que respalden la estandarización del proceso final."
+        isStepCompleted={completed_steps.has("step-11")}
+        onToggleStep={() => on_toggle_step("step-11")}
+      />
+
     </div>
   );
 };

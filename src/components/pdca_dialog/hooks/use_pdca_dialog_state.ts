@@ -68,7 +68,9 @@ export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?:
 
   const [has_gop_themes, set_has_gop_themes] = useState<boolean>(initial_pdca.hasGopThemes || false);
   const [gop_themes_data, set_gop_themes_data] = useState<any[]>(initial_pdca.gopThemesData || []);
-  const [process_mapping_image, set_process_mapping_image] = useState<string | null>(initial_pdca.processMappingImage || null);
+  const [process_mapping_files, set_process_mapping_files] = useState<string[]>(
+    initial_pdca.processMappingFiles || (initial_pdca.processMappingImage ? [initial_pdca.processMappingImage] : [])
+  );
 
   const [five_whys_tables, set_five_whys_tables] = useState<FiveWhysTableData[]>(() => {
     if (initial_pdca.fiveWhysTables && initial_pdca.fiveWhysTables.length > 0) return initial_pdca.fiveWhysTables;
@@ -131,7 +133,7 @@ export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?:
     flavor_correlation_data, set_flavor_correlation_data,
     has_gop_themes, set_has_gop_themes,
     gop_themes_data, set_gop_themes_data,
-    process_mapping_image, set_process_mapping_image,
+    process_mapping_files, set_process_mapping_files,
     five_whys_tables, set_five_whys_tables,
     impact_matrix, set_impact_matrix,
     ishikawas, set_ishikawas,

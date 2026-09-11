@@ -1,27 +1,16 @@
-import { useState } from "react";
-import { DatePicker } from "@/components/ui/date-picker";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Plus, GripVertical, Trash2 } from "lucide-react";
-
+import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { ActionItem } from "@/data/pdca";
 
 const parseTaskDate = (whenStr?: string): Date | undefined => {
@@ -33,94 +22,16 @@ const parseTaskDate = (whenStr?: string): Date | undefined => {
   return undefined;
 };
 
-// Sortable Item Component
-function SortableTask({ 
-  task, 
-  onUpdate, 
-  onRemove 
-}: { 
-  task: ActionItem; 
-  onUpdate: (id: string, field: keyof ActionItem, value: string) => void;
-  onRemove: (id: string) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="group relative flex flex-col gap-2 rounded-lg border border-border bg-card p-3 shadow-sm hover:border-primary/30 transition-colors"
-    >
-      <div className="flex items-start gap-2">
-        <button
-          className="mt-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="size-4" />
-        </button>
-        <div className="flex-1 space-y-2">
-          <Input
-            value={task.what}
-            onChange={(e) => onUpdate(task.id, "what", e.target.value)}
-            placeholder="¿Qué hacer?"
-            className="h-7 text-sm font-medium shadow-none border-0 px-1 bg-transparent hover:bg-secondary/50 focus-visible:bg-background"
-          />
-          <div className="flex items-center gap-2">
-            <Input
-              value={task.who}
-              onChange={(e) => onUpdate(task.id, "who", e.target.value)}
-              placeholder="¿Quién?"
-              className="h-6 w-1/2 text-xs shadow-none px-2"
-            />
-            <div className="w-1/2">
-              <DatePicker
-                date={parseTaskDate(task.when)}
-                setDate={(date) => {
-                  if (date && !isNaN(date.getTime())) {
-                    const formatted = date.toISOString().split("T")[0];
-                    if (formatted) onUpdate(task.id, "when", formatted);
-                  } else {
-                    onUpdate(task.id, "when", "");
-                  }
-                }}
-                className="h-6 w-full text-xs shadow-none px-2"
-                placeholder="¿Cuándo?"
-              />
-            </div>
-          </div>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => onRemove(task.id)}
-          className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive shrink-0"
-        >
-          <Trash2 className="size-3.5" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-const columns = [
-  { id: "Pendiente", title: "Por Hacer", color: "border-destructive/30 bg-destructive/5 text-destructive" },
-  { id: "En progreso", title: "En Progreso", color: "border-amber-500/30 bg-amber-500/5 text-amber-600" },
-  { id: "Completada", title: "Completado", color: "border-emerald-500/30 bg-emerald-500/5 text-emerald-600" },
-] as const;
+// Colores extraídos exactamente del diseño de la imagen
+const STATUS_COLORS = {
+  "NO INICIADO": "bg-[#5D6770] text-white",
+  "EN PROGRESO": "bg-[#FFC000] text-black",
+  "COMPLETADO": "bg-[#00B050] text-white",
+  // Soporte de compatibilidad para datos viejos que ya tenías guardados
+  "Pendiente": "bg-[#5D6770] text-white",
+  "En progreso": "bg-[#FFC000] text-black",
+  "Completada": "bg-[#00B050] text-white",
+} as const;
 
 export function ActionKanban({
   acciones,
@@ -129,65 +40,22 @@ export function ActionKanban({
   acciones: ActionItem[];
   setAcciones: (updater: (prev: ActionItem[]) => ActionItem[]) => void;
 }) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const activeId = active.id.toString();
-    const overId = over.id.toString();
-
-    // Find the task and the column it was dropped in
-    const activeTask = acciones.find(t => t.id === activeId);
-    if (!activeTask) return;
-
-    // Check if dropping on a column directly or another task
-    const isOverColumn = columns.some(c => c.id === overId);
-    let targetStatus = activeTask.status;
-
-    if (isOverColumn) {
-      targetStatus = overId as any;
-    } else {
-      const overTask = acciones.find(t => t.id === overId);
-      if (overTask) {
-        targetStatus = overTask.status;
-      }
-    }
-
-    if (activeTask.status !== targetStatus) {
-      // Moved to different column
-      setAcciones(prev => prev.map(t => 
-        t.id === activeId 
-          ? { ...t, status: targetStatus, done: targetStatus === "Completada" } 
-          : t
-      ));
-    } else if (activeId !== overId && !isOverColumn) {
-      // Reordered within same column
-      setAcciones(prev => {
-        const oldIndex = prev.findIndex(t => t.id === activeId);
-        const newIndex = prev.findIndex(t => t.id === overId);
-        return arrayMove(prev, oldIndex, newIndex);
-      });
-    }
-  };
-
-  const addAction = (status: ActionItem["status"]) => {
+  const addAction = () => {
     setAcciones(prev => [...prev, {
       id: `A-${Date.now()}`,
+      tema: "",
+      causa: "",
       what: "",
+      comentarios: "",
       who: "",
       when: "",
-      status,
-      done: status === "Completada"
-    }]);
+      status: "NO INICIADO",
+      sdca: "", // CORREGIDO: Ahora inicia completamente vacío
+      done: false
+    } as any]); 
   };
 
-  const updateAction = (id: string, field: keyof ActionItem, value: string) => {
+  const updateAction = (id: string, field: string, value: any) => {
     setAcciones(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
   };
 
@@ -196,63 +64,147 @@ export function ActionKanban({
   };
 
   return (
-    <div className="space-y-3 pt-2">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-foreground">
-            Tablero Kanban
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Arrastra las tarjetas para cambiar su estatus.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => addAction("Pendiente")}>
+    <div className="space-y-4 pt-2">
+      <div className="flex items-center justify-end">
+        <Button variant="outline" size="sm" onClick={addAction}>
           <Plus className="size-4 mr-2" /> Agregar Acción
         </Button>
       </div>
 
-      <DndContext 
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {columns.map(col => {
-            const columnTasks = acciones.filter(a => a.status === col.id);
-            return (
-              <div key={col.id} className="flex flex-col gap-3">
-                <div className={cn("rounded-md border px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-center", col.color)}>
-                  {col.title} ({columnTasks.length})
-                </div>
-                
-                {/* Column Drop Zone (simulated by having a SortableContext) */}
-                <SortableContext 
-                  id={col.id}
-                  items={columnTasks.map(t => t.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="flex-1 min-h-[150px] bg-secondary/20 rounded-lg p-2 flex flex-col gap-2">
-                    {columnTasks.map(task => (
-                      <SortableTask 
-                        key={task.id} 
-                        task={task} 
-                        onUpdate={updateAction}
-                        onRemove={removeAction}
-                      />
-                    ))}
-                    <button 
-                      onClick={() => addAction(col.id as any)}
-                      className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2 text-xs text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
+      <div className="overflow-x-auto border rounded-md">
+        <Table className="text-xs min-w-[1000px]">
+          <TableHeader>
+            <TableRow className="bg-[#0070c0] hover:bg-[#0070c0]">
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">TEMA</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">CAUSA RAÍZ</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">ACCIÓN</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">COMENTARIOS</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">RESPONSABLE</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">FECHA</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">ESTADO</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 text-center">HERRAMIENTA SDCA</TableHead>
+              <TableHead className="w-10 h-8 py-1 px-2"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {acciones.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-6 text-muted-foreground">
+                  No hay acciones registradas. Haz clic en "Agregar Acción" para comenzar.
+                </TableCell>
+              </TableRow>
+            )}
+            {acciones.map((task) => (
+              <TableRow key={task.id} className="hover:bg-muted/30">
+                <TableCell className="p-0 border-r">
+                  <Input
+                    value={(task as any).tema || ""}
+                    onChange={(e) => updateAction(task.id, "tema", e.target.value)}
+                    placeholder="Tema..."
+                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                  />
+                </TableCell>
+                <TableCell className="p-0 border-r">
+                  <Input
+                    value={(task as any).causa || ""}
+                    onChange={(e) => updateAction(task.id, "causa", e.target.value)}
+                    placeholder="Causa raíz..."
+                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                  />
+                </TableCell>
+                <TableCell className="p-0 border-r">
+                  <Input
+                    value={task.what || ""}
+                    onChange={(e) => updateAction(task.id, "what", e.target.value)}
+                    placeholder="Acción..."
+                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                  />
+                </TableCell>
+                <TableCell className="p-0 border-r">
+                  <Input
+                    value={(task as any).comentarios || ""}
+                    onChange={(e) => updateAction(task.id, "comentarios", e.target.value)}
+                    placeholder="Comentarios..."
+                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                  />
+                </TableCell>
+                <TableCell className="p-0 border-r">
+                  <Input
+                    value={task.who || ""}
+                    onChange={(e) => updateAction(task.id, "who", e.target.value)}
+                    placeholder="Responsable"
+                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs text-center text-muted-foreground"
+                  />
+                </TableCell>
+                <TableCell className="p-1 border-r relative">
+                  <DatePicker
+                    date={parseTaskDate(task.when)}
+                    setDate={(date) => {
+                      if (date && !isNaN(date.getTime())) {
+                        const formatted = date.toISOString().split("T")[0];
+                        if (formatted) updateAction(task.id, "when", formatted);
+                      } else {
+                        updateAction(task.id, "when", "");
+                      }
+                    }}
+                    className="h-8 w-full text-xs shadow-none border-0 bg-transparent flex justify-center text-muted-foreground font-medium"
+                  />
+                </TableCell>
+                <TableCell className="p-1 border-r">
+                  <div className="relative w-full h-8">
+                    <select
+                      value={task.status || "NO INICIADO"}
+                      onChange={(e) => {
+                        const newStatus = e.target.value;
+                        setAcciones(prev => prev.map(a => 
+                          a.id === task.id 
+                            ? { ...a, status: newStatus as any, done: newStatus === "COMPLETADO" } 
+                            : a
+                        ));
+                      }}
+                      className={cn(
+                        "w-full h-full text-[10px] font-bold text-center border-0 outline-none cursor-pointer rounded-sm appearance-none",
+                        STATUS_COLORS[(task.status || "NO INICIADO") as keyof typeof STATUS_COLORS] || "bg-[#5D6770] text-white"
+                      )}
                     >
-                      <Plus className="size-3" /> Agregar
-                    </button>
+                      <option value="NO INICIADO" className="bg-[#5D6770] text-white">NO INICIADO</option>
+                      <option value="EN PROGRESO" className="bg-[#FFC000] text-black">EN PROGRESO</option>
+                      <option value="COMPLETADO" className="bg-[#00B050] text-white">COMPLETADO</option>
+                      
+                      <option value="Pendiente" className="hidden">Pendiente</option>
+                      <option value="En progreso" className="hidden">En progreso</option>
+                      <option value="Completada" className="hidden">Completada</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-white">
+                      <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" fillRule="evenodd" />
+                      </svg>
+                    </div>
                   </div>
-                </SortableContext>
-              </div>
-            );
-          })}
-        </div>
-      </DndContext>
+                </TableCell>
+                <TableCell className="p-0 border-r">
+                  <Input
+                    value={(task as any).sdca || ""}
+                    onChange={(e) => updateAction(task.id, "sdca", e.target.value)}
+                    placeholder="Herramienta SDCA"
+                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-[10px] text-center text-muted-foreground uppercase"
+                  />
+                </TableCell>
+                <TableCell className="p-0 text-center">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => removeAction(task.id)}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

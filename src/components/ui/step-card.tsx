@@ -1,6 +1,5 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface StepCardProps {
@@ -11,6 +10,8 @@ interface StepCardProps {
   defaultExpanded?: boolean | undefined;
   className?: string | undefined;
   headerRight?: React.ReactNode;
+  /** Explicit storage key for persisting collapsed state. */
+  storageId?: string | undefined;
 }
 
 export type { StepCardProps };
@@ -20,16 +21,20 @@ export function StepCard({
   isStepCompleted,
   onToggleStep,
   children,
-  defaultExpanded = true,
+  defaultExpanded = false, // Obliga a cerrarse por defecto
   className,
-  headerRight
+  headerRight,
+  storageId,
 }: StepCardProps) {
   const storageKey = React.useMemo(() => {
+    if (storageId) {
+      return `pdca_step_${storageId}`;
+    }
     if (typeof title === "string") {
       return `pdca_step_${title.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}`;
     }
     return null;
-  }, [title]);
+  }, [storageId, title]);
 
   const [isExpanded, setIsExpanded] = React.useState(() => {
     if (storageKey) {

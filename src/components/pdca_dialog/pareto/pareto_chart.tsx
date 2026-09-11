@@ -51,7 +51,8 @@ export function ParetoChart({
 }: ParetoChartProps) {
   const y_domain: [number, number | "auto"] = [y_axis_min, y_axis_max];
   const bar_height = is_fullscreen ? "100%" : 250;
-  const x_bottom_margin = chart_data.length > 6 ? 70 : 40;
+  // Aumentamos considerablemente el margen inferior para que quepan los textos largos rotados
+  const x_bottom_margin = chart_data.length > 6 ? 120 : 80;
 
   return (
     <div className="flex flex-col gap-2">
@@ -102,24 +103,35 @@ export function ParetoChart({
 
       {/* Gráfica */}
       <div className="border rounded-md p-2 bg-card">
+        {/* Título renderizado arriba de la gráfica, usa el valor del input superior */}
+        {chart_title && (
+            <h3 className="text-center text-sm font-semibold mb-2 text-foreground">
+                {chart_title}
+            </h3>
+        )}
         <ResponsiveContainer width="100%" height={bar_height}>
           <ComposedChart
             data={chart_data}
             margin={{ top: 25, right: 15, bottom: x_bottom_margin, left: -10 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-            {/* interval={0} garantiza que todos los labels X sean visibles */}
+            
+            {/* Eje X ajustado: interval={0} fuerza todos los labels, height permite que no se recorten */}
             <XAxis
               dataKey="area"
               interval={0}
-              angle={-35}
+              angle={-45}
               textAnchor="end"
+              height={100}
               tick={{ fontSize: 10 }}
               stroke="var(--color-muted-foreground)"
             />
+            
+            {/* Eje Y izquierdo ajustado: allowDataOverflow garantiza que se respeten los límites */}
             <YAxis
               yAxisId="left"
               domain={y_domain}
+              allowDataOverflow={true}
               tick={{ fontSize: 11 }}
               stroke="var(--color-muted-foreground)"
               tickFormatter={(val) => format_value(val)}

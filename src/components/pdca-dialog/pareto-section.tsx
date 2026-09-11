@@ -75,18 +75,20 @@ function build_pareto_data(raw_data: ParetoItem[]): {
   total_gap: number;
   pareto_rows: ParetoRow[];
 } {
-  const sorted = [...raw_data].sort((a, b) => (b.gap || 0) - (a.gap || 0));
-  const total_gap = sorted.reduce((s, i) => s + (i.gap || 0), 0);
+  const safe_data = raw_data || [];
+  const sorted = [...safe_data].sort((a, b) => (b.gap ?? 0) - (a.gap ?? 0));
+  const total_gap = sorted.reduce((s, i) => s + (i.gap ?? 0), 0);
   let running = 0;
   const pareto_rows: ParetoRow[] = sorted.map((item) => {
-    const ind_pct = total_gap > 0 ? ((item.gap || 0) / total_gap) * 100 : 0;
+    const gap = item.gap ?? 0;
+    const ind_pct = total_gap > 0 ? (gap / total_gap) * 100 : 0;
     running += ind_pct;
     return { ...item, ind_pct, cum_pct: running };
   });
   return { sorted, total_gap, pareto_rows };
 }
 
-function format_value(val: number, unit: string): string {
+function format_value(val: number | undefined | null, unit?: string): string {
   if (val === null || val === undefined || isNaN(val)) return "";
   const s = Number(val).toLocaleString("en-US", {
     minimumFractionDigits: 2,
@@ -103,9 +105,9 @@ function CustomBarLabel(props: {
   y?: number;
   width?: number;
   value?: number;
-  unit: string;
+  unit?: string;
 }) {
-  const { x = 0, y = 0, width = 0, value, unit } = props;
+  const { x = 0, y = 0, width = 0, value, unit = "" } = props;
   if (value === null || value === undefined) return null;
   return (
     <text
@@ -127,26 +129,30 @@ function CustomBarLabel(props: {
 function ParetoChart({
   pareto_rows,
   on_bar_click,
-  unit,
+  unit = "",
   y_axis_min,
   y_axis_max,
   chart_title,
-  on_chart_title_change,
   max_bar_size = 40,
 }: {
   pareto_rows: ParetoRow[];
   on_bar_click?: (area: string) => void;
-  unit: string;
+  unit?: string;
   y_axis_min: number;
   y_axis_max: number | "auto";
   chart_title: string;
   on_chart_title_change: (t: string) => void;
   max_bar_size?: number;
 }) {
-  const bottom_margin = Math.max(60, Math.min(130, 40 + pareto_rows.length * 5));
+  const bottom_margin = Math.max(100, 40 + pareto_rows.length * 5);
+  
   return (
     <div className="flex flex-col gap-1 w-full h-full">
-      
+      {chart_title && (
+        <h3 className="text-center text-sm font-semibold mb-2 text-foreground">
+          {chart_title}
+        </h3>
+      )}
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={pareto_rows}
@@ -158,7 +164,7 @@ function ParetoChart({
             tick={{ fontSize: 10 }}
             stroke="hsl(var(--muted-foreground))"
             interval={0}
-            angle={-40}
+            angle={-45}
             textAnchor="end"
             height={bottom_margin}
           />
@@ -168,6 +174,7 @@ function ParetoChart({
             stroke="hsl(var(--muted-foreground))"
             tickFormatter={(v) => format_value(v, unit)}
             domain={[y_axis_min, y_axis_max]}
+            allowDataOverflow={true}
           />
           <YAxis
             yAxisId="right"
@@ -191,8 +198,10 @@ function ParetoChart({
             fill="#4285f4"
             radius={[4, 4, 0, 0]}
             maxBarSize={max_bar_size}
-            onClick={(payload) => {
-              if (on_bar_click && payload.area) on_bar_click(payload.area);
+            onClick={(payload: any) => {
+              if (on_bar_click && payload && payload.area) {
+                on_bar_click(payload.area);
+              }
             }}
             className={on_bar_click ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
             label={<CustomBarLabel unit={unit} />}
@@ -244,13 +253,21 @@ export function ParetoInteractive({
   const { pareto_rows, total_gap } = build_pareto_data(data);
 
   const add_row = () => {
-    if (onDataChange) onDataChange([...data, { id: Date.now(), area: "", gap: 0 }]);
+    if (onDataChange) {
+      onDataChange([...data, { id: Date.now(), area: "", gap: 0 } as ParetoItem]);
+    }
   };
+
   const update_row = (id: number, field: "area" | "gap", value: string | number) => {
-    if (onDataChange) onDataChange(data.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
+    if (onDataChange) {
+      onDataChange(data.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
+    }
   };
+
   const remove_row = (id: number) => {
-    if (onDataChange) onDataChange(data.filter((d) => d.id !== id));
+    if (onDataChange) {
+      onDataChange(data.filter((d) => d.id !== id));
+    }
   };
 
   const handle_import_excel = () => {
@@ -261,23 +278,59 @@ export function ParetoInteractive({
       const parts = line.split("\t");
       let cat = "";
       let val = 0;
+      
+      const p0 = parts[0];
+      const p1 = parts[1];
+      
       if (parts.length >= 2) {
-        cat = parts[0].trim();
-        val = parseFloat(parts[1].replace(/,/g, "").trim()) || 0;
+        cat = p0 ? p0.trim() : "";
+        val = p1 ? parseFloat(p1.replace(/,/g, "").trim() || "0") : 0;
       } else {
         const fb = line.split(",");
-        if (fb.length >= 2) { cat = fb[0].trim(); val = parseFloat(fb[1].replace(/,/g, "").trim()) || 0; }
-        else { cat = line.trim(); val = 1; }
+        const fb0 = fb[0];
+        const fb1 = fb[1];
+        if (fb.length >= 2) { 
+          cat = fb0 ? fb0.trim() : ""; 
+          val = fb1 ? parseFloat(fb1.replace(/,/g, "").trim() || "0") : 0; 
+        } else { 
+          cat = line.trim(); 
+          val = 1; 
+        }
       }
-      if (cat) agg[cat] = (agg[cat] || 0) + val;
+      
+      if (isNaN(val)) val = 0;
+      
+      // Corrección específica para el acceso dinámico
+      if (cat) {
+        const currentAgg = agg[cat] ?? 0;
+        agg[cat] = currentAgg + val;
+      }
     }
+    
     if (onDataChange) {
       const ex: Record<string, number> = {};
       data.forEach((item) => {
-        if (item.area?.trim()) ex[item.area.trim()] = (ex[item.area.trim()] || 0) + (item.gap || 0);
+        const area = item.area?.trim();
+        if (area) {
+          const currentEx = ex[area] ?? 0;
+          ex[area] = currentEx + (item.gap ?? 0);
+        }
       });
-      for (const c in agg) ex[c] = (ex[c] || 0) + agg[c];
-      onDataChange(Object.keys(ex).map((c) => ({ id: Date.now() + Math.random(), area: c, gap: ex[c] })));
+      
+      // Corrección específica para la línea 314 (ahora 315/316)
+      for (const c in agg) {
+        const currentEx = ex[c] ?? 0;
+        const currentAgg = agg[c] ?? 0;
+        ex[c] = currentEx + currentAgg;
+      }
+      
+      const new_items = Object.keys(ex).map((c) => ({ 
+        id: Date.now() + Math.random(), 
+        area: c, 
+        gap: ex[c] ?? 0 
+      } as ParetoItem));
+      
+      onDataChange(new_items);
     }
     set_is_paste_open(false);
     set_paste_data("");
@@ -287,7 +340,7 @@ export function ParetoInteractive({
   const make_chart = (max_bar_size: number) => (
     <ParetoChart
       pareto_rows={pareto_rows}
-      on_bar_click={onBarClick}
+      {...(onBarClick ? { on_bar_click: onBarClick } : {})}
       unit={unit}
       y_axis_min={y_axis_min}
       y_axis_max={y_axis_max}
@@ -307,7 +360,7 @@ export function ParetoInteractive({
           <span className="text-muted-foreground/50 font-normal">-</span>
           <Input
             value={chart_title}
-            onChange={(e) => on_chart_title_change(e.target.value)}
+            onChange={(e) => on_title_change(e.target.value)}
             placeholder="Nombre del pareto (opcional)"
             className="h-7 text-sm font-medium border-dashed bg-transparent shadow-none
               placeholder:text-muted-foreground/50 focus-visible:bg-background w-64 px-2"
@@ -315,8 +368,8 @@ export function ParetoInteractive({
           />
         </div>
       }
-      isStepCompleted={level === 0 ? isStepCompleted : undefined}
-      onToggleStep={level === 0 ? onToggleStep : undefined}
+      {...(level === 0 && isStepCompleted !== undefined ? { isStepCompleted } : {})}
+      {...(level === 0 && onToggleStep ? { onToggleStep } : {})}
       headerRight={
         <div className="flex gap-2">
           {onClose && (
@@ -438,8 +491,8 @@ export function ParetoInteractive({
                 <TableRow key={row.id}>
                   <TableCell className="py-1.5 px-3">
                     <Input
-                      value={row.area}
-                      onChange={(e) => update_row(row.id, "area", e.target.value)}
+                      value={row.area ?? ""}
+                      onChange={(e) => update_row(row.id ?? 0, "area", e.target.value)}
                       placeholder="Ej. Envasado..."
                       className="h-7 text-xs shadow-none border-0 px-1 bg-transparent
                         hover:bg-secondary/50 focus-visible:bg-background"
@@ -448,8 +501,8 @@ export function ParetoInteractive({
                   <TableCell className="py-1.5 px-3">
                     <Input
                       type="number"
-                      value={row.gap || ""}
-                      onChange={(e) => update_row(row.id, "gap", Number(e.target.value))}
+                      value={row.gap ?? ""}
+                      onChange={(e) => update_row(row.id ?? 0, "gap", Number(e.target.value))}
                       className="h-7 text-xs shadow-none border-0 px-1 bg-transparent
                         hover:bg-secondary/50 focus-visible:bg-background text-right"
                     />
@@ -466,7 +519,7 @@ export function ParetoInteractive({
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        onClick={() => remove_row(row.id)}
+                        onClick={() => remove_row(row.id ?? 0)}
                       >
                         <X className="size-3" />
                       </Button>
@@ -512,13 +565,11 @@ export function ParetoInteractive({
           <div className="flex-1 w-full min-h-0 pt-4">
             <ParetoChart
               pareto_rows={pareto_rows}
-              on_bar_click={(cat) => {
-                if (onBarClick) { onBarClick(cat); set_is_fullscreen(false); }
-              }}
+              {...(onBarClick ? { on_bar_click: (cat) => { onBarClick(cat); set_is_fullscreen(false); } } : {})}
               unit={unit}
               y_axis_min={y_axis_min}
               y_axis_max={y_axis_max}
-              chart_title={chart_title}
+              chart_title={""}
               on_chart_title_change={on_title_change}
               max_bar_size={60}
             />
@@ -568,19 +619,28 @@ export function ParetoSection({
       parent === "root"
         ? `level-${level + 1}-${cat}`
         : `${parent}-level-${level + 1}-${cat}`;
-    const is_legacy = drillDowns.length > 0 && !drillDowns[0].includes("level-");
+        
+    const firstDrill = drillDowns[0] ?? "";
+    const is_legacy = drillDowns.length > 0 && !firstDrill.includes("level-");
+    
     const drills = is_legacy
       ? drillDowns.map((d, i) => `level-${i + 1}-${d}`)
       : [...drillDowns];
+      
     if (!drills.includes(new_path)) setDrillDowns([...drills, new_path]);
-    if (!dataMap[new_path]) setDataMap({ ...dataMap, [new_path]: [] });
+    
+    const currentData = dataMap[new_path];
+    if (!currentData) setDataMap({ ...dataMap, [new_path]: [] });
   };
 
   const handle_close_drill = (path: string) => {
-    const is_legacy = drillDowns.length > 0 && !drillDowns[0].includes("level-");
+    const firstDrill = drillDowns[0] ?? "";
+    const is_legacy = drillDowns.length > 0 && !firstDrill.includes("level-");
+    
     const drills = is_legacy
       ? drillDowns.map((d, i) => `level-${i + 1}-${d}`)
       : [...drillDowns];
+      
     setDrillDowns(drills.filter((p) => p !== path && !p.startsWith(`${path}-`)));
     const m = { ...dataMap };
     Object.keys(m).forEach((k) => { if (k === path || k.startsWith(`${path}-`)) delete m[k]; });
@@ -600,13 +660,18 @@ export function ParetoSection({
   const parse_path = (path: string, idx: number) => {
     if (!path.includes("level-"))
       return { actual_path: `level-${idx + 1}-${path}`, level: idx + 1, category: path };
+      
     if (path.includes("-level-")) {
       const parts = path.split("-level-");
-      const rest = parts[1].split("-");
-      return { actual_path: path, level: parseInt(rest[0], 10), category: rest.slice(1).join("-") };
+      const p1 = parts[1] ?? "";
+      const rest = p1.split("-");
+      const r0 = rest[0] ?? "0";
+      return { actual_path: path, level: parseInt(r0, 10), category: rest.slice(1).join("-") };
     }
+    
     const parts = path.split("-");
-    return { actual_path: path, level: parseInt(parts[1], 10), category: parts.slice(2).join("-") };
+    const p1 = parts[1] ?? "0";
+    return { actual_path: path, level: parseInt(p1, 10), category: parts.slice(2).join("-") };
   };
 
   return (
@@ -616,16 +681,16 @@ export function ParetoSection({
           key={key}
           title={idx === 0 ? "PASO 5: PARETO" : `PASO 5: PARETO INDEPENDIENTE ${idx + 1}`}
           level={0}
-          data={dataMap[key] || []}
+          data={dataMap[key] ?? []}
           onDataChange={(d) => update_data(key, d)}
           onBarClick={(cat) => handle_bar_click(cat, 0, key)}
           unit={unit}
-          onAddRoot={idx === 0 ? handle_add_root : undefined}
-          onClose={idx > 0 ? () => handle_close_root(key) : undefined}
+          {...(idx === 0 ? { onAddRoot: handle_add_root } : {})}
+          {...(idx > 0 ? { onClose: () => handle_close_root(key) } : {})}
           {...(onUnitChange ? { onUnitChange } : {})}
-          isStepCompleted={idx === 0 ? isStepCompleted : undefined}
+          {...(idx === 0 && isStepCompleted !== undefined ? { isStepCompleted } : {})}
           {...(idx === 0 && onToggleStep ? { onToggleStep } : {})}
-          chart_title={title_map[key] || ""}
+          chart_title={title_map[key] ?? ""}
           on_chart_title_change={(t) => update_title(key, t)}
         />
       ))}
@@ -637,13 +702,13 @@ export function ParetoSection({
             level={level}
             title={`Sub-Pareto: ${category}`}
             subtitle={`Desglose (Nivel ${level + 1}) de la categoria ${category}.`}
-            data={dataMap[actual_path] || []}
+            data={dataMap[actual_path] ?? []}
             onDataChange={(d) => update_data(actual_path, d)}
             onBarClick={(cat) => handle_bar_click(cat, level, actual_path)}
             onClose={() => handle_close_drill(actual_path)}
             unit={unit}
             {...(onUnitChange ? { onUnitChange } : {})}
-            chart_title={title_map[actual_path] || ""}
+            chart_title={title_map[actual_path] ?? ""}
             on_chart_title_change={(t) => update_title(actual_path, t)}
           />
         );
