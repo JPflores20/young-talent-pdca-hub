@@ -196,33 +196,12 @@ export function IshikawaSection({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        {onToggleStep && (
-          <button
-            type="button"
-            onClick={onToggleStep}
-            title={isStepCompleted ? "Desmarcar paso como completado" : "Marcar paso como completado"}
-            className={cn(
-              "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-              isStepCompleted
-                ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-                : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
-            )}
-          >
-            <Check className="size-4" />
-          </button>
-        )}
-        <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isStepCompleted && "text-emerald-600 dark:text-emerald-400")}>
-            <span>PASO 6: FISHBONE</span>
-          {isStepCompleted && (
-            <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
-              Completado
-            </span>
-          )}
-        </h3>
-      </div>
-
+    <StepCard
+      className="space-y-6"
+      title="PASO 6: FISHBONE"
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
+    >
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700">
           <span className="size-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
@@ -290,7 +269,7 @@ export function IshikawaSection({
           <Plus className="size-4" /> Agregar otro Ishikawa
         </Button>
       </div>
-    </div>
+    </StepCard>
   );
 }
 

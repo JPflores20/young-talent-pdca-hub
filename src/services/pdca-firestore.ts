@@ -47,6 +47,8 @@ function extract_pdcas_from_snapshot(snapshot_docs: { id: string; data: () => un
     });
 }
 
+let is_seeding = false;
+
 /**
  * Obtiene todos los PDCAs de Firestore en una sola lectura.
  * Si la colección no ha sido sembrada, la siembra primero.
@@ -60,7 +62,14 @@ export async function fetch_pdcas_from_firestore(max_limit?: number): Promise<Pd
     const docs = snapshot.docs.map((d) => ({ id: d.id, data: d.data }));
 
     if (!is_collection_seeded(snapshot.docs)) {
-      await seed_initial_pdcas();
+      if (!is_seeding) {
+        is_seeding = true;
+        try {
+          await seed_initial_pdcas();
+        } finally {
+          is_seeding = false;
+        }
+      }
       return (await getDocs(fetch_query)).docs
         .filter((d) => d.id !== CONFIG_DOC_ID)
         .map((d) => d.data() as Pdca);
@@ -88,7 +97,14 @@ export function subscribe_to_pdcas(
     subscribe_query,
     async (snapshot) => {
       if (!is_collection_seeded(snapshot.docs)) {
-        await seed_initial_pdcas();
+        if (!is_seeding) {
+          is_seeding = true;
+          try {
+            await seed_initial_pdcas();
+          } finally {
+            is_seeding = false;
+          }
+        }
         on_update(extract_pdcas_from_snapshot(snapshot.docs));
         return;
       }

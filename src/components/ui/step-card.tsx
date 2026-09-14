@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StepCardProps {
@@ -46,7 +46,22 @@ export function StepCard({
     return defaultExpanded;
   });
 
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+  // Prevenir scroll en body cuando está en pantalla completa
+  React.useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFullscreen]);
+
   const toggleExpanded = () => {
+    if (isFullscreen) return; // No permitir colapsar si está en fullscreen
     const nextState = !isExpanded;
     setIsExpanded(nextState);
     if (storageKey) {
@@ -54,10 +69,26 @@ export function StepCard({
     }
   };
 
+  const toggleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isExpanded && !isFullscreen) {
+      setIsExpanded(true); // Auto expandir si estaba colapsado
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
   return (
-    <div className={cn("rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all", className)}>
+    <div 
+      className={cn(
+        "transition-all",
+        isFullscreen 
+          ? "fixed inset-4 z-[100] bg-background border border-border shadow-2xl rounded-xl p-6 overflow-y-auto" 
+          : "rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]",
+        className
+      )}
+    >
       <div 
-        className="flex items-center justify-between cursor-pointer select-none group"
+        className={cn("flex items-center justify-between select-none group", !isFullscreen && "cursor-pointer")}
         onClick={toggleExpanded}
       >
         <div className="flex items-center gap-3">
@@ -94,17 +125,29 @@ export function StepCard({
               {headerRight}
             </div>
           )}
-          <div 
-            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/80 transition-colors"
+          
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title={isFullscreen ? "Minimizar" : "Expandir pantalla"}
           >
-            <ChevronDown className={cn("h-5 w-5 transition-transform duration-200", isExpanded ? "rotate-180" : "rotate-0")} />
-          </div>
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
+          
+          {!isFullscreen && (
+            <div 
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/80 transition-colors"
+            >
+              <ChevronDown className={cn("h-5 w-5 transition-transform duration-200", isExpanded ? "rotate-180" : "rotate-0")} />
+            </div>
+          )}
         </div>
       </div>
 
       <div className={cn("grid transition-all duration-300 ease-in-out", isExpanded ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 mt-0")}>
-        <div className="overflow-hidden">
-          <div className="space-y-4">
+        <div className={cn("overflow-hidden", isFullscreen && "overflow-visible h-full flex flex-col")}>
+          <div className={cn("space-y-4", isFullscreen && "flex-1")}>
             {children}
           </div>
         </div>

@@ -11,6 +11,8 @@ interface PhaseDoProps {
   on_target_vs_actual_change: (val: any) => void;
   target_vs_actual_unit: string;
   on_target_vs_actual_unit_change: (unit: string) => void;
+  target_vs_actual_title?: string;
+  on_target_vs_actual_title_change?: (title: string) => void;
   kpi_document_files: string[];
   on_kpi_document_files_change: (files: string[]) => void;
   pareto_drill_downs: string[];
@@ -19,6 +21,8 @@ interface PhaseDoProps {
   on_pareto_data_map_change: (map: Record<string, ParetoItem[]>) => void;
   pareto_unit: string;
   on_pareto_unit_change: (unit: string) => void;
+  pareto_titles?: Record<string, string>;
+  on_pareto_titles_change?: (titles: Record<string, string>) => void;
   has_flavor_correlation: boolean;
   flavor_correlation_data: any;
   on_flavor_correlation_data_change: (data: any) => void;
@@ -32,10 +36,12 @@ interface PhaseDoProps {
 export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
   target_vs_actual, on_target_vs_actual_change,
   target_vs_actual_unit, on_target_vs_actual_unit_change,
+  target_vs_actual_title, on_target_vs_actual_title_change,
   kpi_document_files, on_kpi_document_files_change,
   pareto_drill_downs, on_pareto_drill_downs_change,
   pareto_data_map, on_pareto_data_map_change,
   pareto_unit, on_pareto_unit_change,
+  pareto_titles, on_pareto_titles_change,
   has_flavor_correlation, flavor_correlation_data, on_flavor_correlation_data_change,
   has_gop_themes, gop_themes_data, on_gop_themes_data_change,
   completed_steps, on_toggle_step,
@@ -47,6 +53,9 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
         onChange={on_target_vs_actual_change}
         unit={target_vs_actual_unit}
         onUnitChange={on_target_vs_actual_unit_change}
+        title={target_vs_actual_title ? `PASO 3: ${target_vs_actual_title}` : undefined}
+        chartTitle={target_vs_actual_title}
+        onTitleChange={on_target_vs_actual_title_change}
         isStepCompleted={completed_steps.has("step-3")}
         onToggleStep={() => on_toggle_step("step-3")}
       />
@@ -69,6 +78,8 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
         setDataMap={on_pareto_data_map_change}
         unit={pareto_unit}
         onUnitChange={on_pareto_unit_change}
+        paretoTitles={pareto_titles}
+        onParetoTitlesChange={on_pareto_titles_change}
         isStepCompleted={completed_steps.has("step-5")}
         onToggleStep={() => on_toggle_step("step-5")}
       />

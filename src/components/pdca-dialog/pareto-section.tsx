@@ -589,6 +589,8 @@ export function ParetoSection({
   setDataMap,
   unit = "",
   onUnitChange,
+  paretoTitles,
+  onParetoTitlesChange,
   isStepCompleted,
   onToggleStep,
 }: {
@@ -598,10 +600,14 @@ export function ParetoSection({
   setDataMap: (m: Record<string, ParetoItem[]>) => void;
   unit?: string;
   onUnitChange?: (new_unit: string) => void;
+  paretoTitles?: Record<string, string>;
+  onParetoTitlesChange?: (titles: Record<string, string>) => void;
   isStepCompleted?: boolean;
   onToggleStep?: () => void;
 }) {
-  const [title_map, set_title_map] = useState<Record<string, string>>({});
+  const [internal_title_map, set_internal_title_map] = useState<Record<string, string>>({});
+  const title_map = paretoTitles ?? internal_title_map;
+  const set_title_map = onParetoTitlesChange ?? set_internal_title_map;
 
   const root_keys = Object.keys(dataMap)
     .filter((k) => k === "root" || k.startsWith("root-"))

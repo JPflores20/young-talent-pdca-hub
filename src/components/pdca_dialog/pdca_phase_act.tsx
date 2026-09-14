@@ -35,7 +35,7 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
   return (
     <div className="space-y-6">
 
-      {/* PASO 8.2: Plan de Acción (tabla) */}
+      {/* PASO 8: Matriz de Impacto y Plan de Acción (tabla) */}
       <ActionPlanTable
         items={action_items || []}
         onChange={on_action_items_change}

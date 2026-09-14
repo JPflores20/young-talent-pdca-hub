@@ -20,7 +20,7 @@ import {
   DEFAULT_PARTICIPANTES,
 } from "@/data/pdca";
 import { DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
-import { newImpactRow } from "@/components/pdca-dialog/impact-matrix-table";
+
 import { parse_date_string } from "../utils/date_helpers";
 
 export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?: string; email?: string } | null) => {
@@ -49,11 +49,13 @@ export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?:
     initial_pdca.paretoDataMap || DEFAULT_PARETO_DATA_MAP
   );
   const [pareto_unit, set_pareto_unit] = useState<string>(initial_pdca.paretoUnit || "");
+  const [pareto_titles, set_pareto_titles] = useState<Record<string, string>>(initial_pdca.paretoTitles || {});
 
   const [target_vs_actual, set_target_vs_actual] = useState<{ mes: string; target: number; actual: number | null }[]>(
     initial_pdca.targetVsActual || DEFAULT_TARGET_VS_ACTUAL
   );
   const [target_vs_actual_unit, set_target_vs_actual_unit] = useState<string>(initial_pdca.targetVsActualUnit || "");
+  const [target_vs_actual_title, set_target_vs_actual_title] = useState<string>(initial_pdca.targetVsActualTitle || "CURRENT TIME SERIES");
 
   const [kpi_final_result_data, set_kpi_final_result_data] = useState<{ mes: string; target: number; actual: number | null }[]>(
     initial_pdca.kpiFinalResultData || DEFAULT_TARGET_VS_ACTUAL
@@ -77,8 +79,8 @@ export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?:
     return [{ id: "fivewhys-1", title: "MÉTODO", rows: [{ id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" }] }];
   });
 
-  const [impact_matrix, set_impact_matrix] = useState<ImpactMatrixRow[]>(() =>
-    initial_pdca.impactMatrix && initial_pdca.impactMatrix.length > 0 ? initial_pdca.impactMatrix : [newImpactRow()]
+  const [impact_matrix, set_impact_matrix] = useState<ImpactMatrixRow[]>(
+    initial_pdca.impactMatrix || []
   );
 
   const [ishikawas, set_ishikawas] = useState<IshikawaItem[]>(() => {
@@ -122,8 +124,10 @@ export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?:
     pareto_drill_downs, set_pareto_drill_downs,
     pareto_data_map, set_pareto_data_map,
     pareto_unit, set_pareto_unit,
+    pareto_titles, set_pareto_titles,
     target_vs_actual, set_target_vs_actual,
     target_vs_actual_unit, set_target_vs_actual_unit,
+    target_vs_actual_title, set_target_vs_actual_title,
     kpi_final_result_data, set_kpi_final_result_data,
     kpi_final_result_unit, set_kpi_final_result_unit,
     gemba_final_image, set_gemba_final_image,

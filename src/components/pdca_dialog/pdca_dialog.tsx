@@ -11,7 +11,7 @@ import { PdcaPhasePlan } from "./pdca_phase_plan";
 import { PdcaPhaseDo } from "./pdca_phase_do";
 import { PdcaPhaseCheck } from "./pdca_phase_check";
 import { PdcaPhaseAct } from "./pdca_phase_act";
-import { ImpactMatrixTable, newImpactRow } from "../pdca-dialog/impact-matrix-table";
+
 import { CustomStepper } from "../pdca-dialog/pdca-dialog-stepper";
 import { PdcaComments } from "../pdca-comments";
 import { PdcaHistory } from "../pdca-history";
@@ -61,6 +61,7 @@ export const PdcaDialog: React.FC<{
       acciones: state.action_items,
       targetVsActual: state.target_vs_actual,
       targetVsActualUnit: state.target_vs_actual_unit,
+      targetVsActualTitle: state.target_vs_actual_title,
       kpiFinalResultData: state.kpi_final_result_data,
       kpiFinalResultUnit: state.kpi_final_result_unit,
       gembaFinalImage: state.gemba_final_image,
@@ -69,6 +70,7 @@ export const PdcaDialog: React.FC<{
       paretoDataMap: state.pareto_data_map,
       paretoDrillDowns: state.pareto_drill_downs,
       paretoUnit: state.pareto_unit,
+      paretoTitles: state.pareto_titles,
       vpoCheckpoints: state.vpo_checkpoints,
       definicionMeta: state.definition_goal,
       participantes: state.participants_data,
@@ -83,7 +85,15 @@ export const PdcaDialog: React.FC<{
       processMappingFiles: state.process_mapping_files,
       comentarios: state.comments_list,
       historial: state.history_events,
-      fechaFinalizacion: format_date_to_string(state.deadline_date),
+      completedSteps: Array.from(state.completed_steps),
+      completedPhases: Array.from(state.completed_phases),
+      fechaFinalizacion: state.deadline_date
+        ? format_date_to_string(state.deadline_date)
+        : current_pdca.fechaFinalizacion === "Sin límite"
+        ? "Sin límite"
+        : current_pdca.fechaFinalizacion && !parse_date_string(current_pdca.fechaFinalizacion)
+        ? current_pdca.fechaFinalizacion
+        : "",
       autor: state.author_name,
       autorEmail: state.author_email,
       asignados: state.assigned_users,
@@ -135,6 +145,12 @@ export const PdcaDialog: React.FC<{
         document_identifier={current_pdca.id}
         pdca_title={state.title_value}
         last_updated={current_pdca.actualizado}
+        creation_date={
+          current_pdca.historial && current_pdca.historial.length > 0 
+            ? new Date(current_pdca.historial[0].timestamp).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) 
+            : "Desconocida"
+        }
+        deadline_string={current_pdca.fechaFinalizacion}
         completed_steps={state.completed_steps}
         is_saving_in_progress={autosave.is_saving}
         has_pending_modifications={autosave.has_unsaved_changes}
@@ -194,6 +210,8 @@ export const PdcaDialog: React.FC<{
           on_target_vs_actual_change={(t) => { state.set_target_vs_actual(t); autosave.mark_as_modified(); }}
           target_vs_actual_unit={state.target_vs_actual_unit}
           on_target_vs_actual_unit_change={(u) => { state.set_target_vs_actual_unit(u); autosave.mark_as_modified(); }}
+          target_vs_actual_title={state.target_vs_actual_title}
+          on_target_vs_actual_title_change={(title) => { state.set_target_vs_actual_title(title); autosave.mark_as_modified(); }}
           kpi_document_files={state.kpi_document_files}
           on_kpi_document_files_change={(f) => { state.set_kpi_document_files(f); autosave.mark_as_modified(); }}
           pareto_drill_downs={state.pareto_drill_downs}
@@ -202,6 +220,8 @@ export const PdcaDialog: React.FC<{
           on_pareto_data_map_change={(m) => { state.set_pareto_data_map(m); autosave.mark_as_modified(); }}
           pareto_unit={state.pareto_unit}
           on_pareto_unit_change={(u) => { state.set_pareto_unit(u); autosave.mark_as_modified(); }}
+          pareto_titles={state.pareto_titles}
+          on_pareto_titles_change={(t) => { state.set_pareto_titles(t); autosave.mark_as_modified(); }}
           has_flavor_correlation={state.has_flavor_correlation}
           flavor_correlation_data={state.flavor_correlation_data}
           on_flavor_correlation_data_change={(d) => { state.set_flavor_correlation_data(d); autosave.mark_as_modified(); }}
@@ -228,15 +248,7 @@ export const PdcaDialog: React.FC<{
 
       {state.active_tab === "Act" && (
         <div className="space-y-6">
-          {/* PASO 8.1: Matriz de Impacto */}
-          <ImpactMatrixTable
-            rows={state.impact_matrix && state.impact_matrix.length > 0 ? state.impact_matrix : [newImpactRow()]}
-            onChange={(rows: any[]) => { state.set_impact_matrix(rows); autosave.mark_as_modified(); }}
-            isStepCompleted={state.completed_steps.has("impactMatrix")}
-            onToggleStep={() => handle_toggle_step("impactMatrix")}
-          />
-
-          {/* PASO 8.2 y siguientes en la fase Act */}
+          {/* PASO 8 y siguientes en la fase Act */}
           <PdcaPhaseAct
             action_items={state.action_items}
             on_action_items_change={(a) => { state.set_action_items(a); autosave.mark_as_modified(); }}

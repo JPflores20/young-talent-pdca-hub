@@ -22,6 +22,13 @@ export type ActionItem = {
   responsable?: string;
   fecha?: string;
   done?: boolean;
+  // Campos de matriz de impacto integrados
+  seguridad?: number | "";
+  calidadHigiene?: number | "";
+  costo?: number | "";
+  medioAmbiente?: number | "";
+  servicio?: number | "";
+  priorizar?: "SI" | "NO" | "";
 };
 
 export type PdcaComment = {
@@ -201,6 +208,8 @@ export type Pdca = {
   targetVsActual?: { mes: string; target: number; actual: number | null }[];
   target_vs_actual_unit?: string;
   targetVsActualUnit?: string;
+  target_vs_actual_title?: string;
+  targetVsActualTitle?: string;
   // Pareto
   pareto_data_map?: Record<string, ParetoItem[]>;
   paretoDataMap?: Record<string, ParetoItem[]>;

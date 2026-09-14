@@ -25,12 +25,62 @@ const STATUS_COLOR: Record<string, string> = {
   "Completada":   "bg-[#e6f4ea] text-[#137333] border-[#137333]/30",
 };
 
+const SCORE_OPTIONS = [
+  { value: "", label: "-" },
+  { value: "5", label: "5 - Alto" },
+  { value: "3", label: "3 - Medio" },
+  { value: "1", label: "1 - Bajo" },
+];
+
+const DEFAULT_FACTOR_LABELS = ["S", "Q", "C", "E", "M"];
+const FACTOR_KEYS = ["seguridad", "calidadHigiene", "costo", "medioAmbiente", "servicio"] as const;
+
+const getFactorValue = (val: any) => {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    if (val.includes("5")) return 5;
+    if (val.includes("3")) return 3;
+    if (val.includes("1")) return 1;
+  }
+  return 0;
+};
+
+function calcProduct(row: any): number {
+  const vals = [row.seguridad, row.calidadHigiene, row.costo, row.medioAmbiente, row.servicio];
+  const nums = vals.map(getFactorValue);
+  const validNums = nums.filter(n => n > 0);
+  if (validNums.length === 0) return 0;
+  return validNums.reduce((acc, val) => acc * val, 1);
+}
+
+function calculateImpactVisuals(row: any) {
+  const p = calcProduct(row);
+  if (p === 0) return { text: "—", color: "bg-transparent text-muted-foreground" };
+  if (p <= 1) return { text: `${p}-Bajo`, color: "bg-[#e6f4ea] text-[#137333]" };
+  if (p < 25) return { text: `${p}-Medio`, color: "bg-[#fef7e0] text-[#b06000]" };
+  return { text: `${p}-Alto`, color: "bg-[#fce8e6] text-[#c5221f]" };
+}
+
+const getDropdownColor = (val: any) => {
+  if (val === "" || val == null) return "bg-transparent text-muted-foreground border-border";
+  if (String(val).includes("5")) return "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30 font-bold";
+  if (String(val).includes("3")) return "bg-[#fef7e0] text-[#b06000] border-[#b06000]/30 font-bold";
+  if (String(val).includes("1")) return "bg-[#e6f4ea] text-[#137333] border-[#137333]/30 font-bold";
+  return "bg-transparent text-muted-foreground";
+};
+
 function newActionRow(): ActionItem {
   return {
     id: `ACT-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     tema: "",
     causaRaiz: "",
     accion: "",
+    seguridad: "",
+    calidadHigiene: "",
+    costo: "",
+    medioAmbiente: "",
+    servicio: "",
+    priorizar: "",
     comentarios: "",
     responsable: "",
     fecha: "",
@@ -63,7 +113,7 @@ export function ActionPlanTable({
 
   return (
     <StepCard
-      title="PASO 8.2: PLAN DE ACCIÓN"
+      title="PASO 8: MATRIZ DE IMPACTO Y PLAN DE ACCIÓN"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       headerRight={
@@ -83,18 +133,43 @@ export function ActionPlanTable({
       </StepInstructions>
 
       <div className="overflow-x-auto border rounded-md mt-4">
-        <Table className="text-xs min-w-[900px]">
+        <Table className="text-xs min-w-[1550px]">
           <TableHeader>
             <TableRow className="bg-[#0070c0] hover:bg-[#0070c0]">
               {[
                 { label: "TEMA",             w: "min-w-[120px]" },
                 { label: "CAUSA RAÍZ",       w: "min-w-[130px]" },
                 { label: "ACCIÓN",           w: "min-w-[160px]" },
-                { label: "COMENTARIOS",      w: "min-w-[150px]" },
+              ].map(({ label, w }) => (
+                <TableHead
+                  key={label}
+                  className={cn(
+                    "text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center leading-tight",
+                    w
+                  )}
+                >
+                  {label}
+                </TableHead>
+              ))}
+              
+              {/* Factores Numéricos */}
+              {DEFAULT_FACTOR_LABELS.map((label) => (
+                <TableHead
+                  key={label}
+                  className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[75px] leading-tight"
+                >
+                  {label}
+                </TableHead>
+              ))}
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">IMPACTO</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">PRIORIZAR</TableHead>
+
+              {[
+                { label: "COMENTARIOS",      w: "min-w-[130px]" },
                 { label: "RESPONSABLE",      w: "min-w-[110px]" },
                 { label: "FECHA",            w: "min-w-[110px]" },
                 { label: "ESTADO",           w: "min-w-[110px]" },
-                { label: "HERRAMIENTA SDCA", w: "min-w-[130px]" },
+                { label: "SDCA",             w: "min-w-[110px]" },
               ].map(({ label, w }) => (
                 <TableHead
                   key={label}
@@ -149,6 +224,65 @@ export function ActionPlanTable({
                     placeholder="Acción..."
                     className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
                   />
+                </TableCell>
+
+                {/* Factores Numéricos */}
+                {FACTOR_KEYS.map((key) => {
+                  const cellValue = row[key] || "";
+                  return (
+                    <TableCell key={key} className="p-1 border-r">
+                      <div className="px-1 h-full flex items-center justify-center relative">
+                        <select
+                          value={cellValue}
+                          onChange={(e) => updateRow(row.id, key, e.target.value)}
+                          className={cn(
+                            "w-full h-8 text-[11px] rounded border text-center appearance-none cursor-pointer focus:ring-1 focus:ring-primary outline-none",
+                            getDropdownColor(cellValue)
+                          )}
+                        >
+                          {SCORE_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value} className="text-black bg-white">
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </TableCell>
+                  );
+                })}
+
+                {/* RESULTADO DE IMPACTO */}
+                <TableCell className="p-1 border-r bg-muted/20">
+                  <div className="h-full w-full flex items-center justify-center p-1">
+                    {(() => {
+                      const impact = calculateImpactVisuals(row);
+                      return (
+                        <div className={cn("px-2 py-1 rounded text-xs font-semibold whitespace-nowrap w-full text-center border", impact.color.includes("bg-transparent") ? "border-transparent" : "border-black/5")}>
+                          {impact.text}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </TableCell>
+
+                {/* PRIORIZAR */}
+                <TableCell className="p-1 border-r bg-muted/20">
+                  <div className="h-full flex items-center justify-center relative">
+                    <select
+                      value={row.priorizar || ""}
+                      onChange={(e) => updateRow(row.id, "priorizar", e.target.value)}
+                      className={cn(
+                        "w-full h-8 text-[11px] font-bold rounded border text-center appearance-none cursor-pointer outline-none",
+                        row.priorizar === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
+                        row.priorizar === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
+                        "bg-white border-border"
+                      )}
+                    >
+                      <option value="" className="text-black bg-white">-</option>
+                      <option value="SI" className="text-black bg-white">SÍ</option>
+                      <option value="NO" className="text-black bg-white">NO</option>
+                    </select>
+                  </div>
                 </TableCell>
 
                 {/* COMENTARIOS */}

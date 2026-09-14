@@ -3,7 +3,9 @@ import { ArrowLeft, Check, UploadCloud, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PhaseBadge } from "@/components/pdca-badge";
 import { cn } from "@/lib/utils";
+import { differenceInDays, startOfDay } from "date-fns";
 import type { Phase } from "@/data/pdca";
+import { parse_date_string } from "./utils/date_helpers";
 
 /** All trackable step IDs across every phase */
 const ALL_STEP_IDS = [
@@ -28,6 +30,8 @@ interface HeaderProps {
   document_identifier: string;
   pdca_title: string;
   last_updated: string;
+  creation_date?: string;
+  deadline_string?: string | null;
   completed_steps: Set<string>;
   is_saving_in_progress: boolean;
   has_pending_modifications: boolean;
@@ -41,6 +45,8 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
   document_identifier,
   pdca_title,
   last_updated,
+  creation_date,
+  deadline_string,
   completed_steps,
   is_saving_in_progress,
   has_pending_modifications,
@@ -50,6 +56,24 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
 }) => {
   const completed_count = ALL_STEP_IDS.filter((id) => completed_steps.has(id)).length;
   const progress_pct = TOTAL_STEPS > 0 ? Math.round((completed_count / TOTAL_STEPS) * 100) : 0;
+
+  let deadline_info = null;
+  if (deadline_string && deadline_string !== "Sin límite") {
+    const deadline_date = parse_date_string(deadline_string);
+    if (deadline_date) {
+      const today = startOfDay(new Date());
+      const diff = differenceInDays(deadline_date, today);
+      if (diff < 0) {
+        deadline_info = <span className="text-red-500 font-bold ml-2">Vencido por {Math.abs(diff)} días</span>;
+      } else if (diff === 0) {
+        deadline_info = <span className="text-amber-500 font-bold ml-2">Vence hoy</span>;
+      } else {
+        deadline_info = <span className="text-emerald-500 font-medium ml-2">Quedan {diff} días</span>;
+      }
+    }
+  } else if (deadline_string === "Sin límite") {
+    deadline_info = <span className="text-muted-foreground ml-2">Sin límite de tiempo</span>;
+  }
 
   return (
     <div className="space-y-4">
@@ -70,9 +94,19 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
             {document_identifier || "Nuevo PDCA"}
           </span>
           <PhaseBadge phase={current_phase} />
+          {creation_date && (
+            <span className="text-xs text-muted-foreground ml-2">
+              Abierto: {creation_date}
+            </span>
+          )}
+          {deadline_info && (
+            <span className="text-xs">
+              | {deadline_info}
+            </span>
+          )}
           {last_updated && (
-            <span className="text-xs text-muted-foreground">
-              Última actualización: {last_updated}
+            <span className="text-xs text-muted-foreground ml-2">
+              | Actualizado: {last_updated}
             </span>
           )}
         </div>

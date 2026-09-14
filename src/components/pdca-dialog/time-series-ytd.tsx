@@ -99,6 +99,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { StepCard } from "@/components/ui/step-card";
+import { StepInstructions } from "./step-instructions";
 
 
 export function TimeSeriesYTD({
@@ -110,6 +111,7 @@ export function TimeSeriesYTD({
   onToggleStep,
   title = "PASO 3: CURRENT TIME SERIES",
   chartTitle = "CURRENT TIME SERIES",
+  onTitleChange,
 }: {
   value?: { mes: string; target: number; actual: number | null }[];
   onChange?: (newSeries: { mes: string; target: number; actual: number | null }[]) => void;
@@ -119,8 +121,13 @@ export function TimeSeriesYTD({
   onToggleStep?: (() => void) | undefined;
   title?: string;
   chartTitle?: string;
+  onTitleChange?: (newTitle: string) => void;
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
+  
+  const [y_axis_min, set_y_axis_min] = useState<number>(0);
+  const [y_axis_max_str, set_y_axis_max_str] = useState<string>("auto");
+  const chart_y_max = y_axis_max_str.trim() === "auto" || y_axis_max_str.trim() === "" ? "auto" : Number(y_axis_max_str);
 
   const updateMes = (index: number, val: string) => {
     const updated = series.map((s, i) => {
@@ -246,22 +253,41 @@ export function TimeSeriesYTD({
       onToggleStep={onToggleStep}
     >
 
-      <div className="bg-[#1F497D] text-white p-2.5 text-xs leading-relaxed font-sans rounded-sm shadow-sm">
-        <p className="mb-1">Instrucciones:</p>
-        <p>1. Rellena el campo gris con su problema.</p>
-        <p>2. Completa el período de tiempo con tu período de tiempo deseado (años, meses, semanas, días, etc.)</p>
+      <StepInstructions>
+        <p className="mb-1">1. Rellena el campo gris con su problema.</p>
+        <p className="mb-1">2. Completa el período de tiempo con tu período de tiempo deseado (años, meses, semanas, días, etc.)</p>
         <p>3. Rellena las columnas "Objetivo" y "Actual" con tus datos.</p>
-      </div>
+      </StepInstructions>
       
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
-          <Input 
-            value={unit} 
-            onChange={e => { if(onUnitChange) onUnitChange(e.target.value) }}
-            placeholder="ej. $, %, HL" 
-            className="w-28 h-7 text-xs font-bold" 
-          />
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
+            <Input 
+              value={unit} 
+              onChange={e => { if(onUnitChange) onUnitChange(e.target.value) }}
+              placeholder="ej. $, %, HL" 
+              className="w-28 h-7 text-xs font-bold" 
+            />
+          </div>
+          <div className="flex items-center gap-2 border rounded-md px-3 py-1 bg-muted/20 hidden md:flex">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Eje Y —</span>
+            <span className="text-xs text-muted-foreground">Min:</span>
+            <Input
+              type="number"
+              value={y_axis_min}
+              onChange={(e) => set_y_axis_min(Number(e.target.value))}
+              className="w-20 h-7 text-xs"
+            />
+            <span className="text-xs text-muted-foreground">Max:</span>
+            <Input
+              type="text"
+              value={y_axis_max_str}
+              onChange={(e) => set_y_axis_max_str(e.target.value)}
+              placeholder="auto"
+              className="w-20 h-7 text-xs"
+            />
+          </div>
         </div>
         
         <div className="flex items-center gap-2">
@@ -378,7 +404,16 @@ export function TimeSeriesYTD({
         
         {/* Chart Side */}
         <div className="w-full xl:w-[60%] flex flex-col h-[400px]">
-          <h4 className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80">{chartTitle}</h4>
+          {onTitleChange ? (
+            <Input
+              value={chartTitle}
+              onChange={(e) => onTitleChange(e.target.value)}
+              placeholder="CURRENT TIME SERIES"
+              className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80 border-transparent hover:border-input focus:border-input bg-transparent shadow-none"
+            />
+          ) : (
+            <h4 className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80">{chartTitle}</h4>
+          )}
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 40, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
@@ -396,6 +431,8 @@ export function TimeSeriesYTD({
                 stroke="var(--color-muted-foreground)" 
                 tickFormatter={(val) => formatValue(val)}
                 width={80}
+                domain={[y_axis_min, chart_y_max]}
+                allowDataOverflow={true}
               />
               <RTooltip 
                 contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12, backgroundColor: "var(--color-card)" }}
