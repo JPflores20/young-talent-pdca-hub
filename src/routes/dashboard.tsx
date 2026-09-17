@@ -1,12 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { ClipboardList, CheckCircle2, Clock, Target, ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ClipboardList,
+  CheckCircle2,
+  Clock,
+  Target,
+  ArrowRight,
+  RefreshCw,
+  FileSpreadsheet,
+  TrendingUp,
+  AlertCircle,
+  Plus,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PhaseBadge } from "@/components/pdca-badge";
 import { usePdcas } from "@/context/pdca-context";
 import { useAuth } from "@/context/auth-context";
+import { ALL_STEP_IDS, TOTAL_STEPS } from "@/components/pdca_dialog/pdca_dialog_header";
+import { type Pdca } from "@/data/pdca";
+
+function getComputedProgress(p: Pdca): number {
+  if (!p.completedSteps) return p.progreso || 0;
+  const completed_steps = new Set(p.completedSteps);
+  const completed_count = ALL_STEP_IDS.filter((id) => completed_steps.has(id)).length;
+  return TOTAL_STEPS > 0 ? Math.round((completed_count / TOTAL_STEPS) * 100) : 0;
+}
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -30,13 +50,20 @@ export const Route = createFileRoute("/dashboard")({
 function Dashboard() {
   const { currentUser } = useAuth();
   // Use the shared context — no additional Firestore subscription needed
-  const { pdcaList: userPdcas } = usePdcas();
+  const { pdcaList: userPdcas, refresh } = usePdcas();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refresh();
+    setIsRefreshing(false);
+  };
 
   const activos = useMemo(() => userPdcas.filter((p) => p.fase !== "Act").length, [userPdcas]);
   const cerrados = useMemo(() => userPdcas.filter((p) => p.fase === "Act").length, [userPdcas]);
   const avance = useMemo(() => {
     if (userPdcas.length === 0) return 0;
-    return Math.round(userPdcas.reduce((a, p) => a + p.progreso, 0) / userPdcas.length);
+    return Math.round(userPdcas.reduce((a, p) => a + getComputedProgress(p), 0) / userPdcas.length);
   }, [userPdcas]);
 
   const tareas = useMemo(() => userPdcas.flatMap((p) => p.acciones || []), [userPdcas]);
@@ -61,11 +88,16 @@ function Dashboard() {
             Buen día, <span className="font-semibold text-foreground">{currentUser?.name || "Usuario"}</span>. Este es el estatus de {currentUser?.role === "admin" ? "todos los" : "tus"} proyectos de mejora continua.
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link to="/">
-            Ir a Mis PDCAs <ArrowRight className="ml-1 size-4" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing} title="Actualizar datos">
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/">
+              Ir a Mis PDCAs <ArrowRight className="ml-1 size-4" />
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -109,7 +141,7 @@ function Dashboard() {
                   <span className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-secondary sm:block">
                     <span
                       className="block h-full rounded-full bg-brand-yellow"
-                      style={{ width: `${p.progreso}%` }}
+                      style={{ width: `${getComputedProgress(p)}%` }}
                     />
                   </span>
                   <PhaseBadge phase={p.fase} />

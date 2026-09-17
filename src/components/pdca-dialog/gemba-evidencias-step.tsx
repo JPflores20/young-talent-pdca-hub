@@ -16,10 +16,12 @@ interface GembaEvidenciasStepProps {
   onChange: (images: string[]) => void;
   isStepCompleted?: boolean;
   onToggleStep?: () => void;
+  title?: string;
+  description?: string;
 }
 
 // ─── Comprimir imagen antes de subir ─────────────────────────────────────────
-function compressImage(file: File, maxWidth = 1600, quality = 0.82): Promise<Blob> {
+function compressImage(file: File, maxWidth = 2048, quality = 0.85): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -69,6 +71,8 @@ export function GembaEvidenciasStep({
   onChange,
   isStepCompleted,
   onToggleStep,
+  title = "PASO 9: GEMBA (EVIDENCIAS)",
+  description = "Sube fotos del Gemba o documentos que respalden que el plan de acción se ejecutó correctamente.",
 }: GembaEvidenciasStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -128,7 +132,7 @@ export function GembaEvidenciasStep({
 
   return (
     <StepCard
-      title="PASO 9: GEMBA (EVIDENCIAS)"
+      title={title}
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       headerRight={
@@ -138,11 +142,8 @@ export function GembaEvidenciasStep({
       }
     >
       <StepInstructions>
-        <p className="mb-1">
-          <strong>Gestión de Evidencias Gemba</strong>
-        </p>
         <p className="text-muted-foreground text-xs">
-          Sube fotos del Gemba o documentos que respalden que el plan de acción se ejecutó correctamente.
+          {description}
         </p>
       </StepInstructions>
 
@@ -248,12 +249,12 @@ export function GembaEvidenciasStep({
 
       {/* Lightbox */}
       <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
-        <DialogContent className="max-w-4xl p-2 bg-black/90 border-none">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen p-0 bg-black/95 border-none shadow-none flex items-center justify-center !rounded-none">
           <DialogTitle className="sr-only">Vista de evidencia</DialogTitle>
           <img
             src={lightboxUrl ?? ""}
             alt="Evidencia en grande"
-            className="w-full max-h-[85vh] object-contain rounded-lg"
+            className="w-full h-full object-contain"
           />
         </DialogContent>
       </Dialog>

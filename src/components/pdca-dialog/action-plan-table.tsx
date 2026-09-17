@@ -2,6 +2,8 @@ import React from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import TextareaAutosize from "react-textarea-autosize";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -13,6 +15,14 @@ import {
 } from "@/components/ui/table";
 import { StepCard } from "@/components/ui/step-card";
 import { StepInstructions } from "./step-instructions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { ActionItem } from "@/data/pdca";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -32,7 +42,7 @@ const SCORE_OPTIONS = [
   { value: "1", label: "1 - Bajo" },
 ];
 
-const DEFAULT_FACTOR_LABELS = ["S", "Q", "C", "E", "M"];
+const DEFAULT_FACTOR_LABELS = ["SEGURIDAD (S)", "CALIDAD (C)", "COSTO (C)", "MEDIO AMBIENTE (M)", "SERVICIO (S)"];
 const FACTOR_KEYS = ["seguridad", "calidadHigiene", "costo", "medioAmbiente", "servicio"] as const;
 
 const getFactorValue = (val: any) => {
@@ -55,10 +65,10 @@ function calcProduct(row: any): number {
 
 function calculateImpactVisuals(row: any) {
   const p = calcProduct(row);
-  if (p === 0) return { text: "—", color: "bg-transparent text-muted-foreground" };
-  if (p <= 1) return { text: `${p}-Bajo`, color: "bg-[#e6f4ea] text-[#137333]" };
-  if (p < 25) return { text: `${p}-Medio`, color: "bg-[#fef7e0] text-[#b06000]" };
-  return { text: `${p}-Alto`, color: "bg-[#fce8e6] text-[#c5221f]" };
+  if (p === 0) return { text: "-", color: "bg-transparent text-muted-foreground border-border" };
+  if (p <= 1) return { text: p.toString(), color: "bg-[#e6f4ea] text-[#137333] border-[#137333]/30 font-bold" };
+  if (p < 25) return { text: p.toString(), color: "bg-[#fef7e0] text-[#b06000] border-[#b06000]/30 font-bold" };
+  return { text: p.toString(), color: "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30 font-bold" };
 }
 
 const getDropdownColor = (val: any) => {
@@ -72,15 +82,20 @@ const getDropdownColor = (val: any) => {
 function newActionRow(): ActionItem {
   return {
     id: `ACT-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    tema: "",
-    causaRaiz: "",
-    accion: "",
     seguridad: "",
     calidadHigiene: "",
     costo: "",
     medioAmbiente: "",
     servicio: "",
+    resultados: "",
     priorizar: "",
+    quickWin: "",
+    technologyRequired: "",
+    tema: "",
+    causaRaiz: "",
+    accion: "",
+    causaRaiz2: "",
+    accion2: "",
     comentarios: "",
     responsable: "",
     fecha: "",
@@ -136,40 +151,32 @@ export function ActionPlanTable({
         <Table className="text-xs min-w-[1550px]">
           <TableHeader>
             <TableRow className="bg-[#0070c0] hover:bg-[#0070c0]">
-              {[
-                { label: "TEMA",             w: "min-w-[120px]" },
-                { label: "CAUSA RAÍZ",       w: "min-w-[130px]" },
-                { label: "ACCIÓN",           w: "min-w-[160px]" },
-              ].map(({ label, w }) => (
-                <TableHead
-                  key={label}
-                  className={cn(
-                    "text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center leading-tight",
-                    w
-                  )}
-                >
-                  {label}
-                </TableHead>
-              ))}
-              
+              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[200px] leading-tight">TEMA</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[200px] leading-tight">CAUSA RAÍZ</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[250px] leading-tight">ACCIÓN</TableHead>
+
               {/* Factores Numéricos */}
               {DEFAULT_FACTOR_LABELS.map((label) => (
                 <TableHead
                   key={label}
-                  className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[75px] leading-tight"
+                  className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[100px] leading-tight"
                 >
                   {label}
                 </TableHead>
               ))}
-              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">IMPACTO</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[110px] leading-tight">RESULTADOS (R)</TableHead>
               <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">PRIORIZAR</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">QUICK WIN</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[110px] leading-tight">TECH REQUIRED</TableHead>
 
               {[
-                { label: "COMENTARIOS",      w: "min-w-[130px]" },
-                { label: "RESPONSABLE",      w: "min-w-[110px]" },
+                { label: "CAUSA RAÍZ",       w: "min-w-[150px]" },
+                { label: "ACCIÓN",           w: "min-w-[200px]" },
+                { label: "COMENTARIOS",      w: "min-w-[180px]" },
+                { label: "RESPONSABLE",      w: "min-w-[140px]" },
                 { label: "FECHA",            w: "min-w-[110px]" },
                 { label: "ESTADO",           w: "min-w-[110px]" },
-                { label: "SDCA",             w: "min-w-[110px]" },
+                { label: "SDCA",             w: "min-w-[100px]" },
               ].map(({ label, w }) => (
                 <TableHead
                   key={label}
@@ -197,32 +204,35 @@ export function ActionPlanTable({
             {items.map((row) => (
               <TableRow key={row.id} className="hover:bg-muted/30">
                 {/* TEMA */}
-                <TableCell className="p-0 border-r">
-                  <Input
+                <TableCell className="p-0 border-r align-top">
+                  <TextareaAutosize
                     value={row.tema || ""}
                     onChange={(e) => updateRow(row.id, "tema", e.target.value)}
                     placeholder="Tema..."
-                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                    minRows={1}
+                    className="w-full resize-none border-0 shadow-none focus-visible:ring-0 bg-transparent text-xs p-2.5 outline-none min-h-[40px]"
                   />
                 </TableCell>
 
                 {/* CAUSA RAÍZ */}
-                <TableCell className="p-0 border-r">
-                  <Input
+                <TableCell className="p-0 border-r align-top">
+                  <TextareaAutosize
                     value={row.causaRaiz || ""}
                     onChange={(e) => updateRow(row.id, "causaRaiz", e.target.value)}
                     placeholder="Causa raíz..."
-                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                    minRows={1}
+                    className="w-full resize-none border-0 shadow-none focus-visible:ring-0 bg-transparent text-xs p-2.5 outline-none min-h-[40px]"
                   />
                 </TableCell>
 
                 {/* ACCIÓN */}
-                <TableCell className="p-0 border-r">
-                  <Input
+                <TableCell className="p-0 border-r align-top">
+                  <TextareaAutosize
                     value={row.accion || ""}
                     onChange={(e) => updateRow(row.id, "accion", e.target.value)}
                     placeholder="Acción..."
-                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                    minRows={1}
+                    className="w-full resize-none border-0 shadow-none focus-visible:ring-0 bg-transparent text-xs p-2.5 outline-none min-h-[40px]"
                   />
                 </TableCell>
 
@@ -232,32 +242,38 @@ export function ActionPlanTable({
                   return (
                     <TableCell key={key} className="p-1 border-r">
                       <div className="px-1 h-full flex items-center justify-center relative">
-                        <select
-                          value={cellValue}
-                          onChange={(e) => updateRow(row.id, key, e.target.value)}
-                          className={cn(
-                            "w-full h-8 text-[11px] rounded border text-center appearance-none cursor-pointer focus:ring-1 focus:ring-primary outline-none",
-                            getDropdownColor(cellValue)
-                          )}
+                        <Select
+                          value={cellValue || undefined}
+                          onValueChange={(v) => updateRow(row.id, key, v === "-" ? "" : v)}
                         >
-                          {SCORE_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value} className="text-black bg-white">
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger
+                            className={cn(
+                              "h-8 text-[11px] rounded border px-2 shadow-none focus:ring-1 focus:ring-primary [&>span]:line-clamp-none",
+                              getDropdownColor(cellValue)
+                            )}
+                          >
+                            <SelectValue placeholder="-" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SCORE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value || "-"} value={opt.value || "-"}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </TableCell>
                   );
                 })}
 
                 {/* RESULTADO DE IMPACTO */}
-                <TableCell className="p-1 border-r bg-muted/20">
-                  <div className="h-full w-full flex items-center justify-center p-1">
+                <TableCell className="p-1 border-r">
+                  <div className="px-1 h-full flex items-center justify-center relative">
                     {(() => {
                       const impact = calculateImpactVisuals(row);
                       return (
-                        <div className={cn("px-2 py-1 rounded text-xs font-semibold whitespace-nowrap w-full text-center border", impact.color.includes("bg-transparent") ? "border-transparent" : "border-black/5")}>
+                        <div className={cn("flex items-center justify-center w-full h-8 text-[11px] rounded border", impact.color)}>
                           {impact.text}
                         </div>
                       );
@@ -268,84 +284,163 @@ export function ActionPlanTable({
                 {/* PRIORIZAR */}
                 <TableCell className="p-1 border-r bg-muted/20">
                   <div className="h-full flex items-center justify-center relative">
-                    <select
-                      value={row.priorizar || ""}
-                      onChange={(e) => updateRow(row.id, "priorizar", e.target.value)}
-                      className={cn(
-                        "w-full h-8 text-[11px] font-bold rounded border text-center appearance-none cursor-pointer outline-none",
-                        row.priorizar === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
-                        row.priorizar === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
-                        "bg-white border-border"
-                      )}
+                    <Select
+                      value={row.priorizar || undefined}
+                      onValueChange={(v) => updateRow(row.id, "priorizar", v === "-" ? "" : v)}
                     >
-                      <option value="" className="text-black bg-white">-</option>
-                      <option value="SI" className="text-black bg-white">SÍ</option>
-                      <option value="NO" className="text-black bg-white">NO</option>
-                    </select>
+                      <SelectTrigger
+                        className={cn(
+                          "h-8 text-[11px] font-bold rounded border px-2 shadow-none [&>span]:line-clamp-none",
+                          row.priorizar === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
+                          row.priorizar === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
+                          "bg-white border-border"
+                        )}
+                      >
+                        <SelectValue placeholder="-" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="-">-</SelectItem>
+                        <SelectItem value="SI">SÍ</SelectItem>
+                        <SelectItem value="NO">NO</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </TableCell>
 
+                {/* QUICK WIN */}
+                <TableCell className="p-1 border-r bg-muted/20">
+                  <div className="h-full flex items-center justify-center relative">
+                    <Select
+                      value={row.quickWin || undefined}
+                      onValueChange={(v) => updateRow(row.id, "quickWin", v === "-" ? "" : v)}
+                    >
+                      <SelectTrigger
+                        className={cn(
+                          "h-8 text-[11px] font-bold rounded border px-2 shadow-none [&>span]:line-clamp-none",
+                          row.quickWin === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
+                          row.quickWin === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
+                          "bg-white border-border"
+                        )}
+                      >
+                        <SelectValue placeholder="-" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="-">-</SelectItem>
+                        <SelectItem value="SI">SÍ</SelectItem>
+                        <SelectItem value="NO">NO</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TableCell>
+
+                {/* TECHNOLOGY REQUIRED */}
+                <TableCell className="p-1 border-r bg-muted/20">
+                  <div className="h-full flex items-center justify-center relative">
+                    <Select
+                      value={row.technologyRequired || undefined}
+                      onValueChange={(v) => updateRow(row.id, "technologyRequired", v === "-" ? "" : v)}
+                    >
+                      <SelectTrigger
+                        className={cn(
+                          "h-8 text-[11px] font-bold rounded border px-2 shadow-none [&>span]:line-clamp-none",
+                          row.technologyRequired === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
+                          row.technologyRequired === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
+                          "bg-white border-border"
+                        )}
+                      >
+                        <SelectValue placeholder="-" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="-">-</SelectItem>
+                        <SelectItem value="SI">SÍ</SelectItem>
+                        <SelectItem value="NO">NO</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TableCell>
+
+                {/* CAUSA RAIZ */}
+                <TableCell className="p-1 border-r min-w-[150px]">
+                  <TextareaAutosize
+                    minRows={1}
+                    value={row.causaRaiz2 || ""}
+                    onChange={(e) => updateRow(row.id, "causaRaiz2", e.target.value)}
+                    placeholder="Causa raíz..."
+                    className="w-full text-xs p-2 bg-transparent border-0 resize-none outline-none focus:ring-1 focus:ring-primary rounded"
+                  />
+                </TableCell>
+
+                {/* ACCION */}
+                <TableCell className="p-1 border-r min-w-[200px]">
+                  <TextareaAutosize
+                    minRows={1}
+                    value={row.accion2 || ""}
+                    onChange={(e) => updateRow(row.id, "accion2", e.target.value)}
+                    placeholder="Acción..."
+                    className="w-full text-xs p-2 bg-transparent border-0 resize-none outline-none focus:ring-1 focus:ring-primary rounded"
+                  />
+                </TableCell>
+
                 {/* COMENTARIOS */}
-                <TableCell className="p-0 border-r">
-                  <Input
+                <TableCell className="p-1 border-r min-w-[180px]">
+                  <TextareaAutosize
+                    minRows={1}
                     value={row.comentarios || ""}
                     onChange={(e) => updateRow(row.id, "comentarios", e.target.value)}
                     placeholder="Comentarios..."
-                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                    className="w-full text-xs p-2 bg-transparent border-0 resize-none outline-none focus:ring-1 focus:ring-primary rounded"
                   />
                 </TableCell>
 
                 {/* RESPONSABLE */}
-                <TableCell className="p-0 border-r">
+                <TableCell className="p-1 border-r min-w-[140px]">
                   <Input
                     value={row.responsable || ""}
                     onChange={(e) => updateRow(row.id, "responsable", e.target.value)}
                     placeholder="Responsable..."
-                    className="h-10 border-0 rounded-none shadow-none focus-visible:ring-0 bg-transparent text-xs"
+                    className="h-8 text-[11px] bg-transparent border-0 shadow-none px-2 focus-visible:ring-1 rounded"
                   />
                 </TableCell>
 
                 {/* FECHA */}
                 <TableCell className="p-1 border-r">
-                  <input
-                    type="date"
-                    value={row.fecha || ""}
-                    onChange={(e) => updateRow(row.id, "fecha", e.target.value)}
-                    className="w-full h-8 text-xs bg-transparent border-0 outline-none focus:ring-0 cursor-pointer px-1"
+                  <DatePicker
+                    date={row.fecha ? new Date(row.fecha + "T12:00:00") : undefined}
+                    setDate={(d) => updateRow(row.id, "fecha", d ? format(d, "yyyy-MM-dd") : "")}
+                    className="h-8 text-[11px] px-2 bg-transparent border-0 shadow-none hover:bg-muted/50 rounded"
+                    placeholder="-"
                   />
                 </TableCell>
 
                 {/* ESTADO */}
                 <TableCell className="p-1 border-r">
-                  <select
-                    value={row.status}
-                    onChange={(e) => updateRow(row.id, "status", e.target.value)}
-                    className={cn(
-                      "w-full h-7 text-[10px] font-semibold rounded border text-center appearance-none cursor-pointer px-1",
-                      STATUS_COLOR[row.status] ?? "bg-transparent text-muted-foreground border-border"
-                    )}
-                  >
-                    {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt} className="bg-white text-black font-normal">
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={row.status} onValueChange={(v) => updateRow(row.id, "status", v)}>
+                    <SelectTrigger
+                      className={cn(
+                        "h-8 text-[10px] font-semibold rounded border px-2 shadow-none [&>span]:line-clamp-none",
+                        STATUS_COLOR[row.status] ?? "bg-transparent text-muted-foreground border-border"
+                      )}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
 
                 {/* HERRAMIENTA SDCA */}
-                <TableCell className="p-1 border-r">
-                  <select
+                <TableCell className="p-1 border-r min-w-[100px]">
+                  <Input
                     value={row.herramientaSdca || ""}
                     onChange={(e) => updateRow(row.id, "herramientaSdca", e.target.value)}
-                    className="w-full h-7 text-[10px] rounded border border-border bg-transparent text-center appearance-none cursor-pointer px-1"
-                  >
-                    {SDCA_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt} className="bg-white text-black font-normal">
-                        {opt || "—"}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="SDCA..."
+                    className="h-8 text-[11px] bg-transparent border-0 shadow-none px-2 focus-visible:ring-1 rounded"
+                  />
                 </TableCell>
 
                 {/* Eliminar */}

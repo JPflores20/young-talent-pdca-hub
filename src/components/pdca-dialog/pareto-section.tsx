@@ -600,8 +600,8 @@ export function ParetoSection({
   setDataMap: (m: Record<string, ParetoItem[]>) => void;
   unit?: string;
   onUnitChange?: (new_unit: string) => void;
-  paretoTitles?: Record<string, string>;
-  onParetoTitlesChange?: (titles: Record<string, string>) => void;
+  paretoTitles?: Record<string, string> | undefined;
+  onParetoTitlesChange?: ((titles: Record<string, string>) => void) | undefined;
   isStepCompleted?: boolean;
   onToggleStep?: () => void;
 }) {

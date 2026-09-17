@@ -8,22 +8,21 @@ import type { Phase } from "@/data/pdca";
 import { parse_date_string } from "./utils/date_helpers";
 
 /** All trackable step IDs across every phase */
-const ALL_STEP_IDS = [
+export const ALL_STEP_IDS = [
   "step-1",               // Plan: Problem Statement
+  "step-2",               // Plan: Phase SDCA checklist
   "step-3",               // Do: Target vs Actual
   "step-4",               // Do: KPI Tree
   "step-5",               // Do: Pareto
-  "step-process-mapping",  // Check: Process Mapping
   "step-6",               // Check: Fishbone
   "step-7",               // Check: 5 Whys
-  "impactMatrix",          // Act: Impact Matrix
-  "step-8",               // Act: Action Plan
-  "step-9",               // Act: KPI Final
-  "step-10",              // Act: Gemba
-  "step-11",              // Act: Estandarización
+  "step-8",               // Act: Matriz de impacto y plan de acción
+  "step-9",               // Act: Gemba
+  "step-10",              // Act: KPI Final Result
+  "step-11",              // Act: Evidencia de acciones (GEMBA FINAL)
 ] as const;
 
-const TOTAL_STEPS = ALL_STEP_IDS.length;
+export const TOTAL_STEPS = ALL_STEP_IDS.length;
 
 interface HeaderProps {
   current_phase: Phase;

@@ -119,9 +119,9 @@ export function TimeSeriesYTD({
   onUnitChange?: (newUnit: string) => void;
   isStepCompleted?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
-  title?: string;
-  chartTitle?: string;
-  onTitleChange?: (newTitle: string) => void;
+  title?: string | undefined;
+  chartTitle?: string | undefined;
+  onTitleChange?: ((newTitle: string) => void) | undefined;
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
   

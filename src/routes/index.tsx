@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, Filter, Calendar, Trash2, CalendarClock, X, Target, CheckCircle2, Clock, AlertTriangle, Building, LayoutDashboard, Snowflake, Flame } from "lucide-react";
+import { Plus, Search, Filter, Calendar, Trash2, CalendarClock, X, Target, CheckCircle2, Clock, AlertTriangle, Building, LayoutDashboard, Snowflake, Flame, RefreshCw } from "lucide-react";
 import { format, isValid, isBefore, startOfDay, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -36,6 +36,14 @@ import {
 import { phases, type Phase, type Pdca } from "@/data/pdca";
 import { useAuth } from "@/context/auth-context";
 import { usePdcas } from "@/context/pdca-context";
+import { ALL_STEP_IDS, TOTAL_STEPS } from "@/components/pdca_dialog/pdca_dialog_header";
+
+function getComputedProgress(p: Pdca): number {
+  if (!p.completedSteps) return p.progreso || 0;
+  const completed_steps = new Set(p.completedSteps);
+  const completed_count = ALL_STEP_IDS.filter((id) => completed_steps.has(id)).length;
+  return TOTAL_STEPS > 0 ? Math.round((completed_count / TOTAL_STEPS) * 100) : 0;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -63,13 +71,20 @@ export const Route = createFileRoute("/")({
 function MisPdcas() {
   const { currentUser } = useAuth();
   // ← Single shared listener from PdcaProvider, no duplicate subscription
-  const { pdcaList, allPdcas } = usePdcas();
+  const { pdcaList, allPdcas, refresh } = usePdcas();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Phase | "Todas">("Todas");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deadlinePickerOpenId, setDeadlinePickerOpenId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refresh();
+    setIsRefreshing(false);
+  };
 
   const isAdmin = currentUser?.role === "admin";
   // Admin sees all PDCAs; regular user sees only their own (already filtered by context)
@@ -146,6 +161,7 @@ function MisPdcas() {
   const confirmDelete = async () => {
     if (deleteId) {
       await deletePdcaFromFirestore(deleteId);
+      await refresh();
       setDeleteId(null);
     }
   };
@@ -157,12 +173,14 @@ function MisPdcas() {
       const formatted = date && isValid(date) ? format(date, "dd/MM/yyyy", { locale: es }) : "";
       await updatePdcaDeadline(pdcaId, formatted || null);
     }
+    await refresh();
     setDeadlinePickerOpenId(null);
   };
 
   const handleRemoveDeadline = async (e: React.MouseEvent, pdcaId: string) => {
     e.stopPropagation();
     await updatePdcaDeadline(pdcaId, null);
+    await refresh();
   };
 
   const openPdca = (p: Pdca | null) => {
@@ -204,9 +222,14 @@ function MisPdcas() {
             {userPdcas.length} ciclos de mejora continua {currentUser?.role === 'admin' ? 'registrados en la plataforma (Vista Global Admin).' : `asignados a ${currentUser?.name || 'ti'}.`}
           </p>
         </div>
-        <Button size="lg" className="bg-primary shadow-sm hover:bg-brand-dark" onClick={() => openPdca(null)}>
-          <Plus /> Crear Nuevo PDCA
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing} title="Actualizar datos">
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button size="lg" className="bg-primary shadow-sm hover:bg-brand-dark" onClick={() => openPdca(null)}>
+            <Plus /> Crear Nuevo PDCA
+          </Button>
+        </div>
       </header>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -338,10 +361,10 @@ function MisPdcas() {
                     <span className="hidden h-1.5 w-20 overflow-hidden rounded-full bg-secondary sm:block">
                       <span
                         className="block h-full rounded-full bg-primary"
-                        style={{ width: `${p.progreso}%` }}
+                        style={{ width: `${getComputedProgress(p)}%` }}
                       />
                     </span>
-                    <span className="hidden sm:inline">{p.progreso}%</span>
+                    <span className="hidden sm:inline">{getComputedProgress(p)}%</span>
                   </span>
                 </TableCell>
                 {currentUser?.role === "admin" && (

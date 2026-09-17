@@ -8,7 +8,8 @@ export const use_pdca_autosave = (
   pdca_identifier: string,
   current_payload_getter: () => Pdca,
   is_editable: boolean,
-  current_user_name?: string
+  current_user_name?: string,
+  on_save_success?: () => Promise<void>
 ) => {
   const [is_saving, set_is_saving] = useState(false);
   const [has_unsaved_changes, set_has_unsaved_changes] = useState(false);
@@ -41,6 +42,12 @@ export const use_pdca_autosave = (
         await savePdcaToFirestore(payload_to_save);
         last_saved_json_ref.current = JSON.stringify(payload_to_save);
         set_has_unsaved_changes(false);
+        try {
+          // If refresh function is provided via closure or hook, it should be called here
+          if (on_save_success) {
+            await on_save_success();
+          }
+        } catch(e) {}
         toast.success("¡PDCA sincronizado con éxito en la base de datos!");
         return true;
       } catch (save_error) {

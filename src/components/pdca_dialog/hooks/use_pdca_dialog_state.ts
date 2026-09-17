@@ -62,6 +62,9 @@ export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?:
   );
   const [kpi_final_result_unit, set_kpi_final_result_unit] = useState<string>(initial_pdca.kpiFinalResultUnit || "");
   const [gemba_final_image, set_gemba_final_image] = useState<string | null>(initial_pdca.gembaFinalImage || null);
+  const [gemba_final_images, set_gemba_final_images] = useState<string[]>(
+    initial_pdca.gembaFinalImages || (initial_pdca.gembaFinalImage ? [initial_pdca.gembaFinalImage] : [])
+  );
   const [evidence_files, set_evidence_files] = useState<string[]>(initial_pdca.evidencias || []);
   const [kpi_document_files, set_kpi_document_files] = useState<string[]>(initial_pdca.kpiDocuments || []);
 
@@ -131,6 +134,7 @@ export const use_pdca_dialog_state = (initial_pdca: Pdca, current_user: { name?:
     kpi_final_result_data, set_kpi_final_result_data,
     kpi_final_result_unit, set_kpi_final_result_unit,
     gemba_final_image, set_gemba_final_image,
+    gemba_final_images, set_gemba_final_images,
     evidence_files, set_evidence_files,
     kpi_document_files, set_kpi_document_files,
     has_flavor_correlation, set_has_flavor_correlation,

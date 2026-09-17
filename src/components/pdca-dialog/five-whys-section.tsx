@@ -102,7 +102,7 @@ import { StepCard } from "@/components/ui/step-card";
 import { AutoResizeTextarea } from "./auto-resize-textarea";
 
 // ─── Comprimir imagen antes de subir ─────────────────────────────────────────
-function compressImage(file: File, maxWidth = 1600, quality = 0.82): Promise<Blob> {
+function compressImage(file: File, maxWidth = 2048, quality = 0.85): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);

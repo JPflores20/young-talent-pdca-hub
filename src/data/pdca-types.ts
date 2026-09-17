@@ -11,7 +11,9 @@ export type ActionItem = {
   // Campos nuevos (tabla de Plan de Acción)
   tema?: string;
   causaRaiz?: string;
+  causaRaiz2?: string;
   accion?: string;
+  accion2?: string;
   comentarios?: string;
   herramientaSdca?: string;
   // Campos legacy (compatibilidad)
@@ -28,7 +30,10 @@ export type ActionItem = {
   costo?: number | "";
   medioAmbiente?: number | "";
   servicio?: number | "";
+  resultados?: number | "";
   priorizar?: "SI" | "NO" | "";
+  quickWin?: "SI" | "NO" | "";
+  technologyRequired?: "SI" | "NO" | "";
 };
 
 export type PdcaComment = {
@@ -253,9 +258,12 @@ export type Pdca = {
   kpiFinalResultUnit?: string;
   gemba_final_image?: string | null;
   gembaFinalImage?: string | null;
+  gemba_final_images?: string[];
+  gembaFinalImages?: string[];
   kpi_documents?: string[];
   kpiDocuments?: string[];
   // Comentarios e Historial
   comentarios?: PdcaComment[];
   historial?: PdcaHistoryEvent[];
 };
+

@@ -48,6 +48,7 @@ function extract_pdcas_from_snapshot(snapshot_docs: { id: string; data: () => un
 }
 
 let is_seeding = false;
+let has_attempted_seed = false;
 
 /**
  * Obtiene todos los PDCAs de Firestore en una sola lectura.
@@ -62,10 +63,13 @@ export async function fetch_pdcas_from_firestore(max_limit?: number): Promise<Pd
     const docs = snapshot.docs.map((d) => ({ id: d.id, data: d.data }));
 
     if (!is_collection_seeded(snapshot.docs)) {
-      if (!is_seeding) {
+      if (!is_seeding && !has_attempted_seed) {
         is_seeding = true;
+        has_attempted_seed = true;
         try {
           await seed_initial_pdcas();
+        } catch (e) {
+          console.error("[pdca-firestore] Error seeding:", e);
         } finally {
           is_seeding = false;
         }
@@ -97,10 +101,13 @@ export function subscribe_to_pdcas(
     subscribe_query,
     async (snapshot) => {
       if (!is_collection_seeded(snapshot.docs)) {
-        if (!is_seeding) {
+        if (!is_seeding && !has_attempted_seed) {
           is_seeding = true;
+          has_attempted_seed = true;
           try {
             await seed_initial_pdcas();
+          } catch (e) {
+            console.error("[pdca-firestore] Error seeding:", e);
           } finally {
             is_seeding = false;
           }

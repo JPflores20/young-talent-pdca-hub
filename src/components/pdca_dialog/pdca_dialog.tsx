@@ -1,11 +1,12 @@
 import React, { useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
+import { usePdcas } from "@/context/pdca-context";
 import { use_pdca_dialog_state } from "./hooks/use_pdca_dialog_state";
 import { use_pdca_deadline } from "./hooks/use_pdca_deadline";
 import { use_pdca_autosave } from "./hooks/use_pdca_autosave";
-import { format_date_to_string } from "./utils/date_helpers";
-import { PdcaDialogHeader } from "./pdca_dialog_header";
+import { format_date_to_string, parse_date_string } from "./utils/date_helpers";
+import { PdcaDialogHeader, ALL_STEP_IDS, TOTAL_STEPS } from "./pdca_dialog_header";
 import { PdcaDialogFooter } from "./pdca_dialog_footer";
 import { PdcaPhasePlan } from "./pdca_phase_plan";
 import { PdcaPhaseDo } from "./pdca_phase_do";
@@ -51,6 +52,9 @@ export const PdcaDialog: React.FC<{
   const state = use_pdca_dialog_state(current_pdca, auth_user);
 
   const get_current_pdca_payload = useCallback((): Pdca => {
+    const completed_count = ALL_STEP_IDS.filter((id) => state.completed_steps.has(id)).length;
+    const computed_progress = TOTAL_STEPS > 0 ? Math.round((completed_count / TOTAL_STEPS) * 100) : 0;
+
     return {
       ...current_pdca,
       titulo: state.title_value,
@@ -65,6 +69,7 @@ export const PdcaDialog: React.FC<{
       kpiFinalResultData: state.kpi_final_result_data,
       kpiFinalResultUnit: state.kpi_final_result_unit,
       gembaFinalImage: state.gemba_final_image,
+      gembaFinalImages: state.gemba_final_images,
       evidencias: state.evidence_files,
       kpiDocuments: state.kpi_document_files,
       paretoDataMap: state.pareto_data_map,
@@ -87,6 +92,7 @@ export const PdcaDialog: React.FC<{
       historial: state.history_events,
       completedSteps: Array.from(state.completed_steps),
       completedPhases: Array.from(state.completed_phases),
+      progreso: computed_progress,
       fechaFinalizacion: state.deadline_date
         ? format_date_to_string(state.deadline_date)
         : current_pdca.fechaFinalizacion === "Sin límite"
@@ -101,11 +107,14 @@ export const PdcaDialog: React.FC<{
     };
   }, [current_pdca, state]);
 
+  const { refresh } = usePdcas();
+  
   const autosave = use_pdca_autosave(
     current_pdca.id,
     get_current_pdca_payload,
     is_editable,
-    auth_user?.name
+    auth_user?.name,
+    refresh
   );
 
   const handle_toggle_step = useCallback((step_id: string) => {
@@ -146,11 +155,11 @@ export const PdcaDialog: React.FC<{
         pdca_title={state.title_value}
         last_updated={current_pdca.actualizado}
         creation_date={
-          current_pdca.historial && current_pdca.historial.length > 0 
+          current_pdca.historial && current_pdca.historial.length > 0 && current_pdca.historial[0]
             ? new Date(current_pdca.historial[0].timestamp).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) 
             : "Desconocida"
         }
-        deadline_string={current_pdca.fechaFinalizacion}
+        deadline_string={current_pdca.fechaFinalizacion ?? null}
         completed_steps={state.completed_steps}
         is_saving_in_progress={autosave.is_saving}
         has_pending_modifications={autosave.has_unsaved_changes}
@@ -258,8 +267,8 @@ export const PdcaDialog: React.FC<{
             on_kpi_final_result_unit_change={(u) => { state.set_kpi_final_result_unit(u); autosave.mark_as_modified(); }}
             gemba_evidencias={state.evidence_files}
             on_gemba_evidencias_change={(imgs) => { state.set_evidence_files(imgs); autosave.mark_as_modified(); }}
-            gemba_final_image={state.gemba_final_image}
-            on_gemba_final_image_change={(i) => { state.set_gemba_final_image(i); autosave.mark_as_modified(); }}
+            gemba_final_images={state.gemba_final_images}
+            on_gemba_final_images_change={(imgs) => { state.set_gemba_final_images(imgs); autosave.mark_as_modified(); }}
             completed_steps={state.completed_steps}
             on_toggle_step={handle_toggle_step}
             is_editable={is_editable}

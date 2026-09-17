@@ -16,8 +16,8 @@ interface PhaseActProps {
   on_kpi_final_result_unit_change: (unit: string) => void;
   gemba_evidencias: string[];
   on_gemba_evidencias_change: (imgs: string[]) => void;
-  gemba_final_image: string | null;
-  on_gemba_final_image_change: (img: string | null) => void;
+  gemba_final_images: string[];
+  on_gemba_final_images_change: (imgs: string[]) => void;
   completed_steps: Set<string>;
   on_toggle_step: (step_id: string) => void;
   is_editable: boolean;
@@ -28,7 +28,7 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
   kpi_final_result_data, on_kpi_final_result_change,
   kpi_final_result_unit, on_kpi_final_result_unit_change,
   gemba_evidencias, on_gemba_evidencias_change,
-  gemba_final_image, on_gemba_final_image_change,
+  gemba_final_images, on_gemba_final_images_change,
   completed_steps, on_toggle_step,
   is_editable,
 }) => {
@@ -63,13 +63,12 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
         onToggleStep={() => on_toggle_step("step-10")}
       />
 
-      {/* PASO 11: Gemba Final — imagen/archivo único */}
-      <ImageUploadSection
-        image={gemba_final_image}
-        onChange={on_gemba_final_image_change}
-        title="PASO 11: GEMBA FINAL"
-        subtitle="Gestión de Evidencias Gemba"
-        description="Sube archivos, fotos del Gemba o documentos que respalden la estandarización del proceso final."
+      {/* PASO 11: Gemba Final — Evidencia de Acciones */}
+      <GembaEvidenciasStep
+        images={gemba_final_images}
+        onChange={on_gemba_final_images_change}
+        title="PASO 11: EVIDENCIA DE ACCIONES"
+        description="Sube archivos, fotos o documentos que respalden la estandarización del proceso final."
         isStepCompleted={completed_steps.has("step-11")}
         onToggleStep={() => on_toggle_step("step-11")}
       />

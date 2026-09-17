@@ -127,8 +127,8 @@ export function ImageUploadSection({
           let width = img.width;
           let height = img.height;
           
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
+          const MAX_WIDTH = 2048;
+          const MAX_HEIGHT = 2048;
           
           if (width > height) {
             if (width > MAX_WIDTH) {
@@ -151,7 +151,7 @@ export function ImageUploadSection({
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
             else reject(new Error("Error al comprimir la imagen"));
-          }, file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.7);
+          }, file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85);
         };
         img.onerror = () => reject(new Error("Error cargando imagen"));
         img.src = event.target?.result as string;
@@ -185,9 +185,9 @@ export function ImageUploadSection({
                   title="Clic para ver imagen completa"
                 />
               </DialogTrigger>
-              <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+              <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen p-0 bg-black/95 border-none shadow-none flex items-center justify-center !rounded-none">
                 <DialogTitle className="sr-only">Ver imagen completa</DialogTitle>
-                <div className="relative w-full h-full flex items-center justify-center bg-black/40 rounded-lg overflow-hidden">
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                   <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} centerZoomedOut={true}>
                     {({ zoomIn, zoomOut, resetTransform }) => (
                       <>
@@ -202,14 +202,14 @@ export function ImageUploadSection({
                             <RotateCcw className="size-4" />
                           </Button>
                         </div>
-                        <TransformComponent wrapperClass="w-full h-[90vh] !flex items-center justify-center cursor-move">
-                          <img 
-                            src={image} 
-                            alt={title} 
-                            className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg" 
-                            style={{ willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
-                          />
-                        </TransformComponent>
+                            <TransformComponent wrapperClass="w-full h-screen !flex items-center justify-center cursor-move">
+                              <img 
+                                src={image} 
+                                alt={title} 
+                                className="w-full h-full object-contain bg-white shadow-2xl" 
+                                style={{ willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
+                              />
+                            </TransformComponent>
                       </>
                     )}
                   </TransformWrapper>
@@ -376,8 +376,8 @@ export function MultiImageUploadSection({
               const canvas = document.createElement("canvas");
               let width = img.width;
               let height = img.height;
-              const MAX_WIDTH = 1200;
-              const MAX_HEIGHT = 1200;
+              const MAX_WIDTH = 2048;
+              const MAX_HEIGHT = 2048;
               if (width > height) {
                 if (width > MAX_WIDTH) {
                   height *= MAX_WIDTH / width;
@@ -396,7 +396,7 @@ export function MultiImageUploadSection({
               canvas.toBlob((blob) => {
                 if (blob) resolve(blob);
                 else reject(new Error("Error al comprimir la imagen"));
-              }, file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.7);
+              }, file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85);
             };
             img.onerror = () => reject(new Error("Error cargando imagen"));
             img.src = event.target?.result as string;
@@ -548,9 +548,9 @@ export function MultiImageUploadSection({
                       title="Clic para ver imagen completa"
                     />
                   </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+                  <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen p-0 bg-black/95 border-none shadow-none flex items-center justify-center !rounded-none">
                     <DialogTitle className="sr-only">Ver evidencia {i + 1}</DialogTitle>
-                    <div className="relative w-full h-full flex items-center justify-center bg-black/40 rounded-lg overflow-hidden">
+                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                       <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} centerZoomedOut={true}>
                         {({ zoomIn, zoomOut, resetTransform }) => (
                           <>
@@ -565,11 +565,11 @@ export function MultiImageUploadSection({
                                 <RotateCcw className="size-4" />
                               </Button>
                             </div>
-                            <TransformComponent wrapperClass="w-full h-[90vh] !flex items-center justify-center cursor-move">
+                            <TransformComponent wrapperClass="w-full h-screen !flex items-center justify-center cursor-move">
                               <img 
                                 src={img} 
                                 alt={`Evidencia ${i + 1}`} 
-                                className="max-w-full max-h-[90vh] object-contain bg-white rounded-md shadow-lg"
+                                className="w-full h-full object-contain bg-white shadow-2xl"
                                 style={{ willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
                               />
                             </TransformComponent>
