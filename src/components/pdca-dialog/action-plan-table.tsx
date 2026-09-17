@@ -30,9 +30,9 @@ const STATUS_OPTIONS = ["Pendiente", "En progreso", "Completada"] as const;
 const SDCA_OPTIONS = ["", "SDCA", "SOP", "OPL", "Lección de 1 Punto", "Otra"] as const;
 
 const STATUS_COLOR: Record<string, string> = {
-  "Pendiente":    "bg-[#fef7e0] text-[#b06000] border-[#b06000]/30",
-  "En progreso":  "bg-[#e8f0fe] text-[#1a73e8] border-[#1a73e8]/30",
-  "Completada":   "bg-[#e6f4ea] text-[#137333] border-[#137333]/30",
+  Pendiente: "bg-[#fef7e0] text-[#b06000] border-[#b06000]/30",
+  "En progreso": "bg-[#e8f0fe] text-[#1a73e8] border-[#1a73e8]/30",
+  Completada: "bg-[#e6f4ea] text-[#137333] border-[#137333]/30",
 };
 
 const SCORE_OPTIONS = [
@@ -42,12 +42,18 @@ const SCORE_OPTIONS = [
   { value: "1", label: "1 - Bajo" },
 ];
 
-const DEFAULT_FACTOR_LABELS = ["SEGURIDAD (S)", "CALIDAD (C)", "COSTO (C)", "MEDIO AMBIENTE (M)", "SERVICIO (S)"];
+const DEFAULT_FACTOR_LABELS = [
+  "SEGURIDAD (S)",
+  "CALIDAD (C)",
+  "COSTO (C)",
+  "MEDIO AMBIENTE (M)",
+  "SERVICIO (S)",
+];
 const FACTOR_KEYS = ["seguridad", "calidadHigiene", "costo", "medioAmbiente", "servicio"] as const;
 
 const getFactorValue = (val: any) => {
-  if (typeof val === 'number') return val;
-  if (typeof val === 'string') {
+  if (typeof val === "number") return val;
+  if (typeof val === "string") {
     if (val.includes("5")) return 5;
     if (val.includes("3")) return 3;
     if (val.includes("1")) return 1;
@@ -58,7 +64,7 @@ const getFactorValue = (val: any) => {
 function calcProduct(row: any): number {
   const vals = [row.seguridad, row.calidadHigiene, row.costo, row.medioAmbiente, row.servicio];
   const nums = vals.map(getFactorValue);
-  const validNums = nums.filter(n => n > 0);
+  const validNums = nums.filter((n) => n > 0);
   if (validNums.length === 0) return 0;
   return validNums.reduce((acc, val) => acc * val, 1);
 }
@@ -66,8 +72,16 @@ function calcProduct(row: any): number {
 function calculateImpactVisuals(row: any) {
   const p = calcProduct(row);
   if (p === 0) return { text: "-", color: "bg-transparent text-muted-foreground border-border" };
-  if (p <= 1) return { text: p.toString(), color: "bg-[#e6f4ea] text-[#137333] border-[#137333]/30 font-bold" };
-  if (p < 25) return { text: p.toString(), color: "bg-[#fef7e0] text-[#b06000] border-[#b06000]/30 font-bold" };
+  if (p <= 1)
+    return {
+      text: p.toString(),
+      color: "bg-[#e6f4ea] text-[#137333] border-[#137333]/30 font-bold",
+    };
+  if (p < 25)
+    return {
+      text: p.toString(),
+      color: "bg-[#fef7e0] text-[#b06000] border-[#b06000]/30 font-bold",
+    };
   return { text: p.toString(), color: "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30 font-bold" };
 }
 
@@ -132,7 +146,14 @@ export function ActionPlanTable({
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       headerRight={
-        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); addRow(); }}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            addRow();
+          }}
+        >
           <Plus className="mr-1.5 size-3.5" /> Agregar Acción
         </Button>
       }
@@ -140,10 +161,15 @@ export function ActionPlanTable({
       <StepInstructions>
         <p className="mb-1">
           1. Usa esto como{" "}
-          <span className="text-primary underline cursor-default">cualquier otro registro de acción en su MCRS</span>.
+          <span className="text-primary underline cursor-default">
+            cualquier otro registro de acción en su MCRS
+          </span>
+          .
         </p>
         <p>
-          2. Si una acción particular tuvo éxito en la eliminación de un síntoma o causa de raíz, indique si se necesita una herramienta SDCA o necesita ser actualizada para estandarizar el resultado.
+          2. Si una acción particular tuvo éxito en la eliminación de un síntoma o causa de raíz,
+          indique si se necesita una herramienta SDCA o necesita ser actualizada para estandarizar
+          el resultado.
         </p>
       </StepInstructions>
 
@@ -151,9 +177,15 @@ export function ActionPlanTable({
         <Table className="text-xs min-w-[1550px]">
           <TableHeader>
             <TableRow className="bg-[#0070c0] hover:bg-[#0070c0]">
-              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[200px] leading-tight">TEMA</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[200px] leading-tight">CAUSA RAÍZ</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[250px] leading-tight">ACCIÓN</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[200px] leading-tight">
+                TEMA
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[200px] leading-tight">
+                CAUSA RAÍZ
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center min-w-[250px] leading-tight">
+                ACCIÓN
+              </TableHead>
 
               {/* Factores Numéricos */}
               {DEFAULT_FACTOR_LABELS.map((label) => (
@@ -164,25 +196,33 @@ export function ActionPlanTable({
                   {label}
                 </TableHead>
               ))}
-              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[110px] leading-tight">RESULTADOS (R)</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">PRIORIZAR</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">QUICK WIN</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[110px] leading-tight">TECH REQUIRED</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[110px] leading-tight">
+                RESULTADOS (R)
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">
+                PRIORIZAR
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[95px] leading-tight">
+                QUICK WIN
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[110px] leading-tight">
+                TECH REQUIRED
+              </TableHead>
 
               {[
-                { label: "CAUSA RAÍZ",       w: "min-w-[150px]" },
-                { label: "ACCIÓN",           w: "min-w-[200px]" },
-                { label: "COMENTARIOS",      w: "min-w-[180px]" },
-                { label: "RESPONSABLE",      w: "min-w-[140px]" },
-                { label: "FECHA",            w: "min-w-[110px]" },
-                { label: "ESTADO",           w: "min-w-[110px]" },
-                { label: "SDCA",             w: "min-w-[100px]" },
+                { label: "CAUSA RAÍZ", w: "min-w-[150px]" },
+                { label: "ACCIÓN", w: "min-w-[200px]" },
+                { label: "COMENTARIOS", w: "min-w-[180px]" },
+                { label: "RESPONSABLE", w: "min-w-[140px]" },
+                { label: "FECHA", w: "min-w-[110px]" },
+                { label: "ESTADO", w: "min-w-[110px]" },
+                { label: "SDCA", w: "min-w-[100px]" },
               ].map(({ label, w }) => (
                 <TableHead
                   key={label}
                   className={cn(
                     "text-white font-bold h-8 py-1 px-2 border-r border-white/20 text-center leading-tight",
-                    w
+                    w,
                   )}
                 >
                   {label}
@@ -243,13 +283,13 @@ export function ActionPlanTable({
                     <TableCell key={key} className="p-1 border-r">
                       <div className="px-1 h-full flex items-center justify-center relative">
                         <Select
-                          value={cellValue || undefined}
+                          value={cellValue ? String(cellValue) : "-"}
                           onValueChange={(v) => updateRow(row.id, key, v === "-" ? "" : v)}
                         >
                           <SelectTrigger
                             className={cn(
                               "h-8 text-[11px] rounded border px-2 shadow-none focus:ring-1 focus:ring-primary [&>span]:line-clamp-none",
-                              getDropdownColor(cellValue)
+                              getDropdownColor(cellValue),
                             )}
                           >
                             <SelectValue placeholder="-" />
@@ -273,7 +313,12 @@ export function ActionPlanTable({
                     {(() => {
                       const impact = calculateImpactVisuals(row);
                       return (
-                        <div className={cn("flex items-center justify-center w-full h-8 text-[11px] rounded border", impact.color)}>
+                        <div
+                          className={cn(
+                            "flex items-center justify-center w-full h-8 text-[11px] rounded border",
+                            impact.color,
+                          )}
+                        >
                           {impact.text}
                         </div>
                       );
@@ -285,15 +330,17 @@ export function ActionPlanTable({
                 <TableCell className="p-1 border-r bg-muted/20">
                   <div className="h-full flex items-center justify-center relative">
                     <Select
-                      value={row.priorizar || undefined}
+                      value={row.priorizar || "-"}
                       onValueChange={(v) => updateRow(row.id, "priorizar", v === "-" ? "" : v)}
                     >
                       <SelectTrigger
                         className={cn(
                           "h-8 text-[11px] font-bold rounded border px-2 shadow-none [&>span]:line-clamp-none",
-                          row.priorizar === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
-                          row.priorizar === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
-                          "bg-white border-border"
+                          row.priorizar === "SI"
+                            ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30"
+                            : row.priorizar === "NO"
+                              ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30"
+                              : "bg-white border-border",
                         )}
                       >
                         <SelectValue placeholder="-" />
@@ -311,15 +358,17 @@ export function ActionPlanTable({
                 <TableCell className="p-1 border-r bg-muted/20">
                   <div className="h-full flex items-center justify-center relative">
                     <Select
-                      value={row.quickWin || undefined}
+                      value={row.quickWin || "-"}
                       onValueChange={(v) => updateRow(row.id, "quickWin", v === "-" ? "" : v)}
                     >
                       <SelectTrigger
                         className={cn(
                           "h-8 text-[11px] font-bold rounded border px-2 shadow-none [&>span]:line-clamp-none",
-                          row.quickWin === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
-                          row.quickWin === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
-                          "bg-white border-border"
+                          row.quickWin === "SI"
+                            ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30"
+                            : row.quickWin === "NO"
+                              ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30"
+                              : "bg-white border-border",
                         )}
                       >
                         <SelectValue placeholder="-" />
@@ -337,15 +386,19 @@ export function ActionPlanTable({
                 <TableCell className="p-1 border-r bg-muted/20">
                   <div className="h-full flex items-center justify-center relative">
                     <Select
-                      value={row.technologyRequired || undefined}
-                      onValueChange={(v) => updateRow(row.id, "technologyRequired", v === "-" ? "" : v)}
+                      value={row.technologyRequired || "-"}
+                      onValueChange={(v) =>
+                        updateRow(row.id, "technologyRequired", v === "-" ? "" : v)
+                      }
                     >
                       <SelectTrigger
                         className={cn(
                           "h-8 text-[11px] font-bold rounded border px-2 shadow-none [&>span]:line-clamp-none",
-                          row.technologyRequired === "SI" ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30" : 
-                          row.technologyRequired === "NO" ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30" : 
-                          "bg-white border-border"
+                          row.technologyRequired === "SI"
+                            ? "bg-[#e6f4ea] text-[#137333] border-[#137333]/30"
+                            : row.technologyRequired === "NO"
+                              ? "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30"
+                              : "bg-white border-border",
                         )}
                       >
                         <SelectValue placeholder="-" />
@@ -418,7 +471,8 @@ export function ActionPlanTable({
                     <SelectTrigger
                       className={cn(
                         "h-8 text-[10px] font-semibold rounded border px-2 shadow-none [&>span]:line-clamp-none",
-                        STATUS_COLOR[row.status] ?? "bg-transparent text-muted-foreground border-border"
+                        STATUS_COLOR[row.status] ??
+                          "bg-transparent text-muted-foreground border-border",
                       )}
                     >
                       <SelectValue />

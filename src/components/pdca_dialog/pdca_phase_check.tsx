@@ -16,10 +16,14 @@ interface PhaseCheckProps {
 }
 
 export const PdcaPhaseCheck: React.FC<PhaseCheckProps> = ({
-  process_mapping_files, on_process_mapping_files_change,
-  ishikawas, on_ishikawas_change,
-  five_whys_tables, on_five_whys_tables_change,
-  completed_steps, on_toggle_step,
+  process_mapping_files,
+  on_process_mapping_files_change,
+  ishikawas,
+  on_ishikawas_change,
+  five_whys_tables,
+  on_five_whys_tables_change,
+  completed_steps,
+  on_toggle_step,
 }) => {
   return (
     <div className="space-y-6">

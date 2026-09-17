@@ -12,7 +12,7 @@ import {
   RefreshCw,
   FileText,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   Bar,
@@ -30,7 +30,7 @@ import {
   Tooltip as RTooltip,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
 import { format, parseISO, isValid } from "date-fns";
 import { toast } from "sonner";
@@ -81,8 +81,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
-import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import {
+  phases,
+  DEFAULT_TARGET_VS_ACTUAL,
+  DEFAULT_PARETO_DATA_MAP,
+  DEFAULT_VPO_CHECKPOINTS,
+  DEFAULT_PARTICIPANTES,
+  type ParticipantesData,
+  type ActionItem,
+  type Pdca,
+  type Phase,
+  type ParetoItem,
+  type VpoCheckpointItem,
+  type DefinicionMeta,
+  type ImpactMatrixRow,
+  type FiveWhysTableData,
+  type IshikawaItem,
+} from "@/data/pdca";
+import {
+  PdcaGoalDefinition,
+  PdcaParticipants,
+  DEFAULT_DEFINICION_META,
+} from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "../kpi-tree";
 import { ActionKanban } from "../action-kanban";
 // Removed firestore imports
@@ -100,7 +120,6 @@ import {
 } from "@/components/ui/accordion";
 import { StepCard } from "@/components/ui/step-card";
 
-
 export function AutoResizeTextarea({
   value,
   onChange,
@@ -113,7 +132,7 @@ export function AutoResizeTextarea({
   placeholder?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -136,11 +155,9 @@ export function AutoResizeTextarea({
       rows={1}
       className={cn(
         "w-full resize-none overflow-hidden bg-transparent focus:outline-none focus-visible:ring-1",
-        className
+        className,
       )}
       style={{ minHeight: "32px", height: "auto" }}
     />
   );
 }
-
-

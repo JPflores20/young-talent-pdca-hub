@@ -19,18 +19,14 @@ const SAMPLE_ITEMS: ParetoItem[] = [
 
 describe("use_pareto_data › pareto_data calculation", () => {
   it("ordena los items de mayor a menor gap", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: SAMPLE_ITEMS }));
     expect(result.current.pareto_data[0].area).toBe("Esters");
     expect(result.current.pareto_data[0].gap).toBe(8);
     expect(result.current.pareto_data[1].area).toBe("Sweet");
   });
 
   it("acumula el porcentaje acumulado correctamente", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: SAMPLE_ITEMS }));
     const total = 8 + 7 + 6 + 4; // 25
     const expected_first = (8 / total) * 100;
     const expected_second = ((8 + 7) / total) * 100;
@@ -39,24 +35,18 @@ describe("use_pareto_data › pareto_data calculation", () => {
   });
 
   it("el último ítem acumula exactamente 100%", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: SAMPLE_ITEMS }));
     const last = result.current.pareto_data[result.current.pareto_data.length - 1];
     expect(last.cum_pct).toBeCloseTo(100, 1);
   });
 
   it("calcula total_gap sumando todos los gaps", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: SAMPLE_ITEMS }));
     expect(result.current.total_gap).toBe(25);
   });
 
   it("retorna arreglo vacío cuando no hay items", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: [] })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: [] }));
     expect(result.current.pareto_data).toHaveLength(0);
     expect(result.current.total_gap).toBe(0);
   });
@@ -68,7 +58,7 @@ describe("use_pareto_data › add_row", () => {
   it("llama a on_items_change con una fila vacía agregada", () => {
     const mock_change = vi.fn();
     const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change })
+      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change }),
     );
     act(() => {
       result.current.add_row();
@@ -82,9 +72,7 @@ describe("use_pareto_data › add_row", () => {
   });
 
   it("no lanza error cuando on_items_change no está definido", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: SAMPLE_ITEMS }));
     expect(() => act(() => result.current.add_row())).not.toThrow();
   });
 });
@@ -95,7 +83,7 @@ describe("use_pareto_data › remove_row", () => {
   it("elimina la fila con el id dado", () => {
     const mock_change = vi.fn();
     const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change })
+      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change }),
     );
     act(() => {
       result.current.remove_row(2); // remove "Sweet"
@@ -112,7 +100,7 @@ describe("use_pareto_data › update_row", () => {
   it("actualiza el campo 'area' de la fila correcta", () => {
     const mock_change = vi.fn();
     const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change })
+      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change }),
     );
     act(() => {
       result.current.update_row(1, "area", "Estery");
@@ -124,7 +112,7 @@ describe("use_pareto_data › update_row", () => {
   it("actualiza el campo 'gap' de la fila correcta", () => {
     const mock_change = vi.fn();
     const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change })
+      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change }),
     );
     act(() => {
       result.current.update_row(3, "gap", 99);
@@ -136,7 +124,7 @@ describe("use_pareto_data › update_row", () => {
   it("no modifica otras filas al actualizar", () => {
     const mock_change = vi.fn();
     const { result } = renderHook(() =>
-      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change })
+      use_pareto_data({ items: SAMPLE_ITEMS, on_items_change: mock_change }),
     );
     act(() => {
       result.current.update_row(1, "gap", 100);
@@ -151,30 +139,22 @@ describe("use_pareto_data › update_row", () => {
 
 describe("use_pareto_data › format_value", () => {
   it("formatea con unidad de porcentaje", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: [], unit: "%" })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: [], unit: "%" }));
     expect(result.current.format_value(8)).toBe("8.00%");
   });
 
   it("formatea con unidad de dólar", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: [], unit: "$" })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: [], unit: "$" }));
     expect(result.current.format_value(1000)).toBe("$1,000.00");
   });
 
   it("formatea sin unidad", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: [], unit: "" })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: [], unit: "" }));
     expect(result.current.format_value(42.5)).toBe("42.50");
   });
 
   it("retorna cadena vacía para valores nulos", () => {
-    const { result } = renderHook(() =>
-      use_pareto_data({ items: [], unit: "%" })
-    );
+    const { result } = renderHook(() => use_pareto_data({ items: [], unit: "%" }));
     expect(result.current.format_value(null)).toBe("");
     expect(result.current.format_value(undefined)).toBe("");
     expect(result.current.format_value(NaN)).toBe("");
@@ -187,7 +167,7 @@ describe("use_pareto_data › handle_import_excel", () => {
   it("agrega categorías del texto importado", () => {
     const mock_change = vi.fn();
     const { result } = renderHook(() =>
-      use_pareto_data({ items: [], on_items_change: mock_change })
+      use_pareto_data({ items: [], on_items_change: mock_change }),
     );
     act(() => {
       result.current.handle_import_excel("Falla A\t10\nFalla B\t5");
@@ -200,7 +180,7 @@ describe("use_pareto_data › handle_import_excel", () => {
   it("agrupa categorías duplicadas sumando sus valores", () => {
     const mock_change = vi.fn();
     const { result } = renderHook(() =>
-      use_pareto_data({ items: [], on_items_change: mock_change })
+      use_pareto_data({ items: [], on_items_change: mock_change }),
     );
     act(() => {
       result.current.handle_import_excel("Falla A\t10\nFalla A\t15");
@@ -213,7 +193,7 @@ describe("use_pareto_data › handle_import_excel", () => {
     const mock_change = vi.fn();
     const existing: ParetoItem[] = [{ id: 1, area: "Falla A", gap: 10 }];
     const { result } = renderHook(() =>
-      use_pareto_data({ items: existing, on_items_change: mock_change })
+      use_pareto_data({ items: existing, on_items_change: mock_change }),
     );
     act(() => {
       result.current.handle_import_excel("Falla B\t5");

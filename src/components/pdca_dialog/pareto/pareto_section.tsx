@@ -10,18 +10,30 @@ import type { ParetoSectionProps, ParetoItem } from "./pareto_types";
 
 function parse_drill_down_path(
   path: string,
-  fallback_index: number
+  fallback_index: number,
 ): { actual_path: string; level: number; category: string } {
   if (!path.includes("level-")) {
-    return { actual_path: `level-${fallback_index + 1}-${path}`, level: fallback_index + 1, category: path };
+    return {
+      actual_path: `level-${fallback_index + 1}-${path}`,
+      level: fallback_index + 1,
+      category: path,
+    };
   }
   if (path.includes("-level-")) {
     const parts = path.split("-level-");
     const rest = (parts[1] ?? "").split("-");
-    return { actual_path: path, level: parseInt(rest[0] ?? "1", 10), category: rest.slice(1).join("-") };
+    return {
+      actual_path: path,
+      level: parseInt(rest[0] ?? "1", 10),
+      category: rest.slice(1).join("-"),
+    };
   }
   const parts = path.split("-");
-  return { actual_path: path, level: parseInt(parts[1] ?? "1", 10), category: parts.slice(2).join("-") };
+  return {
+    actual_path: path,
+    level: parseInt(parts[1] ?? "1", 10),
+    category: parts.slice(2).join("-"),
+  };
 }
 
 export function ParetoSection({
@@ -67,10 +79,10 @@ export function ParetoSection({
 
   function handle_close_drill(path_to_remove: string) {
     const is_legacy = drill_downs.length > 0 && !drill_downs[0].includes("level-");
-    const current = is_legacy
-      ? drill_downs.map((d, i) => `level-${i + 1}-${d}`)
-      : [...drill_downs];
-    set_drill_downs(current.filter((p) => p !== path_to_remove && !p.startsWith(`${path_to_remove}-`)));
+    const current = is_legacy ? drill_downs.map((d, i) => `level-${i + 1}-${d}`) : [...drill_downs];
+    set_drill_downs(
+      current.filter((p) => p !== path_to_remove && !p.startsWith(`${path_to_remove}-`)),
+    );
     const new_map = { ...data_map };
     Object.keys(new_map).forEach((k) => {
       if (k === path_to_remove || k.startsWith(`${path_to_remove}-`)) delete new_map[k];
@@ -134,4 +146,3 @@ export function ParetoSection({
     </div>
   );
 }
-

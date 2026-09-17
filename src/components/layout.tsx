@@ -1,16 +1,16 @@
 import { ReactNode, useState, useEffect, useMemo } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { 
-  LayoutDashboard, 
-  ClipboardList, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  ClipboardList,
+  LogOut,
   Menu,
   X,
   Bell,
   Users,
   CheckCircle2,
   ArrowRight,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
@@ -31,7 +31,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { allPdcas } = usePdcas();
   const [deadlinePickerOpenId, setDeadlinePickerOpenId] = useState<string | null>(null);
 
-  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined, isNoLimit = false) => {
+  const handleDeadlineChange = async (
+    pdcaId: string,
+    date: Date | undefined,
+    isNoLimit = false,
+  ) => {
     if (isNoLimit) {
       await updatePdcaDeadline(pdcaId, "Sin límite");
     } else {
@@ -45,7 +49,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     if (currentUser?.role !== "admin") return [];
     return allPdcas.filter((p) => !p.fechaFinalizacion || p.fechaFinalizacion.trim() === "");
   }, [allPdcas, currentUser?.role]);
-  
+
   const publicRoutes = ["/login", "/register", "/forgot-password"];
   const isPublicRoute = publicRoutes.includes(currentPath);
 
@@ -56,7 +60,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
   }, [loading, currentUser, isPublicRoute, navigate]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">Cargando plataforma...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">
+        Cargando plataforma...
+      </div>
+    );
   }
 
   if (isPublicRoute) {
@@ -79,7 +87,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
     navItems.push({ href: "/admin", label: "Administración", icon: Users });
   }
 
-  const userInitials = currentUser.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+  const userInitials = currentUser.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -87,9 +100,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <aside className="hidden w-[280px] flex-col bg-gradient-to-b from-[#0a1428] via-[#0f1c38] to-[#080e1e] text-white border-r border-slate-800/80 md:flex shadow-xl z-10 transition-all">
         <div className="flex flex-col items-center justify-center pt-6 pb-3 px-6 text-center shrink-0">
           <div className="size-16 rounded-2xl bg-white/10 p-1.5 flex items-center justify-center border border-white/15 shadow-md mb-2.5 hover:scale-105 transition-transform">
-            <img 
-              src="/logos/MAZ.jpeg" 
-              alt="Logo MAZ" 
+            <img
+              src="/logos/MAZ.jpeg"
+              alt="Logo MAZ"
               className="h-13 w-13 object-cover rounded-xl"
             />
           </div>
@@ -100,13 +113,15 @@ export function AppLayout({ children }: { children: ReactNode }) {
             Zacatecas
           </span>
         </div>
-        
+
         <div className="px-5 py-2">
           <div className="h-px w-full bg-white/10"></div>
         </div>
-        
+
         <nav className="flex-1 space-y-1 p-4 pt-2">
-          <div className="text-xs font-bold text-blue-200/60 mb-3 uppercase tracking-wider px-3">Menú Principal</div>
+          <div className="text-xs font-bold text-blue-200/60 mb-3 uppercase tracking-wider px-3">
+            Menú Principal
+          </div>
           {navItems.map((item) => {
             const isActive = currentPath === item.href;
             return (
@@ -119,7 +134,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     : "text-blue-100/75 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                <item.icon className={`size-5 shrink-0 transition-colors ${isActive ? "text-white" : "text-blue-200/70 group-hover:text-white"}`} />
+                <item.icon
+                  className={`size-5 shrink-0 transition-colors ${isActive ? "text-white" : "text-blue-200/70 group-hover:text-white"}`}
+                />
                 <span className="truncate">{item.label}</span>
                 {isActive && <div className="ml-auto size-1.5 rounded-full bg-white/60 shrink-0" />}
               </Link>
@@ -134,19 +151,23 @@ export function AppLayout({ children }: { children: ReactNode }) {
               {userInitials}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white leading-none">{currentUser.name}</p>
+              <p className="truncate text-sm font-semibold text-white leading-none">
+                {currentUser.name}
+              </p>
               <p className="truncate text-xs text-blue-300/80 mt-0.5">{currentUser.area}</p>
             </div>
-            <span className={`shrink-0 inline-flex items-center text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
-              currentUser.role === "admin" 
-                ? "bg-amber-400/20 text-amber-300 border border-amber-400/30" 
-                : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-            }`}>
+            <span
+              className={`shrink-0 inline-flex items-center text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
+                currentUser.role === "admin"
+                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
+                  : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+              }`}
+            >
               {currentUser.role === "admin" ? "Admin" : "User"}
             </span>
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full justify-start text-blue-200/70 hover:bg-red-500/15 hover:text-red-300 h-9 text-sm font-medium rounded-xl gap-3"
             onClick={handleLogout}
           >
@@ -161,28 +182,32 @@ export function AppLayout({ children }: { children: ReactNode }) {
         {/* Header */}
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-800/80 bg-gradient-to-r from-[#0a1428] via-[#0f1c38] to-[#0a1428] text-white px-4 md:px-8 shadow-md relative z-0">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setMobileMenuOpen(true)}
               className="text-white hover:bg-white/10 md:hidden"
             >
               <Menu className="size-5" />
             </Button>
-            <img 
-              src="/logos/MAZ.jpeg" 
-              alt="Logo MAZ" 
+            <img
+              src="/logos/MAZ.jpeg"
+              alt="Logo MAZ"
               className="h-7 w-auto object-contain rounded md:hidden"
             />
           </div>
 
           <div className="flex items-center gap-3">
             <ThemeToggle className="text-blue-200/80 hover:bg-white/10 hover:text-white" />
-            
+
             {/* Notification Bell */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative text-blue-200/80 hover:bg-white/10 hover:text-white">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative text-blue-200/80 hover:bg-white/10 hover:text-white"
+                >
                   <Bell className="size-5" />
                   {currentUser.role === "admin" && pendingDeadlinePdcas.length > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white shadow-md">
@@ -191,7 +216,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-80 sm:w-[380px] p-0 border border-border bg-background text-foreground shadow-2xl rounded-2xl overflow-hidden">
+              <PopoverContent
+                align="end"
+                className="w-80 sm:w-[380px] p-0 border border-border bg-background text-foreground shadow-2xl rounded-2xl overflow-hidden"
+              >
                 {/* Header */}
                 <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/40">
                   <div className="flex items-center gap-2.5">
@@ -199,8 +227,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
                       <Bell className="size-3.5 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-sm text-foreground leading-none">Notificaciones</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Panel de administración</p>
+                      <h4 className="font-semibold text-sm text-foreground leading-none">
+                        Notificaciones
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Panel de administración
+                      </p>
                     </div>
                   </div>
                   {currentUser.role === "admin" && pendingDeadlinePdcas.length > 0 && (
@@ -220,16 +252,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
                           onOpenChange={(open) => setDeadlinePickerOpenId(open ? p.id : null)}
                         >
                           <PopoverTrigger asChild>
-                            <div
-                              className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/70 border border-transparent hover:border-border transition-all group cursor-pointer"
-                            >
+                            <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/70 border border-transparent hover:border-border transition-all group cursor-pointer">
                               <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 mt-0.5">
                                 <Calendar className="size-4 text-amber-600 dark:text-amber-400" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-foreground truncate leading-snug">{p.titulo || "Sin título"}</p>
+                                <p className="text-sm font-semibold text-foreground truncate leading-snug">
+                                  {p.titulo || "Sin título"}
+                                </p>
                                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                                  {p.autor || "Usuario"} · <span className="text-foreground/60">{p.area}</span>
+                                  {p.autor || "Usuario"} ·{" "}
+                                  <span className="text-foreground/60">{p.area}</span>
                                 </p>
                                 <div className="flex items-center gap-1 mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
                                   <span>Asignar fecha límite</span>
@@ -265,7 +298,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
                           <CheckCircle2 className="size-6 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <p className="font-semibold text-sm text-foreground">¡Todo al día!</p>
-                        <p className="mt-1 text-xs text-muted-foreground max-w-[200px] mx-auto">Todos los PDCAs tienen fecha límite asignada.</p>
+                        <p className="mt-1 text-xs text-muted-foreground max-w-[200px] mx-auto">
+                          Todos los PDCAs tienen fecha límite asignada.
+                        </p>
                       </div>
                     )
                   ) : (
@@ -274,7 +309,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
                         <CheckCircle2 className="size-6 text-blue-600 dark:text-blue-400" />
                       </div>
                       <p className="font-semibold text-sm text-foreground">Sin notificaciones</p>
-                      <p className="mt-1 text-xs text-muted-foreground max-w-[200px] mx-auto">No tienes avisos pendientes por el momento.</p>
+                      <p className="mt-1 text-xs text-muted-foreground max-w-[200px] mx-auto">
+                        No tienes avisos pendientes por el momento.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -300,14 +337,21 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="relative flex w-64 max-w-xs flex-col bg-brand-dark text-white shadow-xl">
               <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
                 <div className="flex items-center gap-3">
-                  <img 
-                    src="/logos/MAZ.jpeg" 
-                    alt="Logo MAZ" 
+                  <img
+                    src="/logos/MAZ.jpeg"
+                    alt="Logo MAZ"
                     className="h-8 w-auto object-contain rounded"
                   />
-                  <span className="font-display text-lg font-bold uppercase tracking-wide">PDCA Hub</span>
+                  <span className="font-display text-lg font-bold uppercase tracking-wide">
+                    PDCA Hub
+                  </span>
                 </div>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   <X className="size-5" />
                 </Button>
               </div>
@@ -329,8 +373,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 ))}
               </nav>
               <div className="border-t border-white/10 p-4">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start text-white/70 hover:bg-white/10 hover:text-white"
                   onClick={() => {
                     handleLogout();
@@ -350,9 +394,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         )}
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
   );

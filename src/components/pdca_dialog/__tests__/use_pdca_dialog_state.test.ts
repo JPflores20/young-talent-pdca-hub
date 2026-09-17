@@ -24,7 +24,7 @@ const mock_pdca: Pdca = {
 describe("use_pdca_dialog_state", () => {
   it("debe inicializar correctamente con los valores provistos del PDCA", () => {
     const { result } = renderHook(() =>
-      use_pdca_dialog_state(mock_pdca, { name: "Admin", email: "admin@test.com" })
+      use_pdca_dialog_state(mock_pdca, { name: "Admin", email: "admin@test.com" }),
     );
 
     expect(result.current.title_value).toBe("Optimización de Envasado");
@@ -35,7 +35,7 @@ describe("use_pdca_dialog_state", () => {
 
   it("debe permitir cambiar de fase activa y modificar el título", () => {
     const { result } = renderHook(() =>
-      use_pdca_dialog_state(mock_pdca, { name: "Admin", email: "admin@test.com" })
+      use_pdca_dialog_state(mock_pdca, { name: "Admin", email: "admin@test.com" }),
     );
 
     act(() => {

@@ -1,6 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, Filter, Calendar, Trash2, CalendarClock, X, Target, CheckCircle2, Clock, AlertTriangle, Building, LayoutDashboard, Snowflake, Flame, RefreshCw } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  Trash2,
+  CalendarClock,
+  X,
+  Target,
+  CheckCircle2,
+  Building,
+  LayoutDashboard,
+  Snowflake,
+  Flame,
+  RefreshCw,
+} from "lucide-react";
 import { format, isValid, isBefore, startOfDay, parse } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -29,10 +44,7 @@ import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { PhaseBadge } from "@/components/pdca-badge";
 
 import { PdcaDialog } from "@/components/pdca-dialog";
-import { 
-  deletePdcaFromFirestore,
-  updatePdcaDeadline,
-} from "@/services/pdca-service";
+import { deletePdcaFromFirestore, updatePdcaDeadline } from "@/services/pdca-service";
 import { phases, type Phase, type Pdca } from "@/data/pdca";
 import { useAuth } from "@/context/auth-context";
 import { usePdcas } from "@/context/pdca-context";
@@ -51,8 +63,7 @@ export const Route = createFileRoute("/")({
       { title: "Mis PDCAs · VPO Grupo Modelo" },
       {
         name: "description",
-        content:
-          "Crea, da seguimiento y cierra tus reportes PDCA de mejora continua.",
+        content: "Crea, da seguimiento y cierra tus reportes PDCA de mejora continua.",
       },
       { property: "og:title", content: "Mis PDCAs · VPO Grupo Modelo" },
       {
@@ -105,7 +116,7 @@ function MisPdcas() {
 
     const today = startOfDay(new Date());
 
-    userPdcas.forEach(p => {
+    userPdcas.forEach((p) => {
       const isClosed = p.fase === "Act" && p.progreso === 100;
       if (isClosed) {
         cerrados++;
@@ -166,7 +177,11 @@ function MisPdcas() {
     }
   };
 
-  const handleDeadlineChange = async (pdcaId: string, date: Date | undefined, isNoLimit = false) => {
+  const handleDeadlineChange = async (
+    pdcaId: string,
+    date: Date | undefined,
+    isNoLimit = false,
+  ) => {
     if (isNoLimit) {
       await updatePdcaDeadline(pdcaId, "Sin límite");
     } else {
@@ -196,15 +211,15 @@ function MisPdcas() {
   if (selected || isCreatingNew) {
     return (
       <div className="mx-auto w-full max-w-[1700px] px-6 py-6 sm:px-10 lg:px-12">
-        <PdcaDialog 
-          pdca={selected} 
-          open={true} 
-          onOpenChange={(open) => { 
+        <PdcaDialog
+          pdca={selected}
+          open={true}
+          onOpenChange={(open) => {
             if (!open) {
               setSelectedId(null);
               setIsCreatingNew(false);
-            } 
-          }} 
+            }
+          }}
         />
       </div>
     );
@@ -219,14 +234,27 @@ function MisPdcas() {
           </p>
           <h1 className="mt-1 text-3xl font-bold uppercase">Mis PDCAs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {userPdcas.length} ciclos de mejora continua {currentUser?.role === 'admin' ? 'registrados en la plataforma (Vista Global Admin).' : `asignados a ${currentUser?.name || 'ti'}.`}
+            {userPdcas.length} ciclos de mejora continua{" "}
+            {currentUser?.role === "admin"
+              ? "registrados en la plataforma (Vista Global Admin)."
+              : `asignados a ${currentUser?.name || "ti"}.`}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing} title="Actualizar datos">
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Actualizar datos"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>
-          <Button size="lg" className="bg-primary shadow-sm hover:bg-brand-dark" onClick={() => openPdca(null)}>
+          <Button
+            size="lg"
+            className="bg-primary shadow-sm hover:bg-brand-dark"
+            onClick={() => openPdca(null)}
+          >
             <Plus /> Crear Nuevo PDCA
           </Button>
         </div>
@@ -240,7 +268,7 @@ function MisPdcas() {
             Check: "border-t-phase-check",
             Act: "border-t-phase-act",
           }[phase];
-          
+
           return (
             <button
               key={phase}
@@ -256,16 +284,14 @@ function MisPdcas() {
                   {userPdcas.filter((p) => p.fase === phase).length}
                 </span>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Proyectos en fase {phase}
-              </p>
+              <p className="mt-3 text-xs text-muted-foreground">Proyectos en fase {phase}</p>
             </button>
           );
         })}
       </div>
 
       {userPdcas.length > 0 && (
-        <div className="mt-8 mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
               <Target className="size-6" />
@@ -275,7 +301,7 @@ function MisPdcas() {
               <h3 className="text-2xl font-bold">{metrics.activos}</h3>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
               <CheckCircle2 className="size-6" />
@@ -293,23 +319,13 @@ function MisPdcas() {
             <div className="flex-1">
               <p className="text-sm font-medium text-muted-foreground mb-1">Por Área (Activos)</p>
               <div className="flex items-center gap-3 text-sm font-semibold">
-                <span className="flex items-center gap-1 text-cyan-600 dark:text-cyan-400"><Snowflake className="size-3"/> {metrics.bloqueFrio}</span>
+                <span className="flex items-center gap-1 text-cyan-600 dark:text-cyan-400">
+                  <Snowflake className="size-3" /> {metrics.bloqueFrio}
+                </span>
                 <span className="text-border">|</span>
-                <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400"><Flame className="size-3"/> {metrics.cocimientos}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-              <AlertTriangle className="size-6" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground mb-1">Tiempos (Activos)</p>
-              <div className="flex items-center gap-3 text-sm font-semibold">
-                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><Clock className="size-3"/> {metrics.aTiempo}</span>
-                <span className="text-border">|</span>
-                <span className="flex items-center gap-1 text-red-600 dark:text-red-400"><CalendarClock className="size-3"/> {metrics.vencidos}</span>
+                <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                  <Flame className="size-3" /> {metrics.cocimientos}
+                </span>
               </div>
             </div>
           </div>
@@ -321,7 +337,11 @@ function MisPdcas() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder={currentUser?.role === "admin" ? "Buscar por título, área o autor..." : "Buscar por título o área..."}
+              placeholder={
+                currentUser?.role === "admin"
+                  ? "Buscar por título, área o autor..."
+                  : "Buscar por título o área..."
+              }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-9 text-xs"
@@ -340,20 +360,36 @@ function MisPdcas() {
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/80 hover:bg-secondary/80">
-              <TableHead className="font-semibold text-foreground/80">Título del Proyecto</TableHead>
+              <TableHead className="font-semibold text-foreground/80">
+                Título del Proyecto
+              </TableHead>
               {currentUser?.role === "admin" && (
-                <TableHead className="hidden sm:table-cell font-semibold text-foreground/80">Autor / Creador</TableHead>
+                <TableHead className="hidden sm:table-cell font-semibold text-foreground/80">
+                  Autor / Creador
+                </TableHead>
               )}
-              <TableHead className="hidden md:table-cell font-semibold text-foreground/80">Área</TableHead>
+              <TableHead className="hidden md:table-cell font-semibold text-foreground/80">
+                Área
+              </TableHead>
               <TableHead className="w-32 font-semibold text-foreground/80">Fase Actual</TableHead>
-              <TableHead className="hidden w-36 lg:table-cell font-semibold text-foreground/80">Fecha Límite</TableHead>
-              <TableHead className="hidden w-40 lg:table-cell font-semibold text-foreground/80">Actualización</TableHead>
-              <TableHead className="w-24 text-right font-semibold text-foreground/80">Acción</TableHead>
+              <TableHead className="hidden w-36 lg:table-cell font-semibold text-foreground/80">
+                Fecha Límite
+              </TableHead>
+              <TableHead className="hidden w-40 lg:table-cell font-semibold text-foreground/80">
+                Actualización
+              </TableHead>
+              <TableHead className="w-24 text-right font-semibold text-foreground/80">
+                Acción
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((p) => (
-              <TableRow key={p.id} className="cursor-pointer transition-colors hover:bg-secondary/30" onClick={() => setSelectedId(p.id)}>
+              <TableRow
+                key={p.id}
+                className="cursor-pointer transition-colors hover:bg-secondary/30"
+                onClick={() => setSelectedId(p.id)}
+              >
                 <TableCell>
                   <span className="block font-semibold">{p.titulo}</span>
                   <span className="mt-0.5 flex items-center gap-2 font-mono text-xs text-muted-foreground">
@@ -369,8 +405,14 @@ function MisPdcas() {
                 </TableCell>
                 {currentUser?.role === "admin" && (
                   <TableCell className="hidden sm:table-cell text-xs">
-                    <span className="font-medium text-foreground block">{p.autor || "Sin autor"}</span>
-                    {p.autorEmail && <span className="text-[11px] text-muted-foreground block">{p.autorEmail}</span>}
+                    <span className="font-medium text-foreground block">
+                      {p.autor || "Sin autor"}
+                    </span>
+                    {p.autorEmail && (
+                      <span className="text-[11px] text-muted-foreground block">
+                        {p.autorEmail}
+                      </span>
+                    )}
                   </TableCell>
                 )}
                 <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
@@ -391,11 +433,16 @@ function MisPdcas() {
                         if (isValid(parsed)) deadlineDate = parsed;
                       }
                     }
-                    const isExpired = deadlineDate ? isBefore(startOfDay(deadlineDate), startOfDay(new Date())) : false;
+                    const isExpired = deadlineDate
+                      ? isBefore(startOfDay(deadlineDate), startOfDay(new Date()))
+                      : false;
 
                     if (isAdmin) {
                       return (
-                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="flex items-center gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Popover
                             open={deadlinePickerOpenId === p.id}
                             onOpenChange={(open) => setDeadlinePickerOpenId(open ? p.id : null)}
@@ -406,8 +453,8 @@ function MisPdcas() {
                                   isExpired
                                     ? "border-red-400/50 text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
                                     : deadlineDate || isNoLimit
-                                    ? "border-border text-foreground bg-transparent"
-                                    : "border-dashed border-muted-foreground/40 text-muted-foreground/60 italic"
+                                      ? "border-border text-foreground bg-transparent"
+                                      : "border-dashed border-muted-foreground/40 text-muted-foreground/60 italic"
                                 }`}
                               >
                                 <CalendarClock className="size-3.5 shrink-0" />
@@ -416,7 +463,11 @@ function MisPdcas() {
                                 ) : deadlineDate ? (
                                   <>
                                     {deadlineStr}
-                                    {isExpired && <span className="ml-1 text-[10px] font-bold uppercase bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1 rounded">Vencida</span>}
+                                    {isExpired && (
+                                      <span className="ml-1 text-[10px] font-bold uppercase bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1 rounded">
+                                        Vencida
+                                      </span>
+                                    )}
                                   </>
                                 ) : (
                                   "Asignar fecha"
@@ -463,10 +514,18 @@ function MisPdcas() {
                         Sin límite
                       </span>
                     ) : deadlineDate ? (
-                      <span className={`inline-flex items-center gap-1.5 font-medium ${isExpired ? "text-red-500" : "text-foreground"}`}>
-                        <Calendar className={`size-3.5 ${isExpired ? "text-red-500" : "text-brand-yellow"}`} />
+                      <span
+                        className={`inline-flex items-center gap-1.5 font-medium ${isExpired ? "text-red-500" : "text-foreground"}`}
+                      >
+                        <Calendar
+                          className={`size-3.5 ${isExpired ? "text-red-500" : "text-brand-yellow"}`}
+                        />
                         {deadlineStr}
-                        {isExpired && <span className="text-[10px] font-bold uppercase bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1 rounded">Vencida</span>}
+                        {isExpired && (
+                          <span className="text-[10px] font-bold uppercase bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1 rounded">
+                            Vencida
+                          </span>
+                        )}
                       </span>
                     ) : (
                       <span className="text-muted-foreground/50 italic text-xs">Sin asignar</span>
@@ -474,9 +533,7 @@ function MisPdcas() {
                   })()}
                 </TableCell>
                 <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
-                  <span className="inline-flex items-center gap-1.5 text-xs">
-                    {p.actualizado}
-                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs">{p.actualizado}</span>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-1">
@@ -484,9 +541,9 @@ function MisPdcas() {
                       Abrir
                     </Button>
                     {currentUser?.role === "admin" && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
                         onClick={(e) => requestDelete(e, p.id)}
                       >
@@ -513,12 +570,16 @@ function MisPdcas() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar PDCA?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente este PDCA y todos sus datos asociados.
+              Esta acción no se puede deshacer. Se eliminará permanentemente este PDCA y todos sus
+              datos asociados.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -9,17 +9,17 @@ import { parse_date_string } from "./utils/date_helpers";
 
 /** All trackable step IDs across every phase */
 export const ALL_STEP_IDS = [
-  "step-1",               // Plan: Problem Statement
-  "step-2",               // Plan: Phase SDCA checklist
-  "step-3",               // Do: Target vs Actual
-  "step-4",               // Do: KPI Tree
-  "step-5",               // Do: Pareto
-  "step-6",               // Check: Fishbone
-  "step-7",               // Check: 5 Whys
-  "step-8",               // Act: Matriz de impacto y plan de acción
-  "step-9",               // Act: Gemba
-  "step-10",              // Act: KPI Final Result
-  "step-11",              // Act: Evidencia de acciones (GEMBA FINAL)
+  "step-1", // Plan: Problem Statement
+  "step-2", // Plan: Phase SDCA checklist
+  "step-3", // Do: Target vs Actual
+  "step-4", // Do: KPI Tree
+  "step-5", // Do: Pareto
+  "step-6", // Check: Fishbone
+  "step-7", // Check: 5 Whys
+  "step-8", // Act: Matriz de impacto y plan de acción
+  "step-9", // Act: Gemba
+  "step-10", // Act: KPI Final Result
+  "step-11", // Act: Evidencia de acciones (GEMBA FINAL)
 ] as const;
 
 export const TOTAL_STEPS = ALL_STEP_IDS.length;
@@ -63,11 +63,15 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
       const today = startOfDay(new Date());
       const diff = differenceInDays(deadline_date, today);
       if (diff < 0) {
-        deadline_info = <span className="text-red-500 font-bold ml-2">Vencido por {Math.abs(diff)} días</span>;
+        deadline_info = (
+          <span className="text-red-500 font-bold ml-2">Vencido por {Math.abs(diff)} días</span>
+        );
       } else if (diff === 0) {
         deadline_info = <span className="text-amber-500 font-bold ml-2">Vence hoy</span>;
       } else {
-        deadline_info = <span className="text-emerald-500 font-medium ml-2">Quedan {diff} días</span>;
+        deadline_info = (
+          <span className="text-emerald-500 font-medium ml-2">Quedan {diff} días</span>
+        );
       }
     }
   } else if (deadline_string === "Sin límite") {
@@ -94,15 +98,9 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
           </span>
           <PhaseBadge phase={current_phase} />
           {creation_date && (
-            <span className="text-xs text-muted-foreground ml-2">
-              Abierto: {creation_date}
-            </span>
+            <span className="text-xs text-muted-foreground ml-2">Abierto: {creation_date}</span>
           )}
-          {deadline_info && (
-            <span className="text-xs">
-              | {deadline_info}
-            </span>
-          )}
+          {deadline_info && <span className="text-xs">| {deadline_info}</span>}
           {last_updated && (
             <span className="text-xs text-muted-foreground ml-2">
               | Actualizado: {last_updated}
@@ -129,13 +127,15 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
 
           <Button
             size="sm"
-            onClick={() => { on_trigger_firestore_save(); }}
+            onClick={() => {
+              on_trigger_firestore_save();
+            }}
             disabled={is_saving_in_progress || !is_user_permitted_to_edit}
             className={cn(
               "font-semibold text-xs h-8 gap-1.5 transition-all shadow-sm",
               has_pending_modifications && is_user_permitted_to_edit
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
             )}
           >
             <UploadCloud className="size-3.5" />
@@ -152,8 +152,7 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
 
         <div className="flex-shrink-0 text-right">
           <div className="text-sm font-semibold text-foreground whitespace-nowrap">
-            Progreso del PDCA:{" "}
-            <span className="text-primary">{progress_pct}%</span>
+            Progreso del PDCA: <span className="text-primary">{progress_pct}%</span>
             <span className="text-xs text-muted-foreground ml-1 font-normal">
               ({completed_count}/{TOTAL_STEPS} pasos)
             </span>

@@ -12,7 +12,7 @@ import {
   RefreshCw,
   FileText,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   Bar,
@@ -30,7 +30,7 @@ import {
   Tooltip as RTooltip,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
 import { format, parseISO, isValid } from "date-fns";
 import { toast } from "sonner";
@@ -81,8 +81,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
-import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import {
+  phases,
+  DEFAULT_TARGET_VS_ACTUAL,
+  DEFAULT_PARETO_DATA_MAP,
+  DEFAULT_VPO_CHECKPOINTS,
+  DEFAULT_PARTICIPANTES,
+  type ParticipantesData,
+  type ActionItem,
+  type Pdca,
+  type Phase,
+  type ParetoItem,
+  type VpoCheckpointItem,
+  type DefinicionMeta,
+  type ImpactMatrixRow,
+  type FiveWhysTableData,
+  type IshikawaItem,
+} from "@/data/pdca";
+import {
+  PdcaGoalDefinition,
+  PdcaParticipants,
+  DEFAULT_DEFINICION_META,
+} from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "../kpi-tree";
 import { ActionKanban } from "../action-kanban";
 // Removed firestore imports
@@ -115,7 +135,11 @@ function compressImage(file: File, maxWidth = 2048, quality = 0.85): Promise<Blo
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Compresión fallida")), "image/jpeg", quality);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Compresión fallida"))),
+          "image/jpeg",
+          quality,
+        );
       };
       img.onerror = reject;
     };
@@ -141,11 +165,8 @@ async function uploadToFirebase(file: File): Promise<string> {
   const uploadTask = uploadBytesResumable(storageRef, blobToUpload);
 
   return new Promise((resolve, reject) => {
-    uploadTask.on(
-      "state_changed",
-      null,
-      reject,
-      async () => resolve(await getDownloadURL(uploadTask.snapshot.ref))
+    uploadTask.on("state_changed", null, reject, async () =>
+      resolve(await getDownloadURL(uploadTask.snapshot.ref)),
     );
   });
 }
@@ -163,30 +184,51 @@ export function FiveWhysSection({
 }) {
   const addTable = () => {
     const newId = `fivewhys-${Date.now()}`;
-    onChange([...tables, { id: newId, title: "MÉTODO", rows: [{ id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" }] }]);
+    onChange([
+      ...tables,
+      {
+        id: newId,
+        title: "MÉTODO",
+        rows: [
+          {
+            id: Date.now(),
+            q1: "",
+            q2: "",
+            q3: "",
+            q4: "",
+            q5: "",
+            w1: "",
+            w2: "",
+            w3: "",
+            w4: "",
+            w5: "",
+            accion: "",
+          },
+        ],
+      },
+    ]);
   };
 
   const updateTable = (id: string, newRows: any[]) => {
-    onChange(tables.map(t => t.id === id ? { ...t, rows: newRows } : t));
+    onChange(tables.map((t) => (t.id === id ? { ...t, rows: newRows } : t)));
   };
-  
+
   const updateTitle = (id: string, newTitle: string) => {
-    onChange(tables.map(t => t.id === id ? { ...t, title: newTitle } : t));
+    onChange(tables.map((t) => (t.id === id ? { ...t, title: newTitle } : t)));
   };
 
   const removeTable = (id: string) => {
     if (tables.length === 1) return;
-    onChange(tables.filter(t => t.id !== id));
+    onChange(tables.filter((t) => t.id !== id));
   };
 
   return (
-    <StepCard 
+    <StepCard
       className="overflow-hidden"
       title="PASO 7: 5 WHYS"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
     >
-
       <div className="space-y-8">
         {tables.map((table, index) => (
           <div key={table.id} className="pt-4">
@@ -203,7 +245,12 @@ export function FiveWhysSection({
       </div>
 
       <div className="flex justify-center pt-4 border-t border-border">
-        <Button variant="outline" size="sm" onClick={addTable} className="border-dashed border-2 hover:border-primary hover:bg-primary/5">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={addTable}
+          className="border-dashed border-2 hover:border-primary hover:bg-primary/5"
+        >
           <Plus className="size-4 mr-2" /> Agregar otra tabla 5 Whys
         </Button>
       </div>
@@ -238,7 +285,20 @@ export function FiveWhysInteractive({
     if (onChange && value) {
       onChange([
         ...value,
-        { id: Date.now(), q1: "", q2: "", q3: "", q4: "", q5: "", w1: "", w2: "", w3: "", w4: "", w5: "", accion: "" },
+        {
+          id: Date.now(),
+          q1: "",
+          q2: "",
+          q3: "",
+          q4: "",
+          q5: "",
+          w1: "",
+          w2: "",
+          w3: "",
+          w4: "",
+          w5: "",
+          accion: "",
+        },
       ]);
     }
   };
@@ -252,12 +312,12 @@ export function FiveWhysInteractive({
 
   const whysCount = Math.max(
     5,
-    ...(value || []).flatMap((r: any) => 
+    ...(value || []).flatMap((r: any) =>
       Object.keys(r)
-        .filter(k => k.startsWith('q'))
-        .map(k => parseInt(k.substring(1)))
-        .filter(n => !isNaN(n))
-    )
+        .filter((k) => k.startsWith("q"))
+        .map((k) => parseInt(k.substring(1)))
+        .filter((n) => !isNaN(n)),
+    ),
   );
 
   const addWhyColumn = () => {
@@ -269,43 +329,69 @@ export function FiveWhysInteractive({
 
   const removeWhyColumn = () => {
     if (onChange && value && whysCount > 5) {
-      onChange(value.map((r: any) => {
-        const newRow = { ...r };
-        delete newRow[`q${whysCount}`];
-        delete newRow[`w${whysCount}`];
-        return newRow;
-      }));
+      onChange(
+        value.map((r: any) => {
+          const newRow = { ...r };
+          delete newRow[`q${whysCount}`];
+          delete newRow[`w${whysCount}`];
+          return newRow;
+        }),
+      );
     }
   };
 
   const tableContent = (
-    <div className={cn("overflow-x-auto border border-[#0078D7] rounded-sm bg-white dark:bg-background shadow-sm flex-1", isFullscreen ? "flex flex-col h-full" : "")}>
+    <div
+      className={cn(
+        "overflow-x-auto border border-[#0078D7] rounded-sm bg-white dark:bg-background shadow-sm flex-1",
+        isFullscreen ? "flex flex-col h-full" : "",
+      )}
+    >
       <div className="flex justify-between items-center px-2 py-1 bg-white dark:bg-background border-b border-[#0078D7]">
-        <input 
-          type="text" 
-          value={title || "MÉTODO"} 
+        <input
+          type="text"
+          value={title || "MÉTODO"}
           onChange={(e) => onTitleChange?.(e.target.value)}
-          className="text-[11px] font-bold text-[#0078D7] uppercase bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-400 p-0.5 w-48" 
+          className="text-[11px] font-bold text-[#0078D7] uppercase bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-400 p-0.5 w-48"
           placeholder="TÍTULO DE LA TABLA"
         />
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={addWhyColumn}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold"
+              onClick={addWhyColumn}
+            >
               <Plus className="mr-1 size-3" /> Añadir Por Qué
             </Button>
             {whysCount > 5 && (
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 font-bold" onClick={removeWhyColumn}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 font-bold"
+                onClick={removeWhyColumn}
+              >
                 <MinusCircle className="mr-1 size-3" /> Quitar Por Qué
               </Button>
             )}
           </div>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={addRow}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold"
+            onClick={addRow}
+          >
             <Plus className="mr-1 size-3" /> Añadir Causa
           </Button>
           {onRemoveTable && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 font-bold">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 font-bold"
+                >
                   <X className="mr-1 size-3" /> Eliminar Tabla
                 </Button>
               </AlertDialogTrigger>
@@ -313,12 +399,16 @@ export function FiveWhysInteractive({
                 <AlertDialogHeader>
                   <AlertDialogTitle>¿Eliminar tabla 5 Whys?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esta acción no se puede deshacer. Se eliminarán permanentemente todas las preguntas y respuestas registradas en esta tabla.
+                    Esta acción no se puede deshacer. Se eliminarán permanentemente todas las
+                    preguntas y respuestas registradas en esta tabla.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={onRemoveTable} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                  <AlertDialogAction
+                    onClick={onRemoveTable}
+                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                  >
                     Eliminar
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -326,24 +416,40 @@ export function FiveWhysInteractive({
             </AlertDialog>
           )}
           {!isFullscreen && (
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold" onClick={() => setIsFullscreen(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] text-[#0078D7] hover:bg-blue-50 dark:hover:bg-blue-950 font-bold"
+              onClick={() => setIsFullscreen(true)}
+            >
               <Maximize2 className="mr-1 size-3" /> Expandir
             </Button>
           )}
-          <span className="text-[11px] font-bold text-[#0078D7] uppercase">TEMA {String(index + 1).padStart(2, '0')}</span>
+          <span className="text-[11px] font-bold text-[#0078D7] uppercase">
+            TEMA {String(index + 1).padStart(2, "0")}
+          </span>
         </div>
       </div>
       <table className="w-full text-sm border-collapse min-w-[900px]">
         <thead>
           <tr className="bg-[#0078D7] text-white">
             {Array.from({ length: whysCount }).map((_, i) => (
-              <th key={i} className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] min-w-[150px]">
+              <th
+                key={i}
+                className="font-bold uppercase text-center border-r border-white/20 p-2 text-[10px] min-w-[150px]"
+              >
                 {i + 1}º POR QUÉ
               </th>
             ))}
-            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">CAUSA RAÍZ</th>
-            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[150px] border-r border-white/20">ACCION(ES)</th>
-            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">EVIDENCIA</th>
+            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">
+              CAUSA RAÍZ
+            </th>
+            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[150px] border-r border-white/20">
+              ACCION(ES)
+            </th>
+            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">
+              EVIDENCIA
+            </th>
             <th className="w-8"></th>
           </tr>
         </thead>
@@ -353,11 +459,17 @@ export function FiveWhysInteractive({
               {/* Fila de Preguntas */}
               <tr className="border-b border-white group">
                 {Array.from({ length: whysCount }).map((_, i) => (
-                  <td key={`q-${i}`} className={cn("p-0 border-r border-white align-top",
-                    row.isRootCause === "Sí" ? "bg-red-50 dark:bg-red-950/30" :
-                    row.isRootCause === "No" ? "bg-green-50 dark:bg-green-950/30" :
-                    "bg-blue-100/50 dark:bg-blue-900/20"
-                  )}>
+                  <td
+                    key={`q-${i}`}
+                    className={cn(
+                      "p-0 border-r border-white align-top",
+                      row.isRootCause === "Sí"
+                        ? "bg-red-50 dark:bg-red-950/30"
+                        : row.isRootCause === "No"
+                          ? "bg-green-50 dark:bg-green-950/30"
+                          : "bg-blue-100/50 dark:bg-blue-900/20",
+                    )}
+                  >
                     <AutoResizeTextarea
                       value={row[`q${i + 1}`] || ""}
                       onChange={(val) => updateRow(row.id, `q${i + 1}`, val)}
@@ -366,58 +478,101 @@ export function FiveWhysInteractive({
                     />
                   </td>
                 ))}
-                <td rowSpan={2} className={cn(
-                  "p-1 border-r border-white align-middle text-center min-w-[80px]",
-                  row.isRootCause === "Sí" ? "bg-red-100 dark:bg-red-900/40" :
-                  row.isRootCause === "No" ? "bg-green-100 dark:bg-green-900/40" :
-                  "bg-[#E2E2E2] dark:bg-secondary"
-                )}>
+                <td
+                  rowSpan={2}
+                  className={cn(
+                    "p-1 border-r border-white align-middle text-center min-w-[80px]",
+                    row.isRootCause === "Sí"
+                      ? "bg-red-100 dark:bg-red-900/40"
+                      : row.isRootCause === "No"
+                        ? "bg-green-100 dark:bg-green-900/40"
+                        : "bg-[#E2E2E2] dark:bg-secondary",
+                  )}
+                >
                   <div className="flex flex-col items-center justify-center gap-1">
-                    <Button 
-                      variant={row.isRootCause === "Sí" ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => updateRow(row.id, "isRootCause", row.isRootCause === "Sí" ? "" : "Sí")}
-                      className={cn("h-6 w-12 text-[10px] px-0", row.isRootCause === "Sí" ? "bg-red-600 hover:bg-red-700 text-white border-red-600" : "hover:bg-red-50 hover:text-red-600")}
+                    <Button
+                      variant={row.isRootCause === "Sí" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() =>
+                        updateRow(row.id, "isRootCause", row.isRootCause === "Sí" ? "" : "Sí")
+                      }
+                      className={cn(
+                        "h-6 w-12 text-[10px] px-0",
+                        row.isRootCause === "Sí"
+                          ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
+                          : "hover:bg-red-50 hover:text-red-600",
+                      )}
                     >
                       SÍ
                     </Button>
-                    <Button 
-                      variant={row.isRootCause === "No" ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => updateRow(row.id, "isRootCause", row.isRootCause === "No" ? "" : "No")}
-                      className={cn("h-6 w-12 text-[10px] px-0", row.isRootCause === "No" ? "bg-green-600 hover:bg-green-700 text-white border-green-600" : "hover:bg-green-50 hover:text-green-600")}
+                    <Button
+                      variant={row.isRootCause === "No" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() =>
+                        updateRow(row.id, "isRootCause", row.isRootCause === "No" ? "" : "No")
+                      }
+                      className={cn(
+                        "h-6 w-12 text-[10px] px-0",
+                        row.isRootCause === "No"
+                          ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
+                          : "hover:bg-green-50 hover:text-green-600",
+                      )}
                     >
                       NO
                     </Button>
                   </div>
                 </td>
-                <td rowSpan={2} className={cn("p-0 border-r border-white align-top",
-                  row.isRootCause === "Sí" ? "bg-red-50 dark:bg-red-950/30" :
-                  row.isRootCause === "No" ? "bg-green-50 dark:bg-green-950/30" :
-                  "bg-[#E2E2E2] dark:bg-secondary"
-                )}>
+                <td
+                  rowSpan={2}
+                  className={cn(
+                    "p-0 border-r border-white align-top",
+                    row.isRootCause === "Sí"
+                      ? "bg-red-50 dark:bg-red-950/30"
+                      : row.isRootCause === "No"
+                        ? "bg-green-50 dark:bg-green-950/30"
+                        : "bg-[#E2E2E2] dark:bg-secondary",
+                  )}
+                >
                   <AutoResizeTextarea
                     value={row.accion || ""}
                     onChange={(val) => updateRow(row.id, "accion", val)}
                     className="w-full min-h-[80px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground overflow-hidden"
                   />
                 </td>
-                <td rowSpan={2} className="bg-background align-middle text-center border-r border-white/20 p-1">
+                <td
+                  rowSpan={2}
+                  className="bg-background align-middle text-center border-r border-white/20 p-1"
+                >
                   <div className="flex flex-col items-center justify-center min-h-[40px]">
                     {row.evidencia ? (
                       <div className="relative group flex justify-center">
-                        {row.evidencia.includes('application/pdf') ? (
-                          <a href={row.evidencia} target="_blank" rel="noreferrer" className="flex items-center justify-center size-10 rounded bg-red-100 text-red-600 hover:bg-red-200" title="Ver PDF">
+                        {row.evidencia.includes("application/pdf") ? (
+                          <a
+                            href={row.evidencia}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-center size-10 rounded bg-red-100 text-red-600 hover:bg-red-200"
+                            title="Ver PDF"
+                          >
                             <span className="text-[10px] font-bold">PDF</span>
                           </a>
                         ) : (
-                          <a href={row.evidencia} target="_blank" rel="noreferrer" title="Ver Imagen">
-                            <img src={row.evidencia} alt="Evidencia" className="size-10 object-cover rounded shadow-sm border border-border" />
+                          <a
+                            href={row.evidencia}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Ver Imagen"
+                          >
+                            <img
+                              src={row.evidencia}
+                              alt="Evidencia"
+                              className="size-10 object-cover rounded shadow-sm border border-border"
+                            />
                           </a>
                         )}
-                        <Button 
-                          variant="destructive" 
-                          size="icon" 
+                        <Button
+                          variant="destructive"
+                          size="icon"
                           className="absolute -top-2 -right-2 size-5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-0"
                           onClick={() => updateRow(row.id, "evidencia", "")}
                         >
@@ -431,22 +586,26 @@ export function FiveWhysInteractive({
                     ) : (
                       <label className="cursor-pointer text-muted-foreground hover:text-blue-600 flex flex-col items-center">
                         <Paperclip className="size-4" />
-                        <span className="text-[9px] mt-1 text-center leading-tight">Añadir<br/>Evidencia</span>
-                        <input 
-                          type="file" 
-                          accept="image/*,application/pdf" 
-                          className="hidden" 
+                        <span className="text-[9px] mt-1 text-center leading-tight">
+                          Añadir
+                          <br />
+                          Evidencia
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
                               try {
-                                setUploadingRows(prev => new Set(prev).add(row.id));
+                                setUploadingRows((prev) => new Set(prev).add(row.id));
                                 const url = await uploadToFirebase(file);
                                 updateRow(row.id, "evidencia", url);
                               } catch (error) {
                                 console.error("Error subiendo evidencia:", error);
                               } finally {
-                                setUploadingRows(prev => {
+                                setUploadingRows((prev) => {
                                   const next = new Set(prev);
                                   next.delete(row.id);
                                   return next;
@@ -463,7 +622,11 @@ export function FiveWhysInteractive({
                   {(value?.length || 0) > 1 && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive mx-auto block">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive mx-auto block"
+                        >
                           <X className="size-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -471,12 +634,18 @@ export function FiveWhysInteractive({
                         <AlertDialogHeader>
                           <AlertDialogTitle>¿Eliminar fila?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            ¿Estás seguro que deseas eliminar esta fila? Esta acción no se puede deshacer.
+                            ¿Estás seguro que deseas eliminar esta fila? Esta acción no se puede
+                            deshacer.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => removeRow(row.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Eliminar</AlertDialogAction>
+                          <AlertDialogAction
+                            onClick={() => removeRow(row.id)}
+                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                          >
+                            Eliminar
+                          </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -486,11 +655,17 @@ export function FiveWhysInteractive({
               {/* Fila de Respuestas */}
               <tr className="border-b-[3px] border-[#0078D7] group">
                 {Array.from({ length: whysCount }).map((_, i) => (
-                  <td key={`w-${i}`} className={cn("p-0 border-r border-white align-top",
-                    row.isRootCause === "Sí" ? "bg-red-100 dark:bg-red-900/40" :
-                    row.isRootCause === "No" ? "bg-green-100 dark:bg-green-900/40" :
-                    "bg-[#E2E2E2] dark:bg-secondary"
-                  )}>
+                  <td
+                    key={`w-${i}`}
+                    className={cn(
+                      "p-0 border-r border-white align-top",
+                      row.isRootCause === "Sí"
+                        ? "bg-red-100 dark:bg-red-900/40"
+                        : row.isRootCause === "No"
+                          ? "bg-green-100 dark:bg-green-900/40"
+                          : "bg-[#E2E2E2] dark:bg-secondary",
+                    )}
+                  >
                     <AutoResizeTextarea
                       value={row[`w${i + 1}`] || ""}
                       onChange={(val) => updateRow(row.id, `w${i + 1}`, val)}
@@ -521,5 +696,3 @@ export function FiveWhysInteractive({
     </>
   );
 }
-
-

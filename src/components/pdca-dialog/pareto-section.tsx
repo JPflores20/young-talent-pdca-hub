@@ -145,13 +145,11 @@ function ParetoChart({
   max_bar_size?: number;
 }) {
   const bottom_margin = Math.max(100, 40 + pareto_rows.length * 5);
-  
+
   return (
     <div className="flex flex-col gap-1 w-full h-full">
       {chart_title && (
-        <h3 className="text-center text-sm font-semibold mb-2 text-foreground">
-          {chart_title}
-        </h3>
+        <h3 className="text-center text-sm font-semibold mb-2 text-foreground">{chart_title}</h3>
       )}
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
@@ -278,10 +276,10 @@ export function ParetoInteractive({
       const parts = line.split("\t");
       let cat = "";
       let val = 0;
-      
+
       const p0 = parts[0];
       const p1 = parts[1];
-      
+
       if (parts.length >= 2) {
         cat = p0 ? p0.trim() : "";
         val = p1 ? parseFloat(p1.replace(/,/g, "").trim() || "0") : 0;
@@ -289,24 +287,24 @@ export function ParetoInteractive({
         const fb = line.split(",");
         const fb0 = fb[0];
         const fb1 = fb[1];
-        if (fb.length >= 2) { 
-          cat = fb0 ? fb0.trim() : ""; 
-          val = fb1 ? parseFloat(fb1.replace(/,/g, "").trim() || "0") : 0; 
-        } else { 
-          cat = line.trim(); 
-          val = 1; 
+        if (fb.length >= 2) {
+          cat = fb0 ? fb0.trim() : "";
+          val = fb1 ? parseFloat(fb1.replace(/,/g, "").trim() || "0") : 0;
+        } else {
+          cat = line.trim();
+          val = 1;
         }
       }
-      
+
       if (isNaN(val)) val = 0;
-      
+
       // Corrección específica para el acceso dinámico
       if (cat) {
         const currentAgg = agg[cat] ?? 0;
         agg[cat] = currentAgg + val;
       }
     }
-    
+
     if (onDataChange) {
       const ex: Record<string, number> = {};
       data.forEach((item) => {
@@ -316,20 +314,23 @@ export function ParetoInteractive({
           ex[area] = currentEx + (item.gap ?? 0);
         }
       });
-      
+
       // Corrección específica para la línea 314 (ahora 315/316)
       for (const c in agg) {
         const currentEx = ex[c] ?? 0;
         const currentAgg = agg[c] ?? 0;
         ex[c] = currentEx + currentAgg;
       }
-      
-      const new_items = Object.keys(ex).map((c) => ({ 
-        id: Date.now() + Math.random(), 
-        area: c, 
-        gap: ex[c] ?? 0 
-      } as ParetoItem));
-      
+
+      const new_items = Object.keys(ex).map(
+        (c) =>
+          ({
+            id: Date.now() + Math.random(),
+            area: c,
+            gap: ex[c] ?? 0,
+          }) as ParetoItem,
+      );
+
       onDataChange(new_items);
     }
     set_is_paste_open(false);
@@ -375,7 +376,11 @@ export function ParetoInteractive({
           {onClose && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
+                >
                   <X className="size-4 mr-2" /> Cerrar
                 </Button>
               </AlertDialogTrigger>
@@ -392,21 +397,44 @@ export function ParetoInteractive({
             </AlertDialog>
           )}
           {onAddRoot && (
-            <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); onAddRoot(); }}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddRoot();
+              }}
+            >
               <Plus className="size-4 mr-2" /> Nuevo Pareto
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); set_is_paste_open(true); }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              set_is_paste_open(true);
+            }}
+          >
             <FileText className="size-4 mr-2" /> Importar Excel
           </Button>
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); add_row(); }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              add_row();
+            }}
+          >
             <Plus className="size-4 mr-2" /> Agregar Fila
           </Button>
           <Dialog open={is_paste_open} onOpenChange={set_is_paste_open}>
             <DialogContent className="max-w-xl">
               <DialogHeader>
                 <DialogTitle>Importar Datos desde Excel</DialogTitle>
-                <DialogDescription>Copia dos columnas (Categoria, Valor) y pegalas aqui.</DialogDescription>
+                <DialogDescription>
+                  Copia dos columnas (Categoria, Valor) y pegalas aqui.
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <Textarea
@@ -416,7 +444,9 @@ export function ParetoInteractive({
                   className="min-h-[200px] text-xs font-mono whitespace-pre"
                 />
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => set_is_paste_open(false)}>Cancelar</Button>
+                  <Button variant="outline" onClick={() => set_is_paste_open(false)}>
+                    Cancelar
+                  </Button>
                   <Button onClick={handle_import_excel}>Importar y Generar</Button>
                 </div>
               </div>
@@ -447,7 +477,9 @@ export function ParetoInteractive({
             </span>
             <Input
               value={unit}
-              onChange={(e) => { if (onUnitChange) onUnitChange(e.target.value); }}
+              onChange={(e) => {
+                if (onUnitChange) onUnitChange(e.target.value);
+              }}
               placeholder="ej. $, %, HL"
               className="w-28 h-7 text-xs font-bold"
             />
@@ -560,12 +592,21 @@ export function ParetoInteractive({
       <Dialog open={is_fullscreen} onOpenChange={set_is_fullscreen}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-[90vh] p-4 sm:p-6 flex flex-col bg-background">
           <DialogHeader>
-            <DialogTitle>{title} {chart_title ? `- ${chart_title}` : ""}</DialogTitle>
+            <DialogTitle>
+              {title} {chart_title ? `- ${chart_title}` : ""}
+            </DialogTitle>
           </DialogHeader>
           <div className="flex-1 w-full min-h-0 pt-4">
             <ParetoChart
               pareto_rows={pareto_rows}
-              {...(onBarClick ? { on_bar_click: (cat) => { onBarClick(cat); set_is_fullscreen(false); } } : {})}
+              {...(onBarClick
+                ? {
+                    on_bar_click: (cat) => {
+                      onBarClick(cat);
+                      set_is_fullscreen(false);
+                    },
+                  }
+                : {})}
               unit={unit}
               y_axis_min={y_axis_min}
               y_axis_max={y_axis_max}
@@ -616,25 +657,20 @@ export function ParetoSection({
 
   const update_data = (path: string, new_data: ParetoItem[]) =>
     setDataMap({ ...dataMap, [path]: new_data });
-  const update_title = (path: string, t: string) =>
-    set_title_map({ ...title_map, [path]: t });
+  const update_title = (path: string, t: string) => set_title_map({ ...title_map, [path]: t });
 
   const handle_bar_click = (cat: string, level: number, parent: string) => {
     if (!cat) return;
     const new_path =
-      parent === "root"
-        ? `level-${level + 1}-${cat}`
-        : `${parent}-level-${level + 1}-${cat}`;
-        
+      parent === "root" ? `level-${level + 1}-${cat}` : `${parent}-level-${level + 1}-${cat}`;
+
     const firstDrill = drillDowns[0] ?? "";
     const is_legacy = drillDowns.length > 0 && !firstDrill.includes("level-");
-    
-    const drills = is_legacy
-      ? drillDowns.map((d, i) => `level-${i + 1}-${d}`)
-      : [...drillDowns];
-      
+
+    const drills = is_legacy ? drillDowns.map((d, i) => `level-${i + 1}-${d}`) : [...drillDowns];
+
     if (!drills.includes(new_path)) setDrillDowns([...drills, new_path]);
-    
+
     const currentData = dataMap[new_path];
     if (!currentData) setDataMap({ ...dataMap, [new_path]: [] });
   };
@@ -642,31 +678,32 @@ export function ParetoSection({
   const handle_close_drill = (path: string) => {
     const firstDrill = drillDowns[0] ?? "";
     const is_legacy = drillDowns.length > 0 && !firstDrill.includes("level-");
-    
-    const drills = is_legacy
-      ? drillDowns.map((d, i) => `level-${i + 1}-${d}`)
-      : [...drillDowns];
-      
+
+    const drills = is_legacy ? drillDowns.map((d, i) => `level-${i + 1}-${d}`) : [...drillDowns];
+
     setDrillDowns(drills.filter((p) => p !== path && !p.startsWith(`${path}-`)));
     const m = { ...dataMap };
-    Object.keys(m).forEach((k) => { if (k === path || k.startsWith(`${path}-`)) delete m[k]; });
+    Object.keys(m).forEach((k) => {
+      if (k === path || k.startsWith(`${path}-`)) delete m[k];
+    });
     setDataMap(m);
   };
 
   const handle_close_root = (key: string) => {
     setDrillDowns(drillDowns.filter((p) => !p.startsWith(`${key}-`)));
     const m = { ...dataMap };
-    Object.keys(m).forEach((k) => { if (k === key || k.startsWith(`${key}-`)) delete m[k]; });
+    Object.keys(m).forEach((k) => {
+      if (k === key || k.startsWith(`${key}-`)) delete m[k];
+    });
     setDataMap(m);
   };
 
-  const handle_add_root = () =>
-    setDataMap({ ...dataMap, [`root-${Date.now()}`]: [] });
+  const handle_add_root = () => setDataMap({ ...dataMap, [`root-${Date.now()}`]: [] });
 
   const parse_path = (path: string, idx: number) => {
     if (!path.includes("level-"))
       return { actual_path: `level-${idx + 1}-${path}`, level: idx + 1, category: path };
-      
+
     if (path.includes("-level-")) {
       const parts = path.split("-level-");
       const p1 = parts[1] ?? "";
@@ -674,7 +711,7 @@ export function ParetoSection({
       const r0 = rest[0] ?? "0";
       return { actual_path: path, level: parseInt(r0, 10), category: rest.slice(1).join("-") };
     }
-    
+
     const parts = path.split("-");
     const p1 = parts[1] ?? "0";
     return { actual_path: path, level: parseInt(p1, 10), category: parts.slice(2).join("-") };

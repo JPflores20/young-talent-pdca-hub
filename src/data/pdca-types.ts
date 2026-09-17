@@ -265,5 +265,7 @@ export type Pdca = {
   // Comentarios e Historial
   comentarios?: PdcaComment[];
   historial?: PdcaHistoryEvent[];
+  // Análisis Estadístico
+  statisticalAnalysisFiles?: string[];
+  statistical_analysis_files?: string[];
 };
-

@@ -12,7 +12,7 @@ import {
   RefreshCw,
   FileText,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   Bar,
@@ -30,7 +30,7 @@ import {
   Tooltip as RTooltip,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
 import { format, parseISO, isValid } from "date-fns";
 import { toast } from "sonner";
@@ -81,8 +81,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
-import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import {
+  phases,
+  DEFAULT_TARGET_VS_ACTUAL,
+  DEFAULT_PARETO_DATA_MAP,
+  DEFAULT_VPO_CHECKPOINTS,
+  DEFAULT_PARTICIPANTES,
+  type ParticipantesData,
+  type ActionItem,
+  type Pdca,
+  type Phase,
+  type ParetoItem,
+  type VpoCheckpointItem,
+  type DefinicionMeta,
+  type ImpactMatrixRow,
+  type FiveWhysTableData,
+  type IshikawaItem,
+} from "@/data/pdca";
+import {
+  PdcaGoalDefinition,
+  PdcaParticipants,
+  DEFAULT_DEFINICION_META,
+} from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "../kpi-tree";
 import { ActionKanban } from "../action-kanban";
 // Removed firestore imports
@@ -100,7 +120,6 @@ import {
 } from "@/components/ui/accordion";
 import { StepCard } from "@/components/ui/step-card";
 import { StepInstructions } from "./step-instructions";
-
 
 export function TimeSeriesYTD({
   value,
@@ -124,10 +143,13 @@ export function TimeSeriesYTD({
   onTitleChange?: ((newTitle: string) => void) | undefined;
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
-  
+
   const [y_axis_min, set_y_axis_min] = useState<number>(0);
   const [y_axis_max_str, set_y_axis_max_str] = useState<string>("auto");
-  const chart_y_max = y_axis_max_str.trim() === "auto" || y_axis_max_str.trim() === "" ? "auto" : Number(y_axis_max_str);
+  const chart_y_max =
+    y_axis_max_str.trim() === "auto" || y_axis_max_str.trim() === ""
+      ? "auto"
+      : Number(y_axis_max_str);
 
   const updateMes = (index: number, val: string) => {
     const updated = series.map((s, i) => {
@@ -170,12 +192,14 @@ export function TimeSeriesYTD({
     if (onChange) onChange(updated);
   };
 
-  const ytdTarget = series.length > 0 ? series.reduce((sum, s) => sum + (s.target || 0), 0) / series.length : 0;
-  const actuals = series.filter(s => s.actual !== null && s.actual !== undefined);
-  const ytdActual = actuals.length > 0 ? actuals.reduce((sum, s) => sum + (s.actual || 0), 0) / actuals.length : 0;
+  const ytdTarget =
+    series.length > 0 ? series.reduce((sum, s) => sum + (s.target || 0), 0) / series.length : 0;
+  const actuals = series.filter((s) => s.actual !== null && s.actual !== undefined);
+  const ytdActual =
+    actuals.length > 0 ? actuals.reduce((sum, s) => sum + (s.actual || 0), 0) / actuals.length : 0;
 
   const chartData = [
-    ...series.map(s => ({
+    ...series.map((s) => ({
       name: s.mes,
       metaLine: s.target,
       actualLine: s.actual,
@@ -195,12 +219,15 @@ export function TimeSeriesYTD({
       actualLine: null,
       ytdTargetBar: null,
       ytdActualBar: ytdActual,
-    }
+    },
   ];
 
   const formatValue = (val: any) => {
     if (val === null || val === undefined || isNaN(val)) return "";
-    const numStr = Number(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const numStr = Number(val).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
     if (unit === "$") {
       return "$" + numStr;
     }
@@ -211,7 +238,14 @@ export function TimeSeriesYTD({
     const { x, y, value } = props;
     if (value === null || value === undefined) return null;
     return (
-      <text x={x} y={y - 10} fill="var(--color-foreground)" fontSize={9} textAnchor="middle" fontWeight="bold">
+      <text
+        x={x}
+        y={y - 10}
+        fill="var(--color-foreground)"
+        fontSize={9}
+        textAnchor="middle"
+        fontWeight="bold"
+      >
         {formatValue(value)}
       </text>
     );
@@ -231,12 +265,12 @@ export function TimeSeriesYTD({
     const { x, y, width, value } = props;
     if (value === null || value === undefined) return null;
     return (
-      <text 
-        x={x + width / 2} 
-        y={y - 5} 
-        fill="var(--color-foreground)" 
-        fontSize={9} 
-        textAnchor="start" 
+      <text
+        x={x + width / 2}
+        y={y - 5}
+        fill="var(--color-foreground)"
+        fontSize={9}
+        textAnchor="start"
         fontWeight="bold"
         transform={`rotate(-45 ${x + width / 2} ${y - 5})`}
       >
@@ -246,32 +280,40 @@ export function TimeSeriesYTD({
   };
 
   return (
-    <StepCard 
+    <StepCard
       className="col-span-full"
       title={title}
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
     >
-
       <StepInstructions>
         <p className="mb-1">1. Rellena el campo gris con su problema.</p>
-        <p className="mb-1">2. Completa el período de tiempo con tu período de tiempo deseado (años, meses, semanas, días, etc.)</p>
+        <p className="mb-1">
+          2. Completa el período de tiempo con tu período de tiempo deseado (años, meses, semanas,
+          días, etc.)
+        </p>
         <p>3. Rellena las columnas "Objetivo" y "Actual" con tus datos.</p>
       </StepInstructions>
-      
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
-            <Input 
-              value={unit} 
-              onChange={e => { if(onUnitChange) onUnitChange(e.target.value) }}
-              placeholder="ej. $, %, HL" 
-              className="w-28 h-7 text-xs font-bold" 
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Unidad de Medida:
+            </span>
+            <Input
+              value={unit}
+              onChange={(e) => {
+                if (onUnitChange) onUnitChange(e.target.value);
+              }}
+              placeholder="ej. $, %, HL"
+              className="w-28 h-7 text-xs font-bold"
             />
           </div>
           <div className="flex items-center gap-2 border rounded-md px-3 py-1 bg-muted/20 hidden md:flex">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Eje Y —</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Eje Y —
+            </span>
             <span className="text-xs text-muted-foreground">Min:</span>
             <Input
               type="number"
@@ -289,32 +331,48 @@ export function TimeSeriesYTD({
             />
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Plantilla Rápida:</span>
-          <Select onValueChange={(val) => {
-            if (window.confirm("Cambiar la plantilla reemplazará los datos actuales en la tabla. ¿Deseas continuar?")) {
-              if (val === 'meses') {
-                if (onChange) onChange([
-                  { mes: "Ene", target: 0, actual: null }, { mes: "Feb", target: 0, actual: null },
-                  { mes: "Mar", target: 0, actual: null }, { mes: "Abr", target: 0, actual: null },
-                  { mes: "May", target: 0, actual: null }, { mes: "Jun", target: 0, actual: null },
-                  { mes: "Jul", target: 0, actual: null }, { mes: "Ago", target: 0, actual: null },
-                  { mes: "Sep", target: 0, actual: null }, { mes: "Oct", target: 0, actual: null },
-                  { mes: "Nov", target: 0, actual: null }, { mes: "Dic", target: 0, actual: null }
-                ]);
-              } else if (val.startsWith('sem-')) {
-                const month = val.split('-')[1];
-                if (onChange) onChange([
-                  { mes: `${month} Sem 1`, target: 0, actual: null },
-                  { mes: `${month} Sem 2`, target: 0, actual: null },
-                  { mes: `${month} Sem 3`, target: 0, actual: null },
-                  { mes: `${month} Sem 4`, target: 0, actual: null },
-                  { mes: `${month} Sem 5`, target: 0, actual: null },
-                ]);
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Plantilla Rápida:
+          </span>
+          <Select
+            onValueChange={(val) => {
+              if (
+                window.confirm(
+                  "Cambiar la plantilla reemplazará los datos actuales en la tabla. ¿Deseas continuar?",
+                )
+              ) {
+                if (val === "meses") {
+                  if (onChange)
+                    onChange([
+                      { mes: "Ene", target: 0, actual: null },
+                      { mes: "Feb", target: 0, actual: null },
+                      { mes: "Mar", target: 0, actual: null },
+                      { mes: "Abr", target: 0, actual: null },
+                      { mes: "May", target: 0, actual: null },
+                      { mes: "Jun", target: 0, actual: null },
+                      { mes: "Jul", target: 0, actual: null },
+                      { mes: "Ago", target: 0, actual: null },
+                      { mes: "Sep", target: 0, actual: null },
+                      { mes: "Oct", target: 0, actual: null },
+                      { mes: "Nov", target: 0, actual: null },
+                      { mes: "Dic", target: 0, actual: null },
+                    ]);
+                } else if (val.startsWith("sem-")) {
+                  const month = val.split("-")[1];
+                  if (onChange)
+                    onChange([
+                      { mes: `${month} Sem 1`, target: 0, actual: null },
+                      { mes: `${month} Sem 2`, target: 0, actual: null },
+                      { mes: `${month} Sem 3`, target: 0, actual: null },
+                      { mes: `${month} Sem 4`, target: 0, actual: null },
+                      { mes: `${month} Sem 5`, target: 0, actual: null },
+                    ]);
+                }
               }
-            }
-          }}>
+            }}
+          >
             <SelectTrigger className="h-7 text-xs w-[180px] bg-secondary/30">
               <SelectValue placeholder="Elegir..." />
             </SelectTrigger>
@@ -347,7 +405,13 @@ export function TimeSeriesYTD({
                 <th className="border-r border-white/20 p-2 font-bold w-[30%]">META</th>
                 <th className="border-r border-white/20 p-2 font-bold w-[30%]">ACTUAL</th>
                 <th className="p-1 w-[10%]">
-                  <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20 hover:text-white" onClick={addRow}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
+                    onClick={addRow}
+                  >
                     <Plus className="size-3" />
                   </Button>
                 </th>
@@ -357,51 +421,65 @@ export function TimeSeriesYTD({
               {series.map((s, i) => (
                 <tr key={i} className="border-b border-border/40 group">
                   <td className="border-r border-border/40 p-0 font-semibold bg-[#E2E2E2] dark:bg-secondary/30">
-                    <Input 
-                      value={s.mes} 
-                      onChange={e => updateMes(i, e.target.value)}
-                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-semibold bg-transparent focus-visible:ring-1 focus-visible:ring-black/20" 
+                    <Input
+                      value={s.mes}
+                      onChange={(e) => updateMes(i, e.target.value)}
+                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-semibold bg-transparent focus-visible:ring-1 focus-visible:ring-black/20"
                     />
                   </td>
                   <td className="border-r border-border/40 p-0">
-                    <Input 
-                      type="number" 
-                      value={s.target || ""} 
-                      onChange={e => updateTarget(i, e.target.value)}
-                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20" 
+                    <Input
+                      type="number"
+                      value={s.target || ""}
+                      onChange={(e) => updateTarget(i, e.target.value)}
+                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20"
                     />
                   </td>
                   <td className="border-r border-border/40 p-0">
-                    <Input 
-                      type="number" 
-                      value={s.actual ?? ""} 
-                      onChange={e => updateActual(i, e.target.value)}
-                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20" 
+                    <Input
+                      type="number"
+                      value={s.actual ?? ""}
+                      onChange={(e) => updateActual(i, e.target.value)}
+                      className="h-8 rounded-none border-none shadow-none text-xs text-center font-mono hide-arrows focus-visible:ring-1 focus-visible:ring-black/20"
                     />
                   </td>
                   <td className="p-0">
-                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeRow(i)}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeRow(i)}
+                    >
                       <X className="size-3" />
                     </Button>
                   </td>
                 </tr>
               ))}
               <tr className="border-b border-border/40">
-                <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">YTD Target</td>
-                <td className="border-r border-border/40 p-2 font-bold font-mono text-[#0078D7]">{formatValue(ytdTarget)}</td>
+                <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">
+                  YTD Target
+                </td>
+                <td className="border-r border-border/40 p-2 font-bold font-mono text-[#0078D7]">
+                  {formatValue(ytdTarget)}
+                </td>
                 <td className="border-r border-border/40 p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
                 <td className="p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
               </tr>
               <tr>
-                <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">YTD Actual</td>
+                <td className="border-r border-border/40 p-2 font-bold bg-[#E2E2E2] dark:bg-secondary/30 text-right pr-4">
+                  YTD Actual
+                </td>
                 <td className="border-r border-border/40 p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
-                <td className="border-r border-border/40 p-2 font-bold font-mono text-muted-foreground">{formatValue(ytdActual)}</td>
+                <td className="border-r border-border/40 p-2 font-bold font-mono text-muted-foreground">
+                  {formatValue(ytdActual)}
+                </td>
                 <td className="p-2 bg-[#F2F8FC] dark:bg-secondary/10"></td>
               </tr>
             </tbody>
           </table>
         </div>
-        
+
         {/* Chart Side */}
         <div className="w-full xl:w-[60%] flex flex-col h-[400px]">
           {onTitleChange ? (
@@ -412,50 +490,69 @@ export function TimeSeriesYTD({
               className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80 border-transparent hover:border-input focus:border-input bg-transparent shadow-none"
             />
           ) : (
-            <h4 className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80">{chartTitle}</h4>
+            <h4 className="text-center font-bold text-sm mb-4 tracking-wider text-foreground/80">
+              {chartTitle}
+            </h4>
           )}
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 40, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fontSize: 10, fontWeight: 600 }} 
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 10, fontWeight: 600 }}
                 stroke="var(--color-muted-foreground)"
                 angle={-45}
                 textAnchor="end"
                 height={60}
                 interval={0}
               />
-              <YAxis 
-                tick={{ fontSize: 10 }} 
-                stroke="var(--color-muted-foreground)" 
+              <YAxis
+                tick={{ fontSize: 10 }}
+                stroke="var(--color-muted-foreground)"
                 tickFormatter={(val) => formatValue(val)}
                 width={80}
                 domain={[y_axis_min, chart_y_max]}
                 allowDataOverflow={true}
               />
-              <RTooltip 
-                contentStyle={{ borderRadius: 8, border: "1px solid var(--color-border)", fontSize: 12, backgroundColor: "var(--color-card)" }}
+              <RTooltip
+                contentStyle={{
+                  borderRadius: 8,
+                  border: "1px solid var(--color-border)",
+                  fontSize: 12,
+                  backgroundColor: "var(--color-card)",
+                }}
                 formatter={(val: number) => formatValue(val)}
               />
-              <Bar dataKey="ytdTargetBar" name="YTD Target" fill="#0078D7" barSize={30} label={<CustomBarLabel />} />
-              <Bar dataKey="ytdActualBar" name="YTD Actual" fill="#808080" barSize={30} label={<CustomBarLabel />} />
-              <Line 
-                type="linear" 
-                dataKey="metaLine" 
-                name="Meta" 
-                stroke="#4DB8FF" 
-                strokeWidth={2} 
-                dot={{ r: 4, fill: "#4DB8FF" }} 
+              <Bar
+                dataKey="ytdTargetBar"
+                name="YTD Target"
+                fill="#0078D7"
+                barSize={30}
+                label={<CustomBarLabel />}
+              />
+              <Bar
+                dataKey="ytdActualBar"
+                name="YTD Actual"
+                fill="#808080"
+                barSize={30}
+                label={<CustomBarLabel />}
+              />
+              <Line
+                type="linear"
+                dataKey="metaLine"
+                name="Meta"
+                stroke="#4DB8FF"
+                strokeWidth={2}
+                dot={{ r: 4, fill: "#4DB8FF" }}
                 label={<CustomMetaLabel />}
                 isAnimationActive={false}
               />
-              <Line 
-                type="linear" 
-                dataKey="actualLine" 
-                name="Actual" 
-                stroke="#0078D7" 
-                strokeWidth={2} 
+              <Line
+                type="linear"
+                dataKey="actualLine"
+                name="Actual"
+                stroke="#0078D7"
+                strokeWidth={2}
                 dot={{ r: 4, fill: "#0078D7" }}
                 label={<CustomActualLabel />}
                 isAnimationActive={false}
@@ -469,4 +566,3 @@ export function TimeSeriesYTD({
 }
 
 // ─── IMPACT MATRIX ───────────────────────────────────────────────────────────
-

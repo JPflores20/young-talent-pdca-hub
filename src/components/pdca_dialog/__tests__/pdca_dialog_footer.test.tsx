@@ -12,11 +12,10 @@ describe("PdcaDialogFooter", () => {
         is_user_permitted_to_edit={true}
         on_proceed_next_phase={vi.fn()}
         on_close_dialog={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText("Cerrar Ventana")).toBeDefined();
-    expect(screen.getByText("Exportar PDF")).toBeDefined();
     expect(screen.getByText("Siguiente Paso")).toBeDefined();
   });
 
@@ -30,7 +29,7 @@ describe("PdcaDialogFooter", () => {
         is_user_permitted_to_edit={true}
         on_proceed_next_phase={handle_proceed}
         on_close_dialog={vi.fn()}
-      />
+      />,
     );
 
     const finish_button = screen.getByRole("button", { name: /Finalizar PDCA/i });

@@ -38,10 +38,7 @@ export function format_pareto_value(val: unknown, unit: string): string {
  * Parsea texto copiado desde Excel (TSV o CSV) y lo fusiona con
  * los items existentes, agrupando por nombre de categoría.
  */
-export function parse_excel_paste(
-  raw_text: string,
-  existing_items: ParetoItem[]
-): ParetoItem[] {
+export function parse_excel_paste(raw_text: string, existing_items: ParetoItem[]): ParetoItem[] {
   const lines = raw_text.split("\n");
   const aggregated: Record<string, number> = {};
 
@@ -79,8 +76,7 @@ export function parse_excel_paste(
   }
 
   for (const category in aggregated) {
-    existing_aggregated[category] =
-      (existing_aggregated[category] ?? 0) + aggregated[category];
+    existing_aggregated[category] = (existing_aggregated[category] ?? 0) + aggregated[category];
   }
 
   return Object.keys(existing_aggregated).map((category) => ({

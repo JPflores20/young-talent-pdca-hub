@@ -2,11 +2,7 @@ import React, { useRef, useState } from "react";
 import { UploadCloud, X, ZoomIn, Loader2, ImageIcon } from "lucide-react";
 import { StepCard } from "@/components/ui/step-card";
 import { StepInstructions } from "./step-instructions";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const MAX_FILES = 10;
@@ -34,7 +30,11 @@ function compressImage(file: File, maxWidth = 2048, quality = 0.85): Promise<Blo
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Compresión fallida")), "image/jpeg", quality);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Compresión fallida"))),
+          "image/jpeg",
+          quality,
+        );
       };
       img.onerror = reject;
     };
@@ -56,11 +56,8 @@ async function uploadToFirebase(file: File): Promise<string> {
   const uploadTask = uploadBytesResumable(storageRef, blob);
 
   return new Promise((resolve, reject) => {
-    uploadTask.on(
-      "state_changed",
-      null,
-      reject,
-      async () => resolve(await getDownloadURL(uploadTask.snapshot.ref))
+    uploadTask.on("state_changed", null, reject, async () =>
+      resolve(await getDownloadURL(uploadTask.snapshot.ref)),
     );
   });
 }
@@ -101,7 +98,7 @@ export function GembaEvidenciasStep({
         } finally {
           setUploadingCount((c) => c - 1);
         }
-      })
+      }),
     );
 
     onChange([...images, ...urls]);
@@ -142,9 +139,7 @@ export function GembaEvidenciasStep({
       }
     >
       <StepInstructions>
-        <p className="text-muted-foreground text-xs">
-          {description}
-        </p>
+        <p className="text-muted-foreground text-xs">{description}</p>
       </StepInstructions>
 
       <div className="mt-4 space-y-4">
@@ -207,7 +202,7 @@ export function GembaEvidenciasStep({
               "border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 py-10 cursor-pointer transition-colors select-none",
               isDragging
                 ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50 hover:bg-muted/40"
+                : "border-border hover:border-primary/50 hover:bg-muted/40",
             )}
           >
             {images.length === 0 && uploadingCount === 0 ? (

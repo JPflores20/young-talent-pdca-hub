@@ -6,8 +6,14 @@
  */
 import { Maximize2 } from "lucide-react";
 import {
-  Bar, CartesianGrid, ComposedChart, Line,
-  ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis,
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ResponsiveContainer,
+  Tooltip as RTooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +21,10 @@ import { Label } from "@/components/ui/label";
 import type { ParetoChartProps } from "./pareto_types";
 
 function CustomBarLabel(props: {
-  x?: number; y?: number; width?: number; value?: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  value?: number;
   format_value: (v: unknown) => string;
 }) {
   const { x = 0, y = 0, width = 0, value, format_value } = props;
@@ -82,9 +91,7 @@ export function ParetoChart({
             value={y_axis_max === "auto" ? "" : y_axis_max}
             placeholder="auto"
             onChange={(e) =>
-              on_y_axis_max_change(
-                e.target.value === "" ? "auto" : Number(e.target.value)
-              )
+              on_y_axis_max_change(e.target.value === "" ? "auto" : Number(e.target.value))
             }
             className="h-6 w-20 text-xs px-1"
           />
@@ -105,9 +112,7 @@ export function ParetoChart({
       <div className="border rounded-md p-2 bg-card">
         {/* Título renderizado arriba de la gráfica, usa el valor del input superior */}
         {chart_title && (
-            <h3 className="text-center text-sm font-semibold mb-2 text-foreground">
-                {chart_title}
-            </h3>
+          <h3 className="text-center text-sm font-semibold mb-2 text-foreground">{chart_title}</h3>
         )}
         <ResponsiveContainer width="100%" height={bar_height}>
           <ComposedChart
@@ -115,7 +120,7 @@ export function ParetoChart({
             margin={{ top: 25, right: 15, bottom: x_bottom_margin, left: -10 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-            
+
             {/* Eje X ajustado: interval={0} fuerza todos los labels, height permite que no se recorten */}
             <XAxis
               dataKey="area"
@@ -126,7 +131,7 @@ export function ParetoChart({
               tick={{ fontSize: 10 }}
               stroke="var(--color-muted-foreground)"
             />
-            
+
             {/* Eje Y izquierdo ajustado: allowDataOverflow garantiza que se respeten los límites */}
             <YAxis
               yAxisId="left"

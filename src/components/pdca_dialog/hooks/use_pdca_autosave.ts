@@ -9,7 +9,7 @@ export const use_pdca_autosave = (
   current_payload_getter: () => Pdca,
   is_editable: boolean,
   current_user_name?: string,
-  on_save_success?: () => Promise<void>
+  on_save_success?: () => Promise<void>,
 ) => {
   const [is_saving, set_is_saving] = useState(false);
   const [has_unsaved_changes, set_has_unsaved_changes] = useState(false);
@@ -47,7 +47,7 @@ export const use_pdca_autosave = (
           if (on_save_success) {
             await on_save_success();
           }
-        } catch(e) {}
+        } catch (e) {}
         toast.success("¡PDCA sincronizado con éxito en la base de datos!");
         return true;
       } catch (save_error) {
@@ -58,7 +58,7 @@ export const use_pdca_autosave = (
         set_is_saving(false);
       }
     },
-    [is_editable, is_saving, current_payload_getter]
+    [is_editable, is_saving, current_payload_getter],
   );
 
   // Autosave y detección de modificaciones

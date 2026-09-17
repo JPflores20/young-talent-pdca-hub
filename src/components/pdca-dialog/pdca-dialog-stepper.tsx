@@ -12,7 +12,7 @@ import {
   RefreshCw,
   FileText,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   Bar,
@@ -30,7 +30,7 @@ import {
   Tooltip as RTooltip,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
 import { format, parseISO, isValid } from "date-fns";
 import { toast } from "sonner";
@@ -81,8 +81,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
-import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import {
+  phases,
+  DEFAULT_TARGET_VS_ACTUAL,
+  DEFAULT_PARETO_DATA_MAP,
+  DEFAULT_VPO_CHECKPOINTS,
+  DEFAULT_PARTICIPANTES,
+  type ParticipantesData,
+  type ActionItem,
+  type Pdca,
+  type Phase,
+  type ParetoItem,
+  type VpoCheckpointItem,
+  type DefinicionMeta,
+  type ImpactMatrixRow,
+  type FiveWhysTableData,
+  type IshikawaItem,
+} from "@/data/pdca";
+import {
+  PdcaGoalDefinition,
+  PdcaParticipants,
+  DEFAULT_DEFINICION_META,
+} from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "../kpi-tree";
 import { ActionKanban } from "../action-kanban";
 // Removed firestore imports
@@ -100,17 +120,22 @@ import {
 } from "@/components/ui/accordion";
 import { StepCard } from "@/components/ui/step-card";
 
-
-const PHASE_STEPS_MAP: Record<string, string[]> = { Plan: ['step-1', 'step-2'], Do: ['step-3', 'step-4', 'step-5', 'step-flavor', 'step-gop'], Check: ['step-6', 'step-7'], Act: ['step-8', 'step-9'] }; const customPhases = [
-  { id: 'Plan', label: '1. DEFINICIÓN', sub: 'Pasos 1 y 2' },
-  { id: 'Do', label: '2. ANÁLISIS', sub: 'Pasos 3, 4 y 5' },
-  { id: 'Check', label: '3. CAUSA RAÍZ', sub: 'Pasos 6 y 7' },
-  { id: 'Act', label: '4. EJECUCIÓN', sub: 'Pasos 8 y 9' }
-] as const; export const isPhaseStepsCompleted = (phaseId: string, completedSteps: Set<string>) => {
-  const steps = PHASE_STEPS_MAP[phaseId as Phase] || [];
-  return steps.length > 0 && steps.every(s => completedSteps.has(s));
+const PHASE_STEPS_MAP: Record<string, string[]> = {
+  Plan: ["step-1", "step-2"],
+  Do: ["step-3", "step-4", "step-5", "step-flavor", "step-gop"],
+  Check: ["step-6", "step-7"],
+  Act: ["step-8", "step-9"],
 };
-
+const customPhases = [
+  { id: "Plan", label: "1. DEFINICIÓN", sub: "Pasos 1 y 2" },
+  { id: "Do", label: "2. ANÁLISIS", sub: "Pasos 3, 4 y 5" },
+  { id: "Check", label: "3. CAUSA RAÍZ", sub: "Pasos 6 y 7" },
+  { id: "Act", label: "4. EJECUCIÓN", sub: "Pasos 8 y 9" },
+] as const;
+export const isPhaseStepsCompleted = (phaseId: string, completedSteps: Set<string>) => {
+  const steps = PHASE_STEPS_MAP[phaseId as Phase] || [];
+  return steps.length > 0 && steps.every((s) => completedSteps.has(s));
+};
 
 export function CustomStepper({
   current,
@@ -130,7 +155,8 @@ export function CustomStepper({
     <div className="flex items-stretch gap-1 rounded-xl border border-border bg-secondary/60 p-1.5">
       {customPhases.map((phase, i) => {
         const isCurrent = i === currentIndex;
-        const isCompleted = completedPhases.has(phase.id) || isPhaseStepsCompleted(phase.id, completedSteps);
+        const isCompleted =
+          completedPhases.has(phase.id) || isPhaseStepsCompleted(phase.id, completedSteps);
         return (
           <div
             key={phase.id}
@@ -175,7 +201,10 @@ export function CustomStepper({
             {/* Toggle complete button */}
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onToggleComplete(phase.id as Phase); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleComplete(phase.id as Phase);
+              }}
               title={isCompleted ? "Desmarcar fase como completada" : "Marcar fase como completada"}
               className={cn(
                 "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
@@ -270,5 +299,3 @@ const PILAR_STYLE_MAP: Record<string, { bg: string; text: string; border: string
     border: "border-violet-500/40",
   },
 };
-
-

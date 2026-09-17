@@ -55,17 +55,24 @@ export function PdcaComments({ comments, onAddComment, onDeleteComment }: PdcaCo
 
       <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
         {comments.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4 italic">No hay comentarios aún. ¡Sé el primero en participar!</p>
+          <p className="text-sm text-muted-foreground text-center py-4 italic">
+            No hay comentarios aún. ¡Sé el primero en participar!
+          </p>
         ) : (
           comments.map((c) => (
-            <div key={c.id} className="flex gap-3 bg-secondary/30 p-3 rounded-lg border border-border/50 text-sm">
+            <div
+              key={c.id}
+              className="flex gap-3 bg-secondary/30 p-3 rounded-lg border border-border/50 text-sm"
+            >
               <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary font-bold shadow-sm">
                 {(c.userName || c.user_name || "U").charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold truncate">{c.userName || c.user_name || "Usuario"}</span>
+                    <span className="font-semibold truncate">
+                      {c.userName || c.user_name || "Usuario"}
+                    </span>
                     {c.stepTitle && (
                       <Badge variant="outline" className="text-[10px] py-0 h-4 bg-background">
                         {c.stepTitle}
@@ -76,11 +83,15 @@ export function PdcaComments({ comments, onAddComment, onDeleteComment }: PdcaCo
                 </div>
                 <p className="mt-1 text-foreground/90 whitespace-pre-wrap">{c.text}</p>
               </div>
-              {onDeleteComment && (currentUser?.role === "admin" || currentUser?.email === c.userId) && (
-                <button onClick={() => onDeleteComment(c.id)} className="shrink-0 text-muted-foreground/50 hover:text-destructive transition-colors">
-                  <Trash2 className="size-4" />
-                </button>
-              )}
+              {onDeleteComment &&
+                (currentUser?.role === "admin" || currentUser?.email === c.userId) && (
+                  <button
+                    onClick={() => onDeleteComment(c.id)}
+                    className="shrink-0 text-muted-foreground/50 hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
             </div>
           ))
         )}

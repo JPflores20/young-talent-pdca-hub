@@ -7,8 +7,12 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Table, TableBody, TableCell,
-  TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import type { ParetoDataTableProps } from "./pareto_types";
 
@@ -47,9 +51,7 @@ export function ParetoDataTable({
                 <Input
                   type="number"
                   value={row.gap || ""}
-                  onChange={(e) =>
-                    on_row_update(row.id, "gap", Number(e.target.value))
-                  }
+                  onChange={(e) => on_row_update(row.id, "gap", Number(e.target.value))}
                   className="h-7 text-xs shadow-none border-0 px-1 bg-transparent hover:bg-secondary/50 focus-visible:bg-background text-right"
                 />
               </TableCell>

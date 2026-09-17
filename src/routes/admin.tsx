@@ -7,9 +7,32 @@ import { secondaryAuth, db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { AlertCircle, UserPlus, Shield, User, Trash2 } from "lucide-react";
 import type { UserRole, UserProfile } from "@/context/auth-context";
 import { toast } from "sonner";
@@ -21,43 +44,45 @@ export const Route = createFileRoute("/admin")({
 function AdminPanel() {
   const { currentUser, mockUsers, addMockUser } = useAuth();
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
-  
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("user");
   const [area, setArea] = useState("");
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-      const list: UserProfile[] = [];
-      snapshot.forEach((docSnap) => {
-        const d = docSnap.data() as Record<string, any>;
-        list.push({
-          uid: docSnap.id,
-          name: (d["name"] as string) || "Usuario",
-          email: (d["email"] as string) || "",
-          role: (d["role"] as UserRole) || "user",
-          area: (d["area"] as string) || "Usuario",
+    const unsub = onSnapshot(
+      collection(db, "users"),
+      (snapshot) => {
+        const list: UserProfile[] = [];
+        snapshot.forEach((docSnap) => {
+          const d = docSnap.data() as Record<string, any>;
+          list.push({
+            uid: docSnap.id,
+            name: (d["name"] as string) || "Usuario",
+            email: (d["email"] as string) || "",
+            role: (d["role"] as UserRole) || "user",
+            area: (d["area"] as string) || "Usuario",
+          });
         });
-      });
-      setUsersList(list);
-    }, (err) => {
-      console.error("Error en onSnapshot de usuarios:", err);
-    });
+        setUsersList(list);
+      },
+      (err) => {
+        console.error("Error en onSnapshot de usuarios:", err);
+      },
+    );
 
     return () => unsub();
   }, []);
 
   const handleRoleChange = async (uid: string, newRole: UserRole) => {
     // Actualización optimista en el estado local del componente
-    setUsersList((prev) =>
-      prev.map((u) => (u.uid === uid ? { ...u, role: newRole } : u))
-    );
+    setUsersList((prev) => prev.map((u) => (u.uid === uid ? { ...u, role: newRole } : u)));
 
     try {
       await setDoc(doc(db, "users", uid), { role: newRole }, { merge: true });
@@ -67,7 +92,7 @@ function AdminPanel() {
       if (err?.code === "permission-denied" || err?.message?.includes("permissions")) {
         toast.warning(
           "Rol actualizado localmente, pero Firebase bloqueó el guardado en la nube por Reglas de Firestore. Revisa tu consola de Firebase.",
-          { duration: 6000 }
+          { duration: 6000 },
         );
       } else {
         toast.error("Error al actualizar rol de usuario en la base de datos.");
@@ -77,11 +102,11 @@ function AdminPanel() {
 
   const handleDeleteUser = async (uid: string, name: string) => {
     // Si se trata de un mock (aunque en prod se usa la DB real)
-    if (mockUsers.find(u => u.uid === uid) && usersList.length === 0) {
+    if (mockUsers.find((u) => u.uid === uid) && usersList.length === 0) {
       toast.info("No se puede eliminar un usuario simulado de prueba local.");
       return;
     }
-    
+
     try {
       await deleteDoc(doc(db, "users", uid));
       toast.success(`El usuario ${name} ha sido eliminado exitosamente.`);
@@ -111,11 +136,11 @@ function AdminPanel() {
       setError("Por favor, completa todos los campos requeridos.");
       return;
     }
-    
+
     setLoading(true);
     setError(null);
     setSuccess(null);
-    
+
     const emailLower = email.trim().toLowerCase();
 
     try {
@@ -150,7 +175,6 @@ function AdminPanel() {
       setEmail("");
       setPassword("");
       setArea("");
-      
     } catch (err: any) {
       setError(err.message || "Error al registrar el usuario.");
     } finally {
@@ -194,22 +218,48 @@ function AdminPanel() {
 
             <div className="space-y-2">
               <Label htmlFor="name">Nombre Completo</Label>
-              <Input id="name" required value={name} onChange={e => setName(e.target.value)} placeholder="Ej. Roberto Torres" />
+              <Input
+                id="name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ej. Roberto Torres"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Correo Electrónico (Obligatorio)</Label>
-              <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="correo@gmodelo.com.mx" />
+              <Input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="correo@gmodelo.com.mx"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña temporal</Label>
-              <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="area">Área / Departamento</Label>
-              <Input id="area" required value={area} onChange={e => setArea(e.target.value)} placeholder="Ej. Logística" />
+              <Input
+                id="area"
+                required
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                placeholder="Ej. Logística"
+              />
             </div>
 
             <div className="space-y-2">
@@ -225,7 +275,11 @@ function AdminPanel() {
               </Select>
             </div>
 
-            <Button type="submit" className="w-full bg-primary hover:bg-brand-dark mt-2" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-brand-dark mt-2"
+              disabled={loading}
+            >
               {loading ? "Registrando..." : "Crear Cuenta"}
             </Button>
           </form>
@@ -234,7 +288,9 @@ function AdminPanel() {
         {/* Lista de Usuarios */}
         <div className="lg:col-span-2 overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
           <div className="flex items-center gap-3 border-b border-border px-6 py-4">
-            <h2 className="font-display text-lg font-bold">Usuarios Registrados ({displayUsers.length})</h2>
+            <h2 className="font-display text-lg font-bold">
+              Usuarios Registrados ({displayUsers.length})
+            </h2>
           </div>
           <Table>
             <TableHeader>
@@ -242,8 +298,12 @@ function AdminPanel() {
                 <TableHead className="font-semibold text-foreground/80">Nombre</TableHead>
                 <TableHead className="font-semibold text-foreground/80">Correo</TableHead>
                 <TableHead className="font-semibold text-foreground/80">Área</TableHead>
-                <TableHead className="w-40 font-semibold text-foreground/80">Modificar Permisos</TableHead>
-                <TableHead className="w-20 font-semibold text-foreground/80 text-center">Acciones</TableHead>
+                <TableHead className="w-40 font-semibold text-foreground/80">
+                  Modificar Permisos
+                </TableHead>
+                <TableHead className="w-20 font-semibold text-foreground/80 text-center">
+                  Acciones
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -260,7 +320,10 @@ function AdminPanel() {
                   <TableCell className="text-muted-foreground">{u.email}</TableCell>
                   <TableCell className="text-muted-foreground">{u.area}</TableCell>
                   <TableCell>
-                    <Select value={u.role} onValueChange={(v) => handleRoleChange(u.uid, v as UserRole)}>
+                    <Select
+                      value={u.role}
+                      onValueChange={(v) => handleRoleChange(u.uid, v as UserRole)}
+                    >
                       <SelectTrigger className="h-8 w-32 text-xs font-semibold">
                         <SelectValue />
                       </SelectTrigger>
@@ -281,7 +344,11 @@ function AdminPanel() {
                   <TableCell className="text-center">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                        >
                           <Trash2 className="size-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -289,12 +356,17 @@ function AdminPanel() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            ¿Estás seguro que deseas eliminar a <strong className="text-foreground">{u.name}</strong> del sistema? Esta acción no se puede deshacer. Se le revocará el acceso inmediatamente.
+                            ¿Estás seguro que deseas eliminar a{" "}
+                            <strong className="text-foreground">{u.name}</strong> del sistema? Esta
+                            acción no se puede deshacer. Se le revocará el acceso inmediatamente.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteUser(u.uid, u.name)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                          <AlertDialogAction
+                            onClick={() => handleDeleteUser(u.uid, u.name)}
+                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                          >
                             Eliminar
                           </AlertDialogAction>
                         </AlertDialogFooter>

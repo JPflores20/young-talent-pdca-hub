@@ -40,6 +40,5 @@ describe("PdcaDialog (Componente Refactorizado)", () => {
     expect(screen.getByText("PDCA-2026-UNIT")).toBeDefined();
     expect(screen.getByDisplayValue("Proyecto de Reducción de Pérdidas")).toBeDefined();
     expect(screen.getByText("Guardar PDCA")).toBeDefined();
-    expect(screen.getByText("Exportar PDF")).toBeDefined();
   });
 });

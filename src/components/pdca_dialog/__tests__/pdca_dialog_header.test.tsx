@@ -33,7 +33,7 @@ describe("PdcaDialogHeader", () => {
         {...BASE_PROPS}
         has_pending_modifications={true}
         on_trigger_firestore_save={handle_save}
-      />
+      />,
     );
 
     expect(screen.getByText("Cambios pendientes")).toBeDefined();

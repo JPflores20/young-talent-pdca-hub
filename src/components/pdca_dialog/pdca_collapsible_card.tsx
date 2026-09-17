@@ -46,13 +46,15 @@ export const PdcaCollapsibleCard: React.FC<CollapsibleCardProps> = ({
           className="text-muted-foreground hover:text-foreground p-1 rounded-md transition-colors"
           aria-label={internalCollapsed ? "Expandir sección" : "Colapsar sección"}
         >
-          {internalCollapsed ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
+          {internalCollapsed ? (
+            <ChevronDown className="size-4" />
+          ) : (
+            <ChevronUp className="size-4" />
+          )}
         </button>
       </div>
 
-      <div className={cn("p-5 transition-all", internalCollapsed && "hidden")}>
-        {children}
-      </div>
+      <div className={cn("p-5 transition-all", internalCollapsed && "hidden")}>{children}</div>
     </div>
   );
 };

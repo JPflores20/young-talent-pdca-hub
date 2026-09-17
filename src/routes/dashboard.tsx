@@ -34,8 +34,7 @@ export const Route = createFileRoute("/dashboard")({
       { title: "Dashboard de mejora continua · PDCA Hub" },
       {
         name: "description",
-        content:
-          "Resumen de avance de los ciclos PDCA del programa de Grupo Modelo.",
+        content: "Resumen de avance de los ciclos PDCA del programa de Grupo Modelo.",
       },
       { property: "og:title", content: "Dashboard de mejora continua · PDCA Hub" },
       {
@@ -71,9 +70,19 @@ function Dashboard() {
 
   const kpis = [
     { label: "PDCAs activos", value: activos, icon: ClipboardList, hint: "En Plan, Do o Check" },
-    { label: "En cierre / Act", value: cerrados, icon: CheckCircle2, hint: "Listos para estandarizar" },
+    {
+      label: "En cierre / Act",
+      value: cerrados,
+      icon: CheckCircle2,
+      hint: "Listos para estandarizar",
+    },
     { label: "Avance promedio", value: `${avance}%`, icon: Target, hint: "Todos los ciclos" },
-    { label: "Tareas pendientes", value: pendientes, icon: Clock, hint: "Planes de acción abiertos" },
+    {
+      label: "Tareas pendientes",
+      value: pendientes,
+      icon: Clock,
+      hint: "Planes de acción abiertos",
+    },
   ];
 
   return (
@@ -85,12 +94,21 @@ function Dashboard() {
           </p>
           <h1 className="mt-1 text-3xl font-bold uppercase">Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Buen día, <span className="font-semibold text-foreground">{currentUser?.name || "Usuario"}</span>. Este es el estatus de {currentUser?.role === "admin" ? "todos los" : "tus"} proyectos de mejora continua.
+            Buen día,{" "}
+            <span className="font-semibold text-foreground">{currentUser?.name || "Usuario"}</span>.
+            Este es el estatus de {currentUser?.role === "admin" ? "todos los" : "tus"} proyectos de
+            mejora continua.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing} title="Actualizar datos">
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Actualizar datos"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>
           <Button asChild variant="outline">
             <Link to="/">

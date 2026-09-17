@@ -6,7 +6,7 @@ import { toast } from "sonner";
  */
 export const export_element_to_pdf = async (
   element_id: string,
-  document_identifier: string
+  document_identifier: string,
 ): Promise<boolean> => {
   const dom_element = document.getElementById(element_id);
   if (!dom_element) {

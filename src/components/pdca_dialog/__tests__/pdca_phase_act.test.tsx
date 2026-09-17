@@ -15,12 +15,12 @@ describe("PdcaPhaseAct", () => {
         on_kpi_final_result_unit_change={vi.fn()}
         gemba_evidencias={[]}
         on_gemba_evidencias_change={vi.fn()}
-        gemba_final_image={null}
-        on_gemba_final_image_change={vi.fn()}
+        gemba_final_images={[]}
+        on_gemba_final_images_change={vi.fn()}
         completed_steps={new Set()}
         on_toggle_step={vi.fn()}
         is_editable={true}
-      />
+      />,
     );
 
     expect(screen.getByText(/PASO 8.2: PLAN DE ACCIÓN/i)).toBeDefined();

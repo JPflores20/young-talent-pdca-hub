@@ -33,9 +33,7 @@ export function AppSidebar() {
             <p className="truncate font-display text-base font-semibold uppercase tracking-wide">
               Grupo Modelo
             </p>
-            <p className="truncate text-xs text-sidebar-foreground/70">
-              Plataforma PDCA Hub
-            </p>
+            <p className="truncate text-xs text-sidebar-foreground/70">Plataforma PDCA Hub</p>
           </div>
         </div>
       </SidebarHeader>
@@ -47,7 +45,11 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={currentPath === item.url} tooltip={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={currentPath === item.url}
+                    tooltip={item.title}
+                  >
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>

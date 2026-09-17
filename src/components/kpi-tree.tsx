@@ -36,7 +36,7 @@ const CustomNode = ({ id, data, selected }: { id: string; data: any; selected: b
 
   const updateData = (field: string, value: string) => {
     setNodes((nds) =>
-      nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, [field]: value } } : n))
+      nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, [field]: value } } : n)),
     );
   };
 
@@ -50,30 +50,62 @@ const CustomNode = ({ id, data, selected }: { id: string; data: any; selected: b
     white: "bg-white border-gray-300 text-gray-800 dark:bg-white dark:text-gray-800",
     blue: "bg-blue-100 border-blue-400 text-blue-800 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200",
     red: "bg-red-100 border-red-400 text-red-800 dark:bg-red-900 dark:border-red-600 dark:text-red-200",
-    green: "bg-emerald-100 border-emerald-400 text-emerald-800 dark:bg-emerald-900 dark:border-emerald-600 dark:text-emerald-200",
-    yellow: "bg-amber-100 border-amber-400 text-amber-800 dark:bg-amber-900 dark:border-amber-600 dark:text-amber-200",
+    green:
+      "bg-emerald-100 border-emerald-400 text-emerald-800 dark:bg-emerald-900 dark:border-emerald-600 dark:text-emerald-200",
+    yellow:
+      "bg-amber-100 border-amber-400 text-amber-800 dark:bg-amber-900 dark:border-amber-600 dark:text-amber-200",
   };
   const bgColorClass = colorMap[data.color || "default"] || colorMap["default"];
 
   return (
-    <div className={cn(
-      "relative rounded-md border p-3 shadow-sm min-w-[160px] group transition-colors",
-      bgColorClass,
-      selected ? "ring-2 ring-primary border-transparent" : ""
-    )}>
+    <div
+      className={cn(
+        "relative rounded-md border p-3 shadow-sm min-w-[160px] group transition-colors",
+        bgColorClass,
+        selected ? "ring-2 ring-primary border-transparent" : "",
+      )}
+    >
       <Handle type="target" position={Position.Top} className="w-2 h-2" />
-      
+
       {/* Edit Controls (visible on hover/select) */}
-      <div className={cn(
-        "absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-card border shadow-sm rounded-md p-1 transition-opacity z-10",
-        selected ? "opacity-100" : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
-      )}>
-        <button onClick={() => updateData("color", "default")} className="w-4 h-4 rounded-full bg-secondary border hover:scale-110 transition-transform" title="Normal" />
-        <button onClick={() => updateData("color", "white")} className="w-4 h-4 rounded-full bg-white border border-gray-300 hover:scale-110 transition-transform" title="Blanco" />
-        <button onClick={() => updateData("color", "blue")} className="w-4 h-4 rounded-full bg-blue-500 hover:scale-110 transition-transform" title="Azul" />
-        <button onClick={() => updateData("color", "red")} className="w-4 h-4 rounded-full bg-red-500 hover:scale-110 transition-transform" title="Rojo" />
-        <button onClick={() => updateData("color", "yellow")} className="w-4 h-4 rounded-full bg-amber-400 hover:scale-110 transition-transform" title="Amarillo" />
-        <button onClick={() => updateData("color", "green")} className="w-4 h-4 rounded-full bg-emerald-500 hover:scale-110 transition-transform" title="Verde" />
+      <div
+        className={cn(
+          "absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-card border shadow-sm rounded-md p-1 transition-opacity z-10",
+          selected
+            ? "opacity-100"
+            : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto",
+        )}
+      >
+        <button
+          onClick={() => updateData("color", "default")}
+          className="w-4 h-4 rounded-full bg-secondary border hover:scale-110 transition-transform"
+          title="Normal"
+        />
+        <button
+          onClick={() => updateData("color", "white")}
+          className="w-4 h-4 rounded-full bg-white border border-gray-300 hover:scale-110 transition-transform"
+          title="Blanco"
+        />
+        <button
+          onClick={() => updateData("color", "blue")}
+          className="w-4 h-4 rounded-full bg-blue-500 hover:scale-110 transition-transform"
+          title="Azul"
+        />
+        <button
+          onClick={() => updateData("color", "red")}
+          className="w-4 h-4 rounded-full bg-red-500 hover:scale-110 transition-transform"
+          title="Rojo"
+        />
+        <button
+          onClick={() => updateData("color", "yellow")}
+          className="w-4 h-4 rounded-full bg-amber-400 hover:scale-110 transition-transform"
+          title="Amarillo"
+        />
+        <button
+          onClick={() => updateData("color", "green")}
+          className="w-4 h-4 rounded-full bg-emerald-500 hover:scale-110 transition-transform"
+          title="Verde"
+        />
         <div className="w-px h-4 bg-border mx-1" />
         <button onClick={deleteNode} className="text-muted-foreground hover:text-destructive p-0.5">
           <Trash2 className="size-3.5" />
@@ -81,14 +113,14 @@ const CustomNode = ({ id, data, selected }: { id: string; data: any; selected: b
       </div>
 
       <div className="flex flex-col gap-1.5 nodrag">
-        <Input 
-          value={data.label} 
+        <Input
+          value={data.label}
           onChange={(e) => updateData("label", e.target.value)}
           className="h-7 text-sm font-semibold text-center bg-transparent border-transparent hover:border-input focus:border-input shadow-none px-1"
           placeholder="Nombre del KPI"
         />
-        <Input 
-          value={data.value} 
+        <Input
+          value={data.value}
           onChange={(e) => updateData("value", e.target.value)}
           className="h-6 text-xs text-center bg-transparent border-transparent hover:border-input focus:border-input shadow-none px-1 font-mono"
           placeholder="Valor (ej. 2.8%)"
@@ -142,10 +174,18 @@ interface KpiTreeProps {
   onToggleStep?: (() => void) | undefined;
 }
 
-export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isStepCompleted, onToggleStep }: KpiTreeProps) {
+export function KpiTreeInteractive({
+  initialNodes,
+  initialEdges,
+  onChange,
+  isStepCompleted,
+  onToggleStep,
+}: KpiTreeProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const startNodes = (initialNodes && initialNodes.length > 0) ? initialNodes as Node[] : defaultNodes;
-  const startEdges = (initialEdges && initialEdges.length > 0) ? initialEdges as Edge[] : defaultEdges;
+  const startNodes =
+    initialNodes && initialNodes.length > 0 ? (initialNodes as Node[]) : defaultNodes;
+  const startEdges =
+    initialEdges && initialEdges.length > 0 ? (initialEdges as Edge[]) : defaultEdges;
   const [nodes, setNodes, onNodesChange] = useNodesState(startNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(startEdges);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -169,7 +209,7 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   // Click on an edge to cycle: solid → dashed → animated dashed → solid
@@ -192,10 +232,10 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
             const { strokeDasharray, ...restStyle } = currentStyle;
             return { ...e, animated: false, style: restStyle };
           }
-        })
+        }),
       );
     },
-    [setEdges]
+    [setEdges],
   );
 
   const addNode = () => {
@@ -209,20 +249,34 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
   };
 
   return (
-    <StepCard 
+    <StepCard
       className={cn(
         "transition-all duration-300",
-        isFullscreen && "fixed inset-0 z-50 rounded-none border-none bg-background shadow-none p-4"
+        isFullscreen && "fixed inset-0 z-50 rounded-none border-none bg-background shadow-none p-4",
       )}
       title="PASO 4: KPI TREE (IP)"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       headerRight={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); addNode(); }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              addNode();
+            }}
+          >
             <Plus className="mr-2 size-4" /> Agregar Nodo
           </Button>
-          <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); setIsFullscreen(!isFullscreen); }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsFullscreen(!isFullscreen);
+            }}
+          >
             {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </Button>
         </div>
@@ -230,14 +284,17 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
     >
       <div className="flex flex-col gap-1 mb-4">
         <p className="text-xs text-muted-foreground ml-[36px]">
-          Desglosa el KPI en Indicadores de Proceso (IP). Haz doble clic en un nodo o enlace para eliminarlo. Haz clic normal en el enlace para cambiar su estilo.
+          Desglosa el KPI en Indicadores de Proceso (IP). Haz doble clic en un nodo o enlace para
+          eliminarlo. Haz clic normal en el enlace para cambiar su estilo.
         </p>
       </div>
 
-      <div className={cn(
-        "border border-border rounded-lg bg-secondary/20 overflow-hidden relative transition-all duration-300",
-        isFullscreen ? "h-[calc(100vh-80px)]" : "h-[450px]"
-      )}>
+      <div
+        className={cn(
+          "border border-border rounded-lg bg-secondary/20 overflow-hidden relative transition-all duration-300",
+          isFullscreen ? "h-[calc(100vh-80px)]" : "h-[450px]",
+        )}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -248,7 +305,7 @@ export function KpiTreeInteractive({ initialNodes, initialEdges, onChange, isSte
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.3 }}
-          deleteKeyCode={['Backspace', 'Delete']}
+          deleteKeyCode={["Backspace", "Delete"]}
         >
           <Controls />
           <Background color="var(--color-muted-foreground)" gap={16} />

@@ -29,7 +29,7 @@ describe("ParetoDataTable", () => {
         on_row_remove={vi.fn()}
         format_value={format_value}
         total_gap={15}
-      />
+      />,
     );
     expect(screen.getByText("Área / Categoría")).toBeInTheDocument();
     expect(screen.getByText("% Ind.")).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe("ParetoDataTable", () => {
         on_row_remove={vi.fn()}
         format_value={format_value}
         total_gap={15}
-      />
+      />,
     );
     expect(screen.getByDisplayValue("Esters")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Sweet")).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe("ParetoDataTable", () => {
         on_row_remove={vi.fn()}
         format_value={format_value}
         total_gap={15}
-      />
+      />,
     );
     const input = screen.getByDisplayValue("Esters");
     fireEvent.change(input, { target: { value: "Estery" } });
@@ -78,7 +78,7 @@ describe("ParetoDataTable", () => {
         on_row_remove={vi.fn()}
         format_value={format_value}
         total_gap={15}
-      />
+      />,
     );
     // Con 2 items, deben aparecer botones de borrar
     const buttons = screen.getAllByRole("button");
@@ -94,7 +94,7 @@ describe("ParetoDataTable", () => {
         on_row_remove={vi.fn()}
         format_value={format_value}
         total_gap={15}
-      />
+      />,
     );
     expect(screen.getByText("15")).toBeInTheDocument();
   });

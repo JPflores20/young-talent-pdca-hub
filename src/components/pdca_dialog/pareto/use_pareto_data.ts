@@ -85,9 +85,7 @@ export function use_pareto_data({
   }
 
   function update_row(id: number, field: "area" | "gap", value: string | number) {
-    on_items_change?.(
-      items.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
+    on_items_change?.(items.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   }
 
   function remove_row(id: number) {

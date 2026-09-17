@@ -8,7 +8,7 @@ import { parse_date_string } from "../utils/date_helpers";
  */
 export const use_pdca_deadline = (
   is_administrator: boolean,
-  deadline_date_string?: string | null
+  deadline_date_string?: string | null,
 ): boolean => {
   return useMemo(() => {
     if (is_administrator) {

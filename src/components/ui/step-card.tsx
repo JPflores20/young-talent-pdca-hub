@@ -78,39 +78,59 @@ export function StepCard({
   };
 
   return (
-    <div 
+    <div
       className={cn(
         "transition-all",
-        isFullscreen 
-          ? "fixed inset-4 z-[100] bg-background border border-border shadow-2xl rounded-xl p-6 overflow-y-auto" 
+        isFullscreen
+          ? "fixed inset-4 z-[100] bg-background border border-border shadow-2xl rounded-xl p-6 overflow-y-auto"
           : "rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]",
-        className
+        className,
       )}
     >
-      <div 
-        className={cn("flex items-center justify-between select-none group", !isFullscreen && "cursor-pointer")}
+      <div
+        className={cn(
+          "flex items-center justify-between select-none group",
+          !isFullscreen && "cursor-pointer",
+        )}
         onClick={toggleExpanded}
       >
         <div className="flex items-center gap-3">
           {onToggleStep !== undefined && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleStep();
               }}
               className={`flex items-center justify-center size-6 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                isStepCompleted 
-                  ? "bg-emerald-500 border-emerald-500 text-white" 
+                isStepCompleted
+                  ? "bg-emerald-500 border-emerald-500 text-white"
                   : "border-muted-foreground/30 text-transparent hover:border-emerald-500/50 hover:bg-emerald-500/10"
               }`}
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 3L4.5 8.5L2 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           )}
-          <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex flex-wrap items-center gap-2", isStepCompleted ? "text-emerald-600 dark:text-emerald-400" : "")}>
+          <h3
+            className={cn(
+              "font-display text-base font-semibold uppercase tracking-wide flex flex-wrap items-center gap-2",
+              isStepCompleted ? "text-emerald-600 dark:text-emerald-400" : "",
+            )}
+          >
             <span>{title}</span>
             {isStepCompleted && (
               <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
@@ -120,12 +140,8 @@ export function StepCard({
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          {headerRight && (
-            <div onClick={(e) => e.stopPropagation()}>
-              {headerRight}
-            </div>
-          )}
-          
+          {headerRight && <div onClick={(e) => e.stopPropagation()}>{headerRight}</div>}
+
           <button
             type="button"
             onClick={toggleFullscreen}
@@ -134,22 +150,30 @@ export function StepCard({
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
-          
+
           {!isFullscreen && (
-            <div 
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/80 transition-colors"
-            >
-              <ChevronDown className={cn("h-5 w-5 transition-transform duration-200", isExpanded ? "rotate-180" : "rotate-0")} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/80 transition-colors">
+              <ChevronDown
+                className={cn(
+                  "h-5 w-5 transition-transform duration-200",
+                  isExpanded ? "rotate-180" : "rotate-0",
+                )}
+              />
             </div>
           )}
         </div>
       </div>
 
-      <div className={cn("grid transition-all duration-300 ease-in-out", isExpanded ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 mt-0")}>
-        <div className={cn("overflow-hidden", isFullscreen && "overflow-visible h-full flex flex-col")}>
-          <div className={cn("space-y-4", isFullscreen && "flex-1")}>
-            {children}
-          </div>
+      <div
+        className={cn(
+          "grid transition-all duration-300 ease-in-out",
+          isExpanded ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 mt-0",
+        )}
+      >
+        <div
+          className={cn("overflow-hidden", isFullscreen && "overflow-visible h-full flex flex-col")}
+        >
+          <div className={cn("space-y-4", isFullscreen && "flex-1")}>{children}</div>
         </div>
       </div>
     </div>

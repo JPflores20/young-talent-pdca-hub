@@ -24,17 +24,22 @@ interface PhaseActProps {
 }
 
 export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
-  action_items, on_action_items_change,
-  kpi_final_result_data, on_kpi_final_result_change,
-  kpi_final_result_unit, on_kpi_final_result_unit_change,
-  gemba_evidencias, on_gemba_evidencias_change,
-  gemba_final_images, on_gemba_final_images_change,
-  completed_steps, on_toggle_step,
+  action_items,
+  on_action_items_change,
+  kpi_final_result_data,
+  on_kpi_final_result_change,
+  kpi_final_result_unit,
+  on_kpi_final_result_unit_change,
+  gemba_evidencias,
+  on_gemba_evidencias_change,
+  gemba_final_images,
+  on_gemba_final_images_change,
+  completed_steps,
+  on_toggle_step,
   is_editable,
 }) => {
   return (
     <div className="space-y-6">
-
       {/* PASO 8: Matriz de Impacto y Plan de Acción (tabla) */}
       <ActionPlanTable
         items={action_items || []}
@@ -72,7 +77,6 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
         isStepCompleted={completed_steps.has("step-11")}
         onToggleStep={() => on_toggle_step("step-11")}
       />
-
     </div>
   );
 };

@@ -12,7 +12,7 @@ import {
   RefreshCw,
   FileText,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   Bar,
@@ -30,7 +30,7 @@ import {
   Tooltip as RTooltip,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
 import { format, parseISO, isValid } from "date-fns";
 import { toast } from "sonner";
@@ -81,8 +81,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
-import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import {
+  phases,
+  DEFAULT_TARGET_VS_ACTUAL,
+  DEFAULT_PARETO_DATA_MAP,
+  DEFAULT_VPO_CHECKPOINTS,
+  DEFAULT_PARTICIPANTES,
+  type ParticipantesData,
+  type ActionItem,
+  type Pdca,
+  type Phase,
+  type ParetoItem,
+  type VpoCheckpointItem,
+  type DefinicionMeta,
+  type ImpactMatrixRow,
+  type FiveWhysTableData,
+  type IshikawaItem,
+} from "@/data/pdca";
+import {
+  PdcaGoalDefinition,
+  PdcaParticipants,
+  DEFAULT_DEFINICION_META,
+} from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "../kpi-tree";
 import { ActionKanban } from "../action-kanban";
 // Removed firestore imports
@@ -100,8 +120,13 @@ import {
 } from "@/components/ui/accordion";
 import { StepCard } from "@/components/ui/step-card";
 
-
-export function TeamMembersInput({ members = [], onChange }: { members?: string[], onChange: (m: string[]) => void }) {
+export function TeamMembersInput({
+  members = [],
+  onChange,
+}: {
+  members?: string[];
+  onChange: (m: string[]) => void;
+}) {
   const [inputValue, setInputValue] = useState("");
 
   const addMember = () => {
@@ -128,7 +153,10 @@ export function TeamMembersInput({ members = [], onChange }: { members?: string[
       <Label htmlFor="equipo">Equipo / Integrantes</Label>
       <div className="flex flex-wrap gap-2 mb-2">
         {members.map((member, index) => (
-          <div key={index} className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary border border-primary/20">
+          <div
+            key={index}
+            className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary border border-primary/20"
+          >
             <span>{member}</span>
             <button
               type="button"
@@ -156,5 +184,3 @@ export function TeamMembersInput({ members = [], onChange }: { members?: string[
     </div>
   );
 }
-
-

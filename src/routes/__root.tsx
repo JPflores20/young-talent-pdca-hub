@@ -78,10 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Mis PDCAs · VPO Grupo Modelo" },
-      { name: "description", content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar." },
+      {
+        name: "description",
+        content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar.",
+      },
       { name: "author", content: "Grupo Modelo" },
       { property: "og:title", content: "Mis PDCAs · VPO Grupo Modelo" },
-      { property: "og:description", content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar." },
+      {
+        property: "og:description",
+        content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar.",
+      },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://maz-pdca-hub.web.app/" },
       { property: "og:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
@@ -89,7 +95,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:type", content: "image/jpeg" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Mis PDCAs · VPO Grupo Modelo" },
-      { name: "twitter:description", content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar." },
+      {
+        name: "twitter:description",
+        content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar.",
+      },
       { name: "twitter:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.jpeg" },
     ],
     links: [

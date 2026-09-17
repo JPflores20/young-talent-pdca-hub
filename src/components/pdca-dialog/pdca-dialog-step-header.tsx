@@ -12,7 +12,7 @@ import {
   RefreshCw,
   FileText,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   Bar,
@@ -30,7 +30,7 @@ import {
   Tooltip as RTooltip,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
 import { format, parseISO, isValid } from "date-fns";
 import { toast } from "sonner";
@@ -81,8 +81,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
-import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import {
+  phases,
+  DEFAULT_TARGET_VS_ACTUAL,
+  DEFAULT_PARETO_DATA_MAP,
+  DEFAULT_VPO_CHECKPOINTS,
+  DEFAULT_PARTICIPANTES,
+  type ParticipantesData,
+  type ActionItem,
+  type Pdca,
+  type Phase,
+  type ParetoItem,
+  type VpoCheckpointItem,
+  type DefinicionMeta,
+  type ImpactMatrixRow,
+  type FiveWhysTableData,
+  type IshikawaItem,
+} from "@/data/pdca";
+import {
+  PdcaGoalDefinition,
+  PdcaParticipants,
+  DEFAULT_DEFINICION_META,
+} from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "../kpi-tree";
 import { ActionKanban } from "../action-kanban";
 // Removed firestore imports
@@ -99,7 +119,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { StepCard } from "@/components/ui/step-card";
-
 
 export function StepHeader({
   stepId,
@@ -126,12 +145,17 @@ export function StepHeader({
             "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
             isCompleted
               ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm"
-              : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background"
+              : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500 bg-background",
           )}
         >
           <Check className="size-4" />
         </button>
-        <h3 className={cn("font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2", isCompleted && "text-emerald-600 dark:text-emerald-400")}>
+        <h3
+          className={cn(
+            "font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2",
+            isCompleted && "text-emerald-600 dark:text-emerald-400",
+          )}
+        >
           <span>{title}</span>
           {isCompleted && (
             <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
@@ -144,5 +168,3 @@ export function StepHeader({
     </div>
   );
 }
-
-

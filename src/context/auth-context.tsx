@@ -23,7 +23,7 @@ interface AuthContextType {
   mockUsers: UserProfile[];
   addMockUser: (user: UserProfile & { pass: string }) => void;
   // Cached users list for admins
-  usersList: {name: string, email: string}[];
+  usersList: { name: string; email: string }[];
 }
 
 // Fallback users for when Firebase is down or not configured
@@ -43,7 +43,7 @@ const INITIAL_MOCK_USERS: (UserProfile & { pass: string })[] = [
     pass: "ana123",
     role: "user",
     area: "Envasado",
-  }
+  },
 ];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,11 +56,11 @@ const isAdminEmail = (email: string) => {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [usersList, setUsersList] = useState<{name: string, email: string}[]>([]);
-  
+  const [usersList, setUsersList] = useState<{ name: string; email: string }[]>([]);
+
   // Local state for fallback users (allows Admin to add to it)
   const [mockUsers, setMockUsers] = useState<UserProfile[]>(
-    INITIAL_MOCK_USERS.map(({ pass, ...rest }) => rest)
+    INITIAL_MOCK_USERS.map(({ pass, ...rest }) => rest),
   );
 
   const [mockCredentials, setMockCredentials] = useState(INITIAL_MOCK_USERS);
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const isAutoAdmin = isAdminEmail(user.email || "");
           if (userDoc.exists()) {
             const data = userDoc.data() as Omit<UserProfile, "uid">;
-            const role: UserRole = isAutoAdmin ? "admin" : (data.role || "user");
+            const role: UserRole = isAutoAdmin ? "admin" : data.role || "user";
             persistSession({
               uid: user.uid,
               name: data.name || user.displayName || "Usuario",
@@ -95,7 +95,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             const autoProfile: UserProfile = {
               uid: user.uid,
-              name: user.displayName || (user.email ? (user.email.split("@")[0] ?? "Usuario") : "Usuario"),
+              name:
+                user.displayName ||
+                (user.email ? (user.email.split("@")[0] ?? "Usuario") : "Usuario"),
               email: user.email || "",
               role: isAutoAdmin ? "admin" : "user",
               area: "Usuario",
@@ -128,24 +130,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    let unsub: (() => void) | undefined;
+
     if (currentUser?.role === "admin") {
       import("firebase/firestore").then(({ collection, onSnapshot }) => {
-        const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-          const list: {name: string, email: string}[] = [];
-          snapshot.forEach((docSnap) => {
-            const d = docSnap.data();
-            list.push({
-              name: (d as any).name || "Usuario",
-              email: (d as any).email || "",
+        unsub = onSnapshot(
+          collection(db, "users"),
+          (snapshot) => {
+            const list: { name: string; email: string }[] = [];
+            snapshot.forEach((docSnap) => {
+              const d = docSnap.data();
+              list.push({
+                name: (d as any).name || "Usuario",
+                email: (d as any).email || "",
+              });
             });
-          });
-          setUsersList(list);
-        });
-        return () => unsub();
+            setUsersList(list);
+          },
+          (error) => {
+            console.error("Error fetching users snapshot:", error);
+            setUsersList([]);
+          },
+        );
       });
     } else {
       setUsersList([]);
     }
+
+    return () => {
+      if (unsub) {
+        unsub();
+      }
+    };
   }, [currentUser?.role]);
 
   const persistSession = (user: UserProfile | null) => {
@@ -163,27 +179,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, pass: string) => {
     const emailLower = email.trim().toLowerCase();
     const isAutoAdmin = isAdminEmail(emailLower);
-    
+
     // Autenticar con Firebase Auth
     const userCredential = await signInWithEmailAndPassword(primaryAuth, emailLower, pass);
     const firebaseUser = userCredential.user;
-    
+
     const threshold = new Date("2026-09-01T21:00:00Z").getTime();
     const creationTime = new Date(firebaseUser.metadata.creationTime || 0).getTime();
     const isLegacyUser = creationTime < threshold;
 
     if (!firebaseUser.emailVerified && !isLegacyUser) {
       await signOut(primaryAuth);
-      throw new Error("Por favor, verifica tu correo electrónico usando el enlace que te enviamos antes de iniciar sesión.");
+      throw new Error(
+        "Por favor, verifica tu correo electrónico usando el enlace que te enviamos antes de iniciar sesión.",
+      );
     }
-    
+
     const uid = firebaseUser.uid;
-    
+
     // Obtener perfil de Firestore
     const userDoc = await getDoc(doc(db, "users", uid));
     if (userDoc.exists()) {
       const data = userDoc.data() as Omit<UserProfile, "uid">;
-      const role: UserRole = isAutoAdmin ? "admin" : (data.role || "user");
+      const role: UserRole = isAutoAdmin ? "admin" : data.role || "user";
       if (isAutoAdmin && data.role !== "admin") {
         await setDoc(doc(db, "users", uid), { role: "admin" }, { merge: true });
       }
@@ -221,8 +239,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Exposed utility for admin to add mock users (in case Firebase is down)
   const addMockUser = (user: UserProfile & { pass: string }) => {
-    setMockCredentials(prev => [...prev, user]);
-    setMockUsers(prev => [...prev, { ...user }]);
+    setMockCredentials((prev) => [...prev, user]);
+    setMockUsers((prev) => [...prev, { ...user }]);
   };
 
   const value = {
@@ -236,14 +254,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setMockUsers(action);
     },
     addMockUser,
-    usersList
+    usersList,
   };
 
-  return (
-    <AuthContext.Provider value={value as any}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value as any}>{!loading && children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

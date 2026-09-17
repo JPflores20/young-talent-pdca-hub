@@ -1,67 +1,78 @@
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
-import { Bold, Italic, List, ListOrdered } from 'lucide-react'
-import { Toggle } from './toggle'
-import { useEffect } from 'react'
-import { cn } from '@/lib/utils'
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import { Bold, Italic, List, ListOrdered } from "lucide-react";
+import { Toggle } from "./toggle";
+import { useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 interface RichTextEditorProps {
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  className?: string
-  disabled?: boolean
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
 }
 
-export function RichTextEditor({ value, onChange, placeholder, className, disabled }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+  className,
+  disabled,
+}: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: placeholder || 'Escribe aquí...',
-        emptyEditorClass: 'is-editor-empty',
+        placeholder: placeholder || "Escribe aquí...",
+        emptyEditorClass: "is-editor-empty",
       }),
     ],
     content: value,
     editable: !disabled,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML())
+      onChange(editor.getHTML());
     },
     editorProps: {
       attributes: {
         class: cn(
-          'min-h-[150px] w-full rounded-md px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 prose prose-sm max-w-none dark:prose-invert',
-          disabled && 'bg-muted opacity-50 cursor-not-allowed'
+          "min-h-[150px] w-full rounded-md px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 prose prose-sm max-w-none dark:prose-invert",
+          disabled && "bg-muted opacity-50 cursor-not-allowed",
         ),
       },
     },
-  })
+  });
 
   // Sync value when it changes externally
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value)
+      editor.commands.setContent(value);
     }
-  }, [value, editor])
+  }, [value, editor]);
 
   useEffect(() => {
     if (editor) {
-      editor.setEditable(!disabled)
+      editor.setEditable(!disabled);
     }
-  }, [disabled, editor])
+  }, [disabled, editor]);
 
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
-    <div className={cn("flex flex-col border border-input rounded-md overflow-hidden bg-background shadow-sm focus-within:ring-1 focus-within:ring-ring", className)}>
+    <div
+      className={cn(
+        "flex flex-col border border-input rounded-md overflow-hidden bg-background shadow-sm focus-within:ring-1 focus-within:ring-ring",
+        className,
+      )}
+    >
       {!disabled && (
         <div className="flex flex-wrap items-center gap-1 p-1 border-b border-input bg-muted/40">
           <Toggle
             size="sm"
-            pressed={editor.isActive('bold')}
+            pressed={editor.isActive("bold")}
             onPressedChange={() => editor.chain().focus().toggleBold().run()}
             aria-label="Toggle bold"
           >
@@ -69,7 +80,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, disabl
           </Toggle>
           <Toggle
             size="sm"
-            pressed={editor.isActive('italic')}
+            pressed={editor.isActive("italic")}
             onPressedChange={() => editor.chain().focus().toggleItalic().run()}
             aria-label="Toggle italic"
           >
@@ -78,7 +89,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, disabl
           <div className="w-px h-4 bg-input mx-1" />
           <Toggle
             size="sm"
-            pressed={editor.isActive('bulletList')}
+            pressed={editor.isActive("bulletList")}
             onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
             aria-label="Toggle bullet list"
           >
@@ -86,7 +97,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, disabl
           </Toggle>
           <Toggle
             size="sm"
-            pressed={editor.isActive('orderedList')}
+            pressed={editor.isActive("orderedList")}
             onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
             aria-label="Toggle ordered list"
           >
@@ -112,5 +123,5 @@ export function RichTextEditor({ value, onChange, placeholder, className, disabl
         }
       `}</style>
     </div>
-  )
+  );
 }

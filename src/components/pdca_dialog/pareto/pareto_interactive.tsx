@@ -7,13 +7,17 @@ import { useState } from "react";
 import { ArrowRight, Plus, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StepCard } from "@/components/ui/step-card";
@@ -71,7 +75,7 @@ export function ParetoInteractive({
 
   function update_row(id: number, field: "area" | "gap", value: string | number) {
     on_items_change?.(
-      pareto_items.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+      pareto_items.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
     );
   }
 
@@ -92,7 +96,11 @@ export function ParetoInteractive({
   return (
     <StepCard
       className="col-span-full animate-in fade-in zoom-in-95"
-      title={<>{level > 0 && <ArrowRight className="size-4 text-muted-foreground" />} {title}</>}
+      title={
+        <>
+          {level > 0 && <ArrowRight className="size-4 text-muted-foreground" />} {title}
+        </>
+      }
       isStepCompleted={level === 0 ? is_step_completed : undefined}
       onToggleStep={level === 0 ? on_toggle_step : undefined}
       headerRight={
@@ -100,7 +108,11 @@ export function ParetoInteractive({
           {on_close && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
+                >
                   <X className="size-4 mr-2" /> Cerrar
                 </Button>
               </AlertDialogTrigger>
@@ -119,14 +131,35 @@ export function ParetoInteractive({
             </AlertDialog>
           )}
           {on_add_root && (
-            <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); on_add_root(); }}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                on_add_root();
+              }}
+            >
               <Plus className="size-4 mr-2" /> Nuevo Pareto
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); set_is_paste_open(true); }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              set_is_paste_open(true);
+            }}
+          >
             <FileText className="size-4 mr-2" /> Importar Excel
           </Button>
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); add_empty_row(); }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              add_empty_row();
+            }}
+          >
             <Plus className="size-4 mr-2" /> Agregar Fila
           </Button>
           <ParetoImportDialog
@@ -143,7 +176,9 @@ export function ParetoInteractive({
 
       {level === 0 && (
         <StepInstructions>
-          <p className="mb-2">1. Usa la columna de categorías para identificar los KPI o IP. Este será tu eje X.</p>
+          <p className="mb-2">
+            1. Usa la columna de categorías para identificar los KPI o IP. Este será tu eje X.
+          </p>
           <p className="mb-2">2. Introduce tus datos (Valor / Gap) en las mismas unidades.</p>
           <p className="mb-2">3. El gráfico de Pareto se genera automáticamente.</p>
           <p>4. Haz clic en una barra para crear un sub-Pareto (Nivel 2).</p>
@@ -152,8 +187,15 @@ export function ParetoInteractive({
 
       {level === 0 && (
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Unidad de Medida:</span>
-          <Input value={unit} onChange={(e) => on_unit_change?.(e.target.value)} placeholder="ej. $, %, HL" className="w-28 h-7 text-xs font-bold" />
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Unidad de Medida:
+          </span>
+          <Input
+            value={unit}
+            onChange={(e) => on_unit_change?.(e.target.value)}
+            placeholder="ej. $, %, HL"
+            className="w-28 h-7 text-xs font-bold"
+          />
         </div>
       )}
 
@@ -197,7 +239,10 @@ export function ParetoInteractive({
               y_axis_max={y_axis_max}
               on_y_axis_min_change={set_y_axis_min}
               on_y_axis_max_change={set_y_axis_max}
-              on_bar_click={(cat) => { on_bar_click?.(cat); set_is_fullscreen(false); }}
+              on_bar_click={(cat) => {
+                on_bar_click?.(cat);
+                set_is_fullscreen(false);
+              }}
               unit={unit}
               format_value={format_value}
               is_fullscreen

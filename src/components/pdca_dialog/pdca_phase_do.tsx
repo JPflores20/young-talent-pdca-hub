@@ -26,6 +26,8 @@ interface PhaseDoProps {
   has_flavor_correlation: boolean;
   flavor_correlation_data: any;
   on_flavor_correlation_data_change: (data: any) => void;
+  statistical_analysis_files: string[];
+  on_statistical_analysis_files_change: (files: string[]) => void;
   has_gop_themes: boolean;
   gop_themes_data: any[];
   on_gop_themes_data_change: (data: any[]) => void;
@@ -34,17 +36,32 @@ interface PhaseDoProps {
 }
 
 export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
-  target_vs_actual, on_target_vs_actual_change,
-  target_vs_actual_unit, on_target_vs_actual_unit_change,
-  target_vs_actual_title, on_target_vs_actual_title_change,
-  kpi_document_files, on_kpi_document_files_change,
-  pareto_drill_downs, on_pareto_drill_downs_change,
-  pareto_data_map, on_pareto_data_map_change,
-  pareto_unit, on_pareto_unit_change,
-  pareto_titles, on_pareto_titles_change,
-  has_flavor_correlation, flavor_correlation_data, on_flavor_correlation_data_change,
-  has_gop_themes, gop_themes_data, on_gop_themes_data_change,
-  completed_steps, on_toggle_step,
+  target_vs_actual,
+  on_target_vs_actual_change,
+  target_vs_actual_unit,
+  on_target_vs_actual_unit_change,
+  target_vs_actual_title,
+  on_target_vs_actual_title_change,
+  kpi_document_files,
+  on_kpi_document_files_change,
+  pareto_drill_downs,
+  on_pareto_drill_downs_change,
+  pareto_data_map,
+  on_pareto_data_map_change,
+  pareto_unit,
+  on_pareto_unit_change,
+  pareto_titles,
+  on_pareto_titles_change,
+  has_flavor_correlation,
+  flavor_correlation_data,
+  on_flavor_correlation_data_change,
+  statistical_analysis_files,
+  on_statistical_analysis_files_change,
+  has_gop_themes,
+  gop_themes_data,
+  on_gop_themes_data_change,
+  completed_steps,
+  on_toggle_step,
 }) => {
   return (
     <div className="space-y-6">
@@ -88,6 +105,19 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
         <FlavorCorrelationSection
           isStepCompleted={completed_steps.has("step-flavor")}
           onToggleStep={() => on_toggle_step("step-flavor")}
+        />
+      )}
+
+      {has_flavor_correlation && (
+        <MultiImageUploadSection
+          images={statistical_analysis_files}
+          onChange={on_statistical_analysis_files_change}
+          title="Análisis Estadístico"
+          subtitle="Sube tu archivo o pega una captura de pantalla"
+          description="Selecciona la foto, imagen o pega (Ctrl+V) una captura de pantalla del análisis."
+          maxImages={4}
+          isStepCompleted={completed_steps.has("step-statistical-analysis")}
+          onToggleStep={() => on_toggle_step("step-statistical-analysis")}
         />
       )}
 

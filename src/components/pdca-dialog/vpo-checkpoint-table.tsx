@@ -12,7 +12,7 @@ import {
   RefreshCw,
   FileText,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   Bar,
@@ -30,7 +30,7 @@ import {
   Tooltip as RTooltip,
   XAxis,
   YAxis,
-  Legend
+  Legend,
 } from "recharts";
 import { format, parseISO, isValid } from "date-fns";
 import { toast } from "sonner";
@@ -81,8 +81,28 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PhaseBadge } from "@/components/pdca-badge";
-import { phases, DEFAULT_TARGET_VS_ACTUAL, DEFAULT_PARETO_DATA_MAP, DEFAULT_VPO_CHECKPOINTS, DEFAULT_PARTICIPANTES, type ParticipantesData, type ActionItem, type Pdca, type Phase, type ParetoItem, type VpoCheckpointItem, type DefinicionMeta, type ImpactMatrixRow, type FiveWhysTableData, type IshikawaItem } from "@/data/pdca";
-import { PdcaGoalDefinition, PdcaParticipants, DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import {
+  phases,
+  DEFAULT_TARGET_VS_ACTUAL,
+  DEFAULT_PARETO_DATA_MAP,
+  DEFAULT_VPO_CHECKPOINTS,
+  DEFAULT_PARTICIPANTES,
+  type ParticipantesData,
+  type ActionItem,
+  type Pdca,
+  type Phase,
+  type ParetoItem,
+  type VpoCheckpointItem,
+  type DefinicionMeta,
+  type ImpactMatrixRow,
+  type FiveWhysTableData,
+  type IshikawaItem,
+} from "@/data/pdca";
+import {
+  PdcaGoalDefinition,
+  PdcaParticipants,
+  DEFAULT_DEFINICION_META,
+} from "@/components/pdca-goal-definition";
 import { KpiTreeInteractive } from "../kpi-tree";
 import { ActionKanban } from "../action-kanban";
 // Removed firestore imports
@@ -101,28 +121,27 @@ import {
 import { StepCard } from "@/components/ui/step-card";
 import { StepInstructions } from "./step-instructions";
 
-
 const PILAR_STYLE_MAP: Record<string, { bg: string; text: string; border: string }> = {
-  "Seguridad": {
+  Seguridad: {
     bg: "bg-red-100 dark:bg-red-950/40",
     text: "text-red-800 dark:text-red-300",
-    border: "border-red-200 dark:border-red-900/60"
+    border: "border-red-200 dark:border-red-900/60",
   },
-  "Calidad": {
+  Calidad: {
     bg: "bg-blue-100 dark:bg-blue-950/40",
     text: "text-blue-800 dark:text-blue-300",
-    border: "border-blue-200 dark:border-blue-900/60"
+    border: "border-blue-200 dark:border-blue-900/60",
   },
   "Medio Ambiente": {
     bg: "bg-emerald-100 dark:bg-emerald-950/40",
     text: "text-emerald-800 dark:text-emerald-300",
-    border: "border-emerald-200 dark:border-emerald-900/60"
+    border: "border-emerald-200 dark:border-emerald-900/60",
   },
-  "default": {
+  default: {
     bg: "bg-secondary",
     text: "text-secondary-foreground",
-    border: "border-border"
-  }
+    border: "border-border",
+  },
 };
 
 export function VpoCheckpointTable({
@@ -139,28 +158,40 @@ export function VpoCheckpointTable({
   onToggleStep: (stepId: string) => void;
 }) {
   const updateStatus = (id: string, newStatus: "YES" | "NO" | "N/A" | "") => {
-    const updated = checkpoints.map(item => item.id === id ? { ...item, status: newStatus } : item);
+    const updated = checkpoints.map((item) =>
+      item.id === id ? { ...item, status: newStatus } : item,
+    );
     onChange(updated);
   };
 
   const updateEvidencia = (id: string, text: string) => {
-    const updated = checkpoints.map(item => item.id === id ? { ...item, evidencia: text } : item);
+    const updated = checkpoints.map((item) =>
+      item.id === id ? { ...item, evidencia: text } : item,
+    );
     onChange(updated);
   };
 
-  const yesCount = checkpoints.filter(c => c.status === "YES").length;
+  const yesCount = checkpoints.filter((c) => c.status === "YES").length;
   const scorePct = Math.round((yesCount / checkpoints.length) * 100);
 
   return (
-    <StepCard 
+    <StepCard
       title="PASO 2: PHASE SDCA CHECKLIST"
       isStepCompleted={completedSteps.has("step-2")}
       onToggleStep={() => onToggleStep("step-2")}
     >
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <StepInstructions>
-          <p className="mb-2"><strong>PHASE SDCA CHECKLIST:</strong> Este checklist evalúa la madurez y estandarización del proceso afectado según los pilares del Sistema de Gestión VPO de Grupo Modelo.</p>
-          <p>Evalúa cada punto en el contexto de tu problema. Registra las evidencias o comentarios de soporte para cada ítem y selecciona el status correspondiente (YES / NO / N/A). La brecha identificada servirá para alimentar el plan de acción (Kanban).</p>
+          <p className="mb-2">
+            <strong>PHASE SDCA CHECKLIST:</strong> Este checklist evalúa la madurez y
+            estandarización del proceso afectado según los pilares del Sistema de Gestión VPO de
+            Grupo Modelo.
+          </p>
+          <p>
+            Evalúa cada punto en el contexto de tu problema. Registra las evidencias o comentarios
+            de soporte para cada ítem y selecciona el status correspondiente (YES / NO / N/A). La
+            brecha identificada servirá para alimentar el plan de acción (Kanban).
+          </p>
         </StepInstructions>
 
         <div className="w-full flex rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-950/20 overflow-hidden shadow-sm">
@@ -169,19 +200,33 @@ export function VpoCheckpointTable({
           </div>
           <div className="flex-1 space-y-3 p-4 text-sm font-medium text-foreground/90">
             <p>
-              <strong>Si el score es inferior al 70%</strong> - priorizar las acciones entre los miembros del equipo para cerrar las brechas en los puntos más relevantes del problema. Sin embargo, el equipo debe proceder en paralelo si los datos iniciales indican que hay otros aspectos del problema que estos items del SDCA no pueden abordar sin datos y análisis adicionales.
+              <strong>Si el score es inferior al 70%</strong> - priorizar las acciones entre los
+              miembros del equipo para cerrar las brechas en los puntos más relevantes del problema.
+              Sin embargo, el equipo debe proceder en paralelo si los datos iniciales indican que
+              hay otros aspectos del problema que estos items del SDCA no pueden abordar sin datos y
+              análisis adicionales.
             </p>
             <p>
-              <strong>Si el score es mayor al 70%</strong> - proceda directamente al resto de este toolkit. Cualquier brecha en los puntos anteriores puede asignarse como acciones para los miembros del equipo si es relevante para el problema y es probable que tenga un impacto. Utilice la matriz de impacto en la pestaña de action log, si es necesario, para ayudar a decidir si deben completarse o no.
+              <strong>Si el score es mayor al 70%</strong> - proceda directamente al resto de este
+              toolkit. Cualquier brecha en los puntos anteriores puede asignarse como acciones para
+              los miembros del equipo si es relevante para el problema y es probable que tenga un
+              impacto. Utilice la matriz de impacto en la pestaña de action log, si es necesario,
+              para ayudar a decidir si deben completarse o no.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3 bg-secondary/80 px-4 py-2 rounded-xl border border-border/80 shadow-sm">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Progreso VPO Checkpoint:</span>
-          <span className={cn(
-            "font-mono text-xl font-extrabold", 
-            scorePct >= 70 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
-          )}>
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Progreso VPO Checkpoint:
+          </span>
+          <span
+            className={cn(
+              "font-mono text-xl font-extrabold",
+              scorePct >= 70
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-amber-600 dark:text-amber-400",
+            )}
+          >
             {scorePct}% ({yesCount}/{checkpoints.length} YES)
           </span>
         </div>
@@ -191,7 +236,9 @@ export function VpoCheckpointTable({
         <div
           className={cn(
             "h-full rounded-full transition-all duration-500",
-            scorePct >= 70 ? "bg-gradient-to-r from-emerald-500 to-teal-400" : "bg-gradient-to-r from-amber-500 to-rose-500"
+            scorePct >= 70
+              ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+              : "bg-gradient-to-r from-amber-500 to-rose-500",
           )}
           style={{ width: `${scorePct}%` }}
         />
@@ -208,7 +255,8 @@ export function VpoCheckpointTable({
               Descripción del problema (Definición del Problema)
             </span>
             <p className="text-sm font-semibold text-foreground mt-0.5 leading-snug">
-              {problemaTexto || "Sin especificar (llena la casilla de Descripción del Problema en el Paso 1)"}
+              {problemaTexto ||
+                "Sin especificar (llena la casilla de Descripción del Problema en el Paso 1)"}
             </p>
           </div>
         </div>
@@ -242,14 +290,19 @@ export function VpoCheckpointTable({
               };
 
               return (
-                <TableRow key={item.id} className="hover:bg-secondary/30 transition-colors border-b border-border/60">
+                <TableRow
+                  key={item.id}
+                  className="hover:bg-secondary/30 transition-colors border-b border-border/60"
+                >
                   <TableCell className="py-3 px-4 border-r border-border/60 align-top">
-                    <span className={cn(
-                      "inline-block rounded-md px-2.5 py-1 text-[11px] font-bold border leading-snug",
-                      pilarStyle.bg,
-                      pilarStyle.text,
-                      pilarStyle.border
-                    )}>
+                    <span
+                      className={cn(
+                        "inline-block rounded-md px-2.5 py-1 text-[11px] font-bold border leading-snug",
+                        pilarStyle.bg,
+                        pilarStyle.text,
+                        pilarStyle.border,
+                      )}
+                    >
                       {item.pilar}
                     </span>
                   </TableCell>
@@ -259,8 +312,8 @@ export function VpoCheckpointTable({
                   </TableCell>
 
                   <TableCell className="py-2.5 px-3 border-r border-border/60 align-top">
-                    <Input 
-                      value={item.evidencia} 
+                    <Input
+                      value={item.evidencia}
                       onChange={(e) => updateEvidencia(item.id, e.target.value)}
                       placeholder="Escribe evidencias o comentarios..."
                       className="h-9 text-xs bg-background/80 hover:bg-background border border-border/80 rounded-lg focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-500 px-3 transition-all placeholder:text-muted-foreground/50 shadow-none"
@@ -276,7 +329,7 @@ export function VpoCheckpointTable({
                           "px-2.5 py-1 text-xs font-extrabold rounded-md transition-all flex items-center gap-1",
                           item.status === "YES"
                             ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/50"
-                            : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                            : "text-muted-foreground hover:text-foreground hover:bg-background/50",
                         )}
                       >
                         <Check className="size-3.5 stroke-[3]" /> YES
@@ -288,7 +341,7 @@ export function VpoCheckpointTable({
                           "px-2.5 py-1 text-xs font-extrabold rounded-md transition-all flex items-center gap-1",
                           item.status === "NO"
                             ? "bg-rose-600 text-white shadow-md shadow-rose-600/30 ring-2 ring-rose-500/50"
-                            : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                            : "text-muted-foreground hover:text-foreground hover:bg-background/50",
                         )}
                       >
                         <X className="size-3.5 stroke-[3]" /> NO
@@ -300,7 +353,7 @@ export function VpoCheckpointTable({
                           "px-2 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1",
                           item.status === "N/A"
                             ? "bg-slate-600 text-white shadow-md ring-2 ring-slate-500/50"
-                            : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                            : "text-muted-foreground hover:text-foreground hover:bg-background/50",
                         )}
                       >
                         N/A
@@ -316,5 +369,3 @@ export function VpoCheckpointTable({
     </StepCard>
   );
 }
-
-

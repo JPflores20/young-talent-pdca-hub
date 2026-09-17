@@ -66,15 +66,12 @@ export function PdcaProvider({ children }: { children: ReactNode }) {
       // Si el PDCA no tiene asignados, usamos la lógica original
       if (!p.asignados || p.asignados.length === 0) {
         if (!p.autorEmail) return true;
-        return (
-          p.autorEmail.toLowerCase() === emailLower ||
-          p.autor === currentUser.name
-        );
+        return p.autorEmail.toLowerCase() === emailLower || p.autor === currentUser.name;
       }
-      
+
       // Si tiene asignados, verificamos si el usuario actual está en la lista o es el autor original
-      const isAssigned = p.asignados.some(a => a.email.toLowerCase() === emailLower);
-      const isAuthor = (p.autorEmail?.toLowerCase() === emailLower) || (p.autor === currentUser.name);
+      const isAssigned = p.asignados.some((a) => a.email.toLowerCase() === emailLower);
+      const isAuthor = p.autorEmail?.toLowerCase() === emailLower || p.autor === currentUser.name;
       return isAssigned || isAuthor;
     });
   })();

@@ -26,41 +26,44 @@ const parseTaskDate = (whenStr?: string): Date | undefined => {
 const STATUS_COLORS = {
   "NO INICIADO": "bg-[#5D6770] text-white",
   "EN PROGRESO": "bg-[#FFC000] text-black",
-  "COMPLETADO": "bg-[#00B050] text-white",
+  COMPLETADO: "bg-[#00B050] text-white",
   // Soporte de compatibilidad para datos viejos que ya tenías guardados
-  "Pendiente": "bg-[#5D6770] text-white",
+  Pendiente: "bg-[#5D6770] text-white",
   "En progreso": "bg-[#FFC000] text-black",
-  "Completada": "bg-[#00B050] text-white",
+  Completada: "bg-[#00B050] text-white",
 } as const;
 
 export function ActionKanban({
   acciones,
-  setAcciones
+  setAcciones,
 }: {
   acciones: ActionItem[];
   setAcciones: (updater: (prev: ActionItem[]) => ActionItem[]) => void;
 }) {
   const addAction = () => {
-    setAcciones(prev => [...prev, {
-      id: `A-${Date.now()}`,
-      tema: "",
-      causa: "",
-      what: "",
-      comentarios: "",
-      who: "",
-      when: "",
-      status: "NO INICIADO",
-      sdca: "", // CORREGIDO: Ahora inicia completamente vacío
-      done: false
-    } as any]); 
+    setAcciones((prev) => [
+      ...prev,
+      {
+        id: `A-${Date.now()}`,
+        tema: "",
+        causa: "",
+        what: "",
+        comentarios: "",
+        who: "",
+        when: "",
+        status: "NO INICIADO",
+        sdca: "", // CORREGIDO: Ahora inicia completamente vacío
+        done: false,
+      } as any,
+    ]);
   };
 
   const updateAction = (id: string, field: string, value: any) => {
-    setAcciones(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a));
+    setAcciones((prev) => prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
   };
 
   const removeAction = (id: string) => {
-    setAcciones(prev => prev.filter(a => a.id !== id));
+    setAcciones((prev) => prev.filter((a) => a.id !== id));
   };
 
   return (
@@ -75,14 +78,30 @@ export function ActionKanban({
         <Table className="text-xs min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-[#0070c0] hover:bg-[#0070c0]">
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">TEMA</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">CAUSA RAÍZ</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">ACCIÓN</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">COMENTARIOS</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">RESPONSABLE</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">FECHA</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">ESTADO</TableHead>
-              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 text-center">HERRAMIENTA SDCA</TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">
+                TEMA
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">
+                CAUSA RAÍZ
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">
+                ACCIÓN
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20">
+                COMENTARIOS
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">
+                RESPONSABLE
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">
+                FECHA
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 w-[140px] text-center">
+                ESTADO
+              </TableHead>
+              <TableHead className="text-white font-bold h-8 py-1 px-3 border-r border-white/20 text-center">
+                HERRAMIENTA SDCA
+              </TableHead>
               <TableHead className="w-10 h-8 py-1 px-2"></TableHead>
             </TableRow>
           </TableHeader>
@@ -156,28 +175,48 @@ export function ActionKanban({
                       value={task.status || "NO INICIADO"}
                       onChange={(e) => {
                         const newStatus = e.target.value;
-                        setAcciones(prev => prev.map(a => 
-                          a.id === task.id 
-                            ? { ...a, status: newStatus as any, done: newStatus === "COMPLETADO" } 
-                            : a
-                        ));
+                        setAcciones((prev) =>
+                          prev.map((a) =>
+                            a.id === task.id
+                              ? { ...a, status: newStatus as any, done: newStatus === "COMPLETADO" }
+                              : a,
+                          ),
+                        );
                       }}
                       className={cn(
                         "w-full h-full text-[10px] font-bold text-center border-0 outline-none cursor-pointer rounded-sm appearance-none",
-                        STATUS_COLORS[(task.status || "NO INICIADO") as keyof typeof STATUS_COLORS] || "bg-[#5D6770] text-white"
+                        STATUS_COLORS[
+                          (task.status || "NO INICIADO") as keyof typeof STATUS_COLORS
+                        ] || "bg-[#5D6770] text-white",
                       )}
                     >
-                      <option value="NO INICIADO" className="bg-[#5D6770] text-white">NO INICIADO</option>
-                      <option value="EN PROGRESO" className="bg-[#FFC000] text-black">EN PROGRESO</option>
-                      <option value="COMPLETADO" className="bg-[#00B050] text-white">COMPLETADO</option>
-                      
-                      <option value="Pendiente" className="hidden">Pendiente</option>
-                      <option value="En progreso" className="hidden">En progreso</option>
-                      <option value="Completada" className="hidden">Completada</option>
+                      <option value="NO INICIADO" className="bg-[#5D6770] text-white">
+                        NO INICIADO
+                      </option>
+                      <option value="EN PROGRESO" className="bg-[#FFC000] text-black">
+                        EN PROGRESO
+                      </option>
+                      <option value="COMPLETADO" className="bg-[#00B050] text-white">
+                        COMPLETADO
+                      </option>
+
+                      <option value="Pendiente" className="hidden">
+                        Pendiente
+                      </option>
+                      <option value="En progreso" className="hidden">
+                        En progreso
+                      </option>
+                      <option value="Completada" className="hidden">
+                        Completada
+                      </option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-white">
                       <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" fillRule="evenodd" />
+                        <path
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                          fillRule="evenodd"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -191,9 +230,9 @@ export function ActionKanban({
                   />
                 </TableCell>
                 <TableCell className="p-0 text-center">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => removeAction(task.id)}
                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
                   >

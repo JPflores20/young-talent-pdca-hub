@@ -34,11 +34,7 @@ interface PdcaGoalDefinitionProps {
   readOnly?: boolean;
 }
 
-export function PdcaGoalDefinition({
-  value,
-  onChange,
-  readOnly = false,
-}: PdcaGoalDefinitionProps) {
+export function PdcaGoalDefinition({ value, onChange, readOnly = false }: PdcaGoalDefinitionProps) {
   const meta: DefinicionMeta = {
     ...DEFAULT_DEFINICION_META,
     ...(value || {}),
@@ -160,8 +156,14 @@ export function PdcaGoalDefinition({
               </td>
               <td className="p-2 border-r border-border/60 bg-background/50">
                 <DatePicker
-                  date={meta.hastaFecha && isValid(parseISO(meta.hastaFecha)) ? parseISO(meta.hastaFecha) : undefined}
-                  setDate={(date) => updateField("hastaFecha", date ? format(date, "yyyy-MM-dd") : "")}
+                  date={
+                    meta.hastaFecha && isValid(parseISO(meta.hastaFecha))
+                      ? parseISO(meta.hastaFecha)
+                      : undefined
+                  }
+                  setDate={(date) =>
+                    updateField("hastaFecha", date ? format(date, "yyyy-MM-dd") : "")
+                  }
                   placeholder="Seleccionar fecha"
                   disabled={readOnly}
                   className="h-8 text-xs border-none shadow-none font-mono bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-primary w-full justify-center text-center"
@@ -275,7 +277,10 @@ export function PdcaParticipants({
         <table className="w-full border-collapse text-xs text-center">
           <thead>
             <tr className="bg-[#174373] text-white">
-              <th colSpan={4} className="p-1.5 font-bold uppercase tracking-widest text-[11px] border border-[#174373]">
+              <th
+                colSpan={4}
+                className="p-1.5 font-bold uppercase tracking-widest text-[11px] border border-[#174373]"
+              >
                 PARTICIPANTES
               </th>
             </tr>
@@ -297,7 +302,11 @@ export function PdcaParticipants({
               </td>
               <td className="bg-[#174373] text-white p-3 w-[20%] text-[10px] leading-tight text-left border border-white/20">
                 <strong className="block mb-1">PAPEL/RESPONSABILIDAD EN ESTE EQUIPO:</strong>
-                <span className="text-white/80">(No el título del trabajo de la persona... ¿cuál es su rol en el equipo? Ejemplos... facilitador, analista de datos/experto en Excel, experto en la materia, perspectiva de primera línea, ojos externos, etc.)</span>
+                <span className="text-white/80">
+                  (No el título del trabajo de la persona... ¿cuál es su rol en el equipo?
+                  Ejemplos... facilitador, analista de datos/experto en Excel, experto en la
+                  materia, perspectiva de primera línea, ojos externos, etc.)
+                </span>
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 w-[30%] border border-[#174373]/20">
                 <TextareaAutosize
@@ -326,7 +335,11 @@ export function PdcaParticipants({
               </td>
               <td className="bg-[#174373] text-white p-3 text-[10px] leading-tight text-left border border-white/20">
                 <strong className="block mb-1">PAPEL/RESPONSABILIDAD EN ESTE EQUIPO:</strong>
-                <span className="text-white/80">(No el título del trabajo de la persona... ¿cuál es su papel en el equipo? Ejemplos... Consultor, Fabricante Equipo Original, experto técnico para el tema xx, entrenador del método PDCA, etc)</span>
+                <span className="text-white/80">
+                  (No el título del trabajo de la persona... ¿cuál es su papel en el equipo?
+                  Ejemplos... Consultor, Fabricante Equipo Original, experto técnico para el tema
+                  xx, entrenador del método PDCA, etc)
+                </span>
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 border border-[#174373]/20">
                 <TextareaAutosize
@@ -346,8 +359,14 @@ export function PdcaParticipants({
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-2 border border-[#174373]/20">
                 <DatePicker
-                  date={value.fechaReunionInicial && isValid(parseISO(value.fechaReunionInicial)) ? parseISO(value.fechaReunionInicial) : undefined}
-                  setDate={(date) => updateField("fechaReunionInicial", date ? format(date, "yyyy-MM-dd") : "")}
+                  date={
+                    value.fechaReunionInicial && isValid(parseISO(value.fechaReunionInicial))
+                      ? parseISO(value.fechaReunionInicial)
+                      : undefined
+                  }
+                  setDate={(date) =>
+                    updateField("fechaReunionInicial", date ? format(date, "yyyy-MM-dd") : "")
+                  }
                   placeholder="Seleccionar"
                   disabled={readOnly}
                   className="h-8 w-full text-xs font-bold justify-center shadow-none focus-visible:ring-1 focus-visible:ring-black/20 bg-transparent border-black/10 hover:bg-transparent"
