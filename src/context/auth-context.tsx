@@ -73,7 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isLegacyUser = creationTime < threshold;
 
         if (!user.emailVerified && !isLegacyUser) {
-          await signOut(primaryAuth);
           setCurrentUser(null);
           localStorage.removeItem("pdca_auth_user");
           setLoading(false);

@@ -268,4 +268,15 @@ export type Pdca = {
   // Análisis Estadístico
   statisticalAnalysisFiles?: string[];
   statistical_analysis_files?: string[];
+  itf_r2d2_evaluation?: ItfR2d2Evaluation;
+  itfR2d2Evaluation?: ItfR2d2Evaluation;
+};
+
+export type ItfR2d2Evaluation = {
+  rightPeople: { check: boolean; score: number; comment: string };
+  rightProblem: { check: boolean; score: number; comment: string };
+  dataWillSetYouFree: { check: boolean; score: number; comment: string };
+  dontReinventTheWheel: { check: boolean; score: number; comment: string };
+  noHippos: { check: boolean; score: number; comment: string };
+  evaluators?: { name: string; timestamp: string }[];
 };

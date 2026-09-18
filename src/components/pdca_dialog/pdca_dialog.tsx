@@ -12,6 +12,7 @@ import { PdcaPhasePlan } from "./pdca_phase_plan";
 import { PdcaPhaseDo } from "./pdca_phase_do";
 import { PdcaPhaseCheck } from "./pdca_phase_check";
 import { PdcaPhaseAct } from "./pdca_phase_act";
+import { PdcaItfR2d2 } from "./pdca_itf_r2d2";
 
 import { CustomStepper } from "../pdca-dialog/pdca-dialog-stepper";
 import { PdcaComments } from "../pdca-comments";
@@ -98,7 +99,9 @@ export const PdcaDialog: React.FC<{
       statisticalAnalysisFiles: state.statistical_analysis_files,
       hasGopThemes: state.has_gop_themes,
       gopThemesData: state.gop_themes_data,
+      processMappingImage: state.process_mapping_files?.[0] || null,
       processMappingFiles: state.process_mapping_files,
+      itfR2d2Evaluation: state.itf_r2d2_evaluation,
       comentarios: state.comments_list,
       historial: state.history_events,
       completedSteps: Array.from(state.completed_steps),
@@ -427,6 +430,18 @@ export const PdcaDialog: React.FC<{
           <PdcaHistory history={state.history_events} />
         )}
       </div>
+
+      {state.active_tab === "Plan" && is_admin && (
+        <PdcaItfR2d2
+          evaluation={state.itf_r2d2_evaluation}
+          onChange={(ev) => {
+            state.set_itf_r2d2_evaluation(ev);
+            autosave.mark_as_modified();
+          }}
+          disabled={!is_editable}
+          currentUser={auth_user}
+        />
+      )}
 
       <PdcaDialogFooter
         current_phase={state.active_tab}

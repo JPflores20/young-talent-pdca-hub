@@ -42,14 +42,35 @@ function RichTextEditor({
   disabled?: boolean;
 }) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const isMounted = useRef(false);
+
+  // Sync external changes (e.g. when loading from database)
+  React.useEffect(() => {
+    if (!editorRef.current) return;
+
+    if (!isMounted.current) {
+      editorRef.current.innerHTML = value || "";
+      isMounted.current = true;
+      return;
+    }
+
+    if (value !== editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = value || "";
+    }
+  }, [value]);
 
   const execCmd = (cmd: string, arg?: string) => {
     editorRef.current?.focus();
     document.execCommand(cmd, false, arg);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
   };
 
   const handleInput = () => {
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
   };
 
   return (
@@ -108,7 +129,7 @@ function RichTextEditor({
         contentEditable={!disabled}
         suppressContentEditableWarning
         onInput={handleInput}
-        dangerouslySetInnerHTML={{ __html: value || "" }}
+        onBlur={handleInput}
         className="min-h-[120px] p-3 text-sm focus:outline-none prose prose-sm max-w-none"
         data-placeholder="Describe el problema observado..."
       />

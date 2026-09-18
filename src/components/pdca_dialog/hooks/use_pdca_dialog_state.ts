@@ -112,6 +112,16 @@ export const use_pdca_dialog_state = (
       (initial_pdca.processMappingImage ? [initial_pdca.processMappingImage] : []),
   );
 
+  const [itf_r2d2_evaluation, set_itf_r2d2_evaluation] = useState<any>(
+    initial_pdca.itfR2d2Evaluation || initial_pdca.itf_r2d2_evaluation || {
+      rightPeople: { check: false, score: 0, comment: "" },
+      rightProblem: { check: false, score: 0, comment: "" },
+      dataWillSetYouFree: { check: false, score: 0, comment: "" },
+      dontReinventTheWheel: { check: false, score: 0, comment: "" },
+      noHippos: { check: false, score: 0, comment: "" },
+    }
+  );
+
   const [five_whys_tables, set_five_whys_tables] = useState<FiveWhysTableData[]>(() => {
     if (initial_pdca.fiveWhysTables && initial_pdca.fiveWhysTables.length > 0)
       return initial_pdca.fiveWhysTables;
@@ -272,5 +282,7 @@ export const use_pdca_dialog_state = (
     set_participants_data,
     statistical_analysis_files,
     set_statistical_analysis_files,
+    itf_r2d2_evaluation,
+    set_itf_r2d2_evaluation,
   };
 };
