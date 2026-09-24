@@ -5,6 +5,12 @@ import { StepCard } from "@/components/ui/step-card";
 import { StepInstructions } from "../pdca-dialog/step-instructions";
 import { TeamMembersInput } from "../pdca-dialog/team-members-input";
 import { VpoCheckpointTable } from "../pdca-dialog/vpo-checkpoint-table";
+import { TimeSeriesYTD } from "../pdca-dialog/time-series-ytd";
+import { ImageUploadSection, MultiImageUploadSection, ALL_ACCEPT_STRING } from "../image-upload-section";
+import { ParetoSection } from "@/components/pdca-dialog/pareto-section";
+import { IshikawaSection } from "../pdca-dialog/ishikawa-section";
+import { FiveWhysSection } from "../pdca-dialog/five-whys-section";
+import { ColeccionDatosTable } from "./coleccion-datos-table";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -18,7 +24,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { DefinicionMeta, ParticipantesData, VpoCheckpointItem } from "@/data/pdca";
+import type { 
+  DefinicionMeta, 
+  ParticipantesData, 
+  VpoCheckpointItem,
+  ParetoItem,
+  IshikawaItem,
+  FiveWhysTableData
+} from "@/data/pdca";
 
 // ─── Áreas disponibles ────────────────────────────────────────────────────────
 const AREAS = [
@@ -170,6 +183,32 @@ interface PhasePlanProps {
   completed_steps: Set<string>;
   on_toggle_step: (step_id: string) => void;
   is_editable: boolean;
+  
+  // Nuevos props migrados
+  process_mapping_files?: string[];
+  on_process_mapping_files_change?: (files: string[]) => void;
+  baseline_image?: string;
+  on_baseline_image_change?: (img: string | undefined) => void;
+  coleccion_datos?: any[];
+  on_coleccion_datos_change?: (data: any[]) => void;
+  pareto_drill_downs?: string[];
+  on_pareto_drill_downs_change?: (drills: string[]) => void;
+  pareto_data_map?: Record<string, ParetoItem[]>;
+  on_pareto_data_map_change?: (map: Record<string, ParetoItem[]>) => void;
+  pareto_unit?: string;
+  on_pareto_unit_change?: (unit: string) => void;
+  pareto_titles?: Record<string, string>;
+  on_pareto_titles_change?: (titles: Record<string, string>) => void;
+  target_vs_actual?: { mes: string; target: number; actual: number | null }[];
+  on_target_vs_actual_change?: (val: any) => void;
+  target_vs_actual_unit?: string;
+  on_target_vs_actual_unit_change?: (unit: string) => void;
+  target_vs_actual_title?: string;
+  on_target_vs_actual_title_change?: (title: string) => void;
+  ishikawas?: IshikawaItem[];
+  on_ishikawas_change?: (items: IshikawaItem[]) => void;
+  five_whys_tables?: FiveWhysTableData[];
+  on_five_whys_tables_change?: (tables: FiveWhysTableData[]) => void;
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -200,12 +239,36 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
   completed_steps,
   on_toggle_step,
   is_editable,
+  process_mapping_files,
+  on_process_mapping_files_change,
+  baseline_image,
+  on_baseline_image_change,
+  coleccion_datos,
+  on_coleccion_datos_change,
+  pareto_drill_downs,
+  on_pareto_drill_downs_change,
+  pareto_data_map,
+  on_pareto_data_map_change,
+  pareto_unit,
+  on_pareto_unit_change,
+  pareto_titles,
+  on_pareto_titles_change,
+  target_vs_actual,
+  on_target_vs_actual_change,
+  target_vs_actual_unit,
+  on_target_vs_actual_unit_change,
+  target_vs_actual_title,
+  on_target_vs_actual_title_change,
+  ishikawas,
+  on_ishikawas_change,
+  five_whys_tables,
+  on_five_whys_tables_change,
 }) => {
   return (
     <div className="space-y-6">
-      {/* ── PASO 1: DEFINICIÓN DEL PROBLEMA ─────────────────────────────────── */}
+      {/* ── PASO 1: PROYECT STATEMENT ─────────────────────────────────── */}
       <StepCard
-        title="PASO 1: DEFINICIÓN DEL PROBLEMA"
+        title="PASO 1: PROYECT STATEMENT"
         isStepCompleted={completed_steps.has("step-1")}
         onToggleStep={() => on_toggle_step("step-1")}
       >
@@ -376,6 +439,176 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         completedSteps={completed_steps}
         onToggleStep={on_toggle_step}
       />
+
+      {/* ── PASO 3: SIPOC MAP (Placeholder) ─────────────────────────── */}
+      <StepCard
+        title="PASO 3: SIPOC MAP"
+        isStepCompleted={completed_steps.has("step-3")}
+        onToggleStep={() => on_toggle_step("step-3")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para el SIPOC MAP.</p>
+        </div>
+      </StepCard>
+
+      {/* ── PASO 4: Mapeo de procesos ───────────────────────────────── */}
+      <MultiImageUploadSection
+        images={process_mapping_files || []}
+        onChange={(f) => on_process_mapping_files_change?.(f)}
+        title="PASO 4: MAPEO DE PROCESOS"
+        subtitle="Sube tus imágenes o PDFs"
+        description="Adjunta fotos o documentos (máximo 6 archivos). Se aceptan imágenes, PDF, Excel y PowerPoint."
+        maxImages={6}
+        acceptTypes={ALL_ACCEPT_STRING}
+        isStepCompleted={completed_steps.has("step-4")}
+        onToggleStep={() => on_toggle_step("step-4")}
+      />
+
+      {/* ── PASO 5: Voz del Consumidor (Placeholder) ────────────────── */}
+      <StepCard
+        title="PASO 5: VOZ DEL CONSUMIDOR"
+        isStepCompleted={completed_steps.has("step-5")}
+        onToggleStep={() => on_toggle_step("step-5")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para la Voz del Consumidor.</p>
+        </div>
+      </StepCard>
+
+      {/* ── PASO 6: Análisis de Riesgos (Placeholder) ───────────────── */}
+      <StepCard
+        title="PASO 6: ANÁLISIS DE RIESGOS DEL PROYECTO"
+        isStepCompleted={completed_steps.has("step-6")}
+        onToggleStep={() => on_toggle_step("step-6")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para el Análisis de Riesgos del proceso.</p>
+        </div>
+      </StepCard>
+
+      {/* ── PASO 7: Situación Actual PI's (Antes Paso 12) ─────────────── */}
+      <TimeSeriesYTD
+        value={target_vs_actual}
+        onChange={on_target_vs_actual_change}
+        unit={target_vs_actual_unit}
+        onUnitChange={on_target_vs_actual_unit_change}
+        title="PASO 7: CURRENT PROCESS PERMANANCE (SITUACIÓN ACTUAL PI'S)"
+        chartTitle={target_vs_actual_title}
+        onTitleChange={on_target_vs_actual_title_change}
+        isStepCompleted={completed_steps.has("step-12")}
+        onToggleStep={() => on_toggle_step("step-12")}
+      />
+
+      {/* ── PASO 8: Línea base ──────────────────────────────────────── */}
+      <ImageUploadSection
+        image={baseline_image || null}
+        onChange={(img) => on_baseline_image_change?.(img || undefined)}
+        title="PASO 8: LÍNEA BASE (BASE LINE)"
+        subtitle="Sube una imagen representativa del baseline"
+        customBadge={<Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold border-0 ml-2">REVISIÓN</Badge>}
+        isStepCompleted={completed_steps.has("step-7")}
+        onToggleStep={() => on_toggle_step("step-7")}
+      />
+
+      {/* ── PASO 9: Data collection Plan ────────────────────────────── */}
+      <ColeccionDatosTable 
+        items={coleccion_datos || []}
+        onChange={(d) => on_coleccion_datos_change?.(d)}
+        isStepCompleted={completed_steps.has("step-8")}
+        onToggleStep={() => on_toggle_step("step-8")}
+      />
+
+      {/* ── PASO 10: Pareto ──────────────────────────────────────────── */}
+      <ParetoSection
+        drillDowns={pareto_drill_downs || []}
+        setDrillDowns={on_pareto_drill_downs_change!}
+        dataMap={pareto_data_map || {}}
+        setDataMap={on_pareto_data_map_change!}
+        unit={pareto_unit || ""}
+        onUnitChange={on_pareto_unit_change!}
+        paretoTitles={pareto_titles}
+        onParetoTitlesChange={on_pareto_titles_change}
+        isStepCompleted={completed_steps.has("step-9")}
+        onToggleStep={() => on_toggle_step("step-9")}
+      />
+
+      {/* ── PASO 11: PTS/6TES (Placeholder) ─────────────────────────── */}
+      <StepCard
+        title="PASO 11: PTS/6TES"
+        isStepCompleted={completed_steps.has("step-10")}
+        onToggleStep={() => on_toggle_step("step-10")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para PTS/6TES.</p>
+        </div>
+      </StepCard>
+
+      {/* ── PASO 12: Bench Mark (Placeholder) ───────────────────────── */}
+      <StepCard
+        title="PASO 12: BENCH MARK"
+        isStepCompleted={completed_steps.has("step-11")}
+        onToggleStep={() => on_toggle_step("step-11")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para Bench Mark.</p>
+        </div>
+      </StepCard>
+
+      {/* ── PASO 13: 60 PI's identificados (Placeholder) ────────────── */}
+      <StepCard
+        title="PASO 13: 60 PI'S IDENTIFICADOS"
+        isStepCompleted={completed_steps.has("step-13")}
+        onToggleStep={() => on_toggle_step("step-13")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para los 60 PI's identificados.</p>
+        </div>
+      </StepCard>
+
+      {/* ── PASO 14: Fishbone ───────────────────────────────────────── */}
+      <IshikawaSection
+        ishikawas={ishikawas || []}
+        onChange={on_ishikawas_change!}
+        isStepCompleted={completed_steps.has("step-14")}
+        onToggleStep={() => on_toggle_step("step-14")}
+      />
+
+      {/* ── PASO 15: 5 Why's ────────────────────────────────────────── */}
+      <FiveWhysSection
+        tables={five_whys_tables || []}
+        onChange={on_five_whys_tables_change!}
+        isStepCompleted={completed_steps.has("step-15")}
+        onToggleStep={() => on_toggle_step("step-15")}
+      />
+      {/* ── PASO 16: Acciones de validacion (Placeholder) ─────────────── */}
+      <StepCard
+        title="PASO 16: ACCIONES DE VALIDACIÓN"
+        isStepCompleted={completed_steps.has("step-16")}
+        onToggleStep={() => on_toggle_step("step-16")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para las Acciones de validación.</p>
+        </div>
+      </StepCard>
+
+      {/* ── PASO 17: Conclusión de causas raíz (Placeholder) ──────────── */}
+      <StepCard
+        title="PASO 17: CONCLUSIÓN DE CAUSAS RAÍZ"
+        isStepCompleted={completed_steps.has("step-17")}
+        onToggleStep={() => on_toggle_step("step-17")}
+      >
+        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
+          <p className="text-muted-foreground font-medium">Sección en construcción</p>
+          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para la Definición de causas raíz.</p>
+        </div>
+      </StepCard>
     </div>
   );
 };

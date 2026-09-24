@@ -722,7 +722,7 @@ export function ParetoSection({
       {root_keys.map((key, idx) => (
         <ParetoInteractive
           key={key}
-          title={idx === 0 ? "PASO 5: PARETO" : `PASO 5: PARETO INDEPENDIENTE ${idx + 1}`}
+          title={idx === 0 ? "PASO 10: ESTRATIFICACIÓN DEL PROBLEMA (PARETO)" : `PASO 10: PARETO INDEPENDIENTE ${idx + 1}`}
           level={0}
           data={dataMap[key] ?? []}
           onDataChange={(d) => update_data(key, d)}

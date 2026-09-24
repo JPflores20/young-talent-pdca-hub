@@ -7,8 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import type { ActionItem, EvidenciaSolucionItem } from "@/data/pdca";
 
 interface EvidenciasSolucionStepProps {
-  kpiFocoImage?: string;
-  onKpiFocoImageChange: (img: string | undefined) => void;
   actions: ActionItem[];
   evidencias: EvidenciaSolucionItem[];
   onEvidenciasChange: (evs: EvidenciaSolucionItem[]) => void;
@@ -17,8 +15,6 @@ interface EvidenciasSolucionStepProps {
 }
 
 export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
-  kpiFocoImage,
-  onKpiFocoImageChange,
   actions,
   evidencias,
   onEvidenciasChange,
@@ -59,25 +55,16 @@ export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
 
   return (
     <StepCard
-      title="PASO 9: IMPLEMENTACIÓN DE SOLUCIONES"
-      isCompleted={isStepCompleted}
-      onToggleComplete={onToggleStep}
+      title="PASO 19: EVIDENCIA DE SOLUCIONES"
+      isStepCompleted={isStepCompleted}
+      onToggleStep={onToggleStep}
       headerRight={<Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold border-0 ml-2">REVISIÓN</Badge>}
     >
       <StepInstructions>
-        Sube la imagen del KPI Tree Foco a trabajar. Luego, por cada acción del plan, adjunta una foto como evidencia.
+        Por cada acción del plan, adjunta una foto o PDF como evidencia.
       </StepInstructions>
 
       <div className="mt-4 space-y-8">
-        <div className="border border-border rounded-xl p-4 bg-secondary/10">
-          <ImageUploadSection
-            image={kpiFocoImage || null}
-            onChange={(img) => onKpiFocoImageChange(img || undefined)}
-            title="KPI TREE FOCO A TRABAJAR"
-            subtitle="Sube la imagen del KPI Tree objetivo"
-          />
-        </div>
-
         <div className="space-y-4">
           <h4 className="text-sm font-bold text-slate-700 uppercase">Evidencias por Acción</h4>
           {actions.length === 0 ? (

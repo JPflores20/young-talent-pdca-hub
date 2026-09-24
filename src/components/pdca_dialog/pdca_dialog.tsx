@@ -290,24 +290,9 @@ export const PdcaDialog: React.FC<{
           completed_steps={state.completed_steps}
           on_toggle_step={handle_toggle_step}
           is_editable={is_editable}
-        />
-      )}
-
-      {state.active_tab === "Do" && (
-        <PdcaPhaseDo
-          target_vs_actual={state.target_vs_actual}
-          on_target_vs_actual_change={(t) => {
-            state.set_target_vs_actual(t);
-            autosave.mark_as_modified();
-          }}
-          target_vs_actual_unit={state.target_vs_actual_unit}
-          on_target_vs_actual_unit_change={(u) => {
-            state.set_target_vs_actual_unit(u);
-            autosave.mark_as_modified();
-          }}
-          target_vs_actual_title={state.target_vs_actual_title}
-          on_target_vs_actual_title_change={(title) => {
-            state.set_target_vs_actual_title(title);
+          process_mapping_files={state.process_mapping_files}
+          on_process_mapping_files_change={(f) => {
+            state.set_process_mapping_files(f);
             autosave.mark_as_modified();
           }}
           baseline_image={state.baseline_image}
@@ -315,19 +300,9 @@ export const PdcaDialog: React.FC<{
             state.set_baseline_image(img);
             autosave.mark_as_modified();
           }}
-          tabla_estandarizacion={state.tabla_estandarizacion}
-          on_tabla_estandarizacion_change={(data) => {
-            state.set_tabla_estandarizacion(data);
-            autosave.mark_as_modified();
-          }}
-          tabla_estandarizacion_vpo={state.tabla_estandarizacion_vpo}
-          on_tabla_estandarizacion_vpo_change={(data) => {
-            state.set_tabla_estandarizacion_vpo(data);
-            autosave.mark_as_modified();
-          }}
-          kpi_document_files={state.kpi_document_files}
-          on_kpi_document_files_change={(f) => {
-            state.set_kpi_document_files(f);
+          coleccion_datos={state.coleccion_datos}
+          on_coleccion_datos_change={(d) => {
+            state.set_coleccion_datos(d);
             autosave.mark_as_modified();
           }}
           pareto_drill_downs={state.pareto_drill_downs}
@@ -350,68 +325,19 @@ export const PdcaDialog: React.FC<{
             state.set_pareto_titles(t);
             autosave.mark_as_modified();
           }}
-          has_flavor_correlation={state.has_flavor_correlation}
-          flavor_correlation_data={state.flavor_correlation_data}
-          on_flavor_correlation_data_change={(d) => {
-            state.set_flavor_correlation_data(d);
+          target_vs_actual={state.target_vs_actual}
+          on_target_vs_actual_change={(t) => {
+            state.set_target_vs_actual(t);
             autosave.mark_as_modified();
           }}
-          coleccion_datos={state.coleccion_datos}
-          on_coleccion_datos_change={(d) => {
-            state.set_coleccion_datos(d);
+          target_vs_actual_unit={state.target_vs_actual_unit}
+          on_target_vs_actual_unit_change={(u) => {
+            state.set_target_vs_actual_unit(u);
             autosave.mark_as_modified();
           }}
-          statistical_analysis_files={state.statistical_analysis_files}
-          on_statistical_analysis_files_change={(f) => {
-            state.set_statistical_analysis_files(f);
-            autosave.mark_as_modified();
-          }}
-          especificacion_procesos_text={state.especificacion_procesos_text}
-          on_especificacion_procesos_text_change={(t) => {
-            state.set_especificacion_procesos_text(t);
-            autosave.mark_as_modified();
-          }}
-          especificacion_procesos_image={state.especificacion_procesos_image}
-          on_especificacion_procesos_image_change={(img) => {
-            state.set_especificacion_procesos_image(img);
-            autosave.mark_as_modified();
-          }}
-          informacion_adicional_files={state.informacion_adicional_files}
-          on_informacion_adicional_files_change={(files) => {
-            state.set_informacion_adicional_files(files);
-            autosave.mark_as_modified();
-          }}
-          has_gop_themes={state.has_gop_themes}
-          gop_themes_data={state.gop_themes_data}
-          on_gop_themes_data_change={(g) => {
-            state.set_gop_themes_data(g);
-            autosave.mark_as_modified();
-          }}
-          completed_steps={state.completed_steps}
-          on_toggle_step={handle_toggle_step}
-          problemTimelineOption={state.problem_timeline_option}
-          onProblemTimelineOptionChange={(val) => {
-            state.set_problem_timeline_option(val);
-            autosave.mark_as_modified();
-          }}
-          problemTimelineFilter={state.problem_timeline_filter}
-          onProblemTimelineFilterChange={(val) => {
-            state.set_problem_timeline_filter(val);
-            autosave.mark_as_modified();
-          }}
-          problemTimelineEvents={state.problem_timeline_events}
-          onProblemTimelineEventsChange={(events) => {
-            state.set_problem_timeline_events(events);
-            autosave.mark_as_modified();
-          }}
-        />
-      )}
-
-      {state.active_tab === "Check" && (
-        <PdcaPhaseCheck
-          process_mapping_files={state.process_mapping_files}
-          on_process_mapping_files_change={(f) => {
-            state.set_process_mapping_files(f);
+          target_vs_actual_title={state.target_vs_actual_title}
+          on_target_vs_actual_title_change={(t) => {
+            state.set_target_vs_actual_title(t);
             autosave.mark_as_modified();
           }}
           ishikawas={state.ishikawas}
@@ -424,6 +350,48 @@ export const PdcaDialog: React.FC<{
             state.set_five_whys_tables(w);
             autosave.mark_as_modified();
           }}
+        />
+      )}
+
+      {state.active_tab === "Do" && (
+        <PdcaPhaseDo
+          action_items={state.action_items}
+          on_action_items_change={(a) => {
+            state.set_action_items(a);
+            autosave.mark_as_modified();
+          }}
+          evidencias_solucion={state.evidencias_solucion}
+          on_evidencias_solucion_change={(evs) => {
+            state.set_evidencias_solucion(evs);
+            autosave.mark_as_modified();
+          }}
+          kpi_tree_foco_image={state.kpi_tree_foco_image}
+          on_kpi_tree_foco_image_change={(img) => {
+            state.set_kpi_tree_foco_image(img);
+            autosave.mark_as_modified();
+          }}
+          completed_steps={state.completed_steps}
+          on_toggle_step={handle_toggle_step}
+        />
+      )}
+
+      {state.active_tab === "Check" && (
+        <PdcaPhaseCheck
+          final_time_series_data={state.final_time_series_data}
+          on_final_time_series_data_change={(k) => {
+            state.set_final_time_series_data(k);
+            autosave.mark_as_modified();
+          }}
+          final_time_series_unit={state.final_time_series_unit}
+          on_final_time_series_unit_change={(u) => {
+            state.set_final_time_series_unit(u);
+            autosave.mark_as_modified();
+          }}
+          final_time_series_title={state.final_time_series_title}
+          on_final_time_series_title_change={(t) => {
+            state.set_final_time_series_title(t);
+            autosave.mark_as_modified();
+          }}
           completed_steps={state.completed_steps}
           on_toggle_step={handle_toggle_step}
         />
@@ -431,61 +399,20 @@ export const PdcaDialog: React.FC<{
 
       {state.active_tab === "Act" && (
         <div className="space-y-6">
-          {/* PASO 8 y siguientes en la fase Act */}
           <PdcaPhaseAct
-            action_items={state.action_items}
-            on_action_items_change={(a) => {
-              state.set_action_items(a);
-              autosave.mark_as_modified();
-            }}
-            kpi_tree_foco_image={state.kpi_tree_foco_image}
-            on_kpi_tree_foco_image_change={(img) => {
-              state.set_kpi_tree_foco_image(img);
-              autosave.mark_as_modified();
-            }}
-            evidencias_solucion={state.evidencias_solucion}
-            on_evidencias_solucion_change={(evs) => {
-              state.set_evidencias_solucion(evs);
-              autosave.mark_as_modified();
-            }}
-            final_time_series_data={state.final_time_series_data}
-            on_final_time_series_change={(k) => {
-              state.set_final_time_series_data(k);
-              autosave.mark_as_modified();
-            }}
-            final_time_series_unit={state.final_time_series_unit}
-            on_final_time_series_unit_change={(u) => {
-              state.set_final_time_series_unit(u);
-              autosave.mark_as_modified();
-            }}
-            gemba_evidencias={state.evidence_files}
-            on_gemba_evidencias_change={(imgs) => {
-              state.set_evidence_files(imgs);
-              autosave.mark_as_modified();
-            }}
             gemba_final_images={state.gemba_final_images}
             on_gemba_final_images_change={(imgs) => {
               state.set_gemba_final_images(imgs);
               autosave.mark_as_modified();
             }}
-            resultados_finales={state.resultados_finales}
-            on_resultados_finales_change={(data) => {
-              state.set_resultados_finales(data);
+            tabla_estandarizacion={state.tabla_estandarizacion}
+            on_tabla_estandarizacion_change={(data) => {
+              state.set_tabla_estandarizacion(data);
               autosave.mark_as_modified();
             }}
-            has_mapeo_proceso={state.has_mapeo_proceso}
-            on_has_mapeo_proceso_change={(val) => {
-              state.set_has_mapeo_proceso(val);
-              autosave.mark_as_modified();
-            }}
-            mapeo_proceso_image={state.mapeo_proceso_image}
-            on_mapeo_proceso_image_change={(img) => {
-              state.set_mapeo_proceso_image(img);
-              autosave.mark_as_modified();
-            }}
-            mapeo_proceso_desc={state.mapeo_proceso_desc}
-            on_mapeo_proceso_desc_change={(desc) => {
-              state.set_mapeo_proceso_desc(desc);
+            tabla_estandarizacion_vpo={state.tabla_estandarizacion_vpo}
+            on_tabla_estandarizacion_vpo_change={(data) => {
+              state.set_tabla_estandarizacion_vpo(data);
               autosave.mark_as_modified();
             }}
             completed_steps={state.completed_steps}

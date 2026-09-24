@@ -121,10 +121,15 @@ import {
 import { StepCard } from "@/components/ui/step-card";
 
 const PHASE_STEPS_MAP: Record<string, string[]> = {
-  Plan: ["step-1", "step-2"],
-  Do: ["step-3", "step-4", "step-5", "step-flavor", "step-gop"],
-  Check: ["step-6", "step-7"],
-  Act: ["step-8", "step-9"],
+  Plan: [
+    "step-1", "step-2", "step-3", "step-4", "step-5", 
+    "step-6", "step-12", "step-7", "step-8", "step-9", "step-10", 
+    "step-11", "step-13", "step-14", "step-15",
+    "step-16", "step-17"
+  ],
+  Do: ["step-18", "step-19", "step-20"],
+  Check: ["step-21", "step-22", "step-23", "step-24"],
+  Act: ["step-24-act", "step-25", "step-26"],
 };
 export const getCustomPhases = (isAdmin: boolean) => {
   const base = [

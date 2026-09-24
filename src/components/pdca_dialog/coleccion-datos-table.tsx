@@ -46,7 +46,7 @@ export const ColeccionDatosTable: React.FC<ColeccionDatosTableProps> = ({ items,
 
   return (
     <StepCard
-      title="COLECCIÓN DE DATOS"
+      title="PASO 9: DATA COLLECTION PLAN"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       headerRight={<Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold border-0 ml-2">REVISIÓN</Badge>}
