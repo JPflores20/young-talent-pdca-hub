@@ -176,7 +176,7 @@ export function VpoCheckpointTable({
 
   return (
     <StepCard
-      title="PASO 2: PHASE SDCA CHECKLIST"
+      title="PASO 2: LISTA DE VERIFICACIÓN SDCA"
       isStepCompleted={completedSteps.has("step-2")}
       onToggleStep={() => onToggleStep("step-2")}
     >

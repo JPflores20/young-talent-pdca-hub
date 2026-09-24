@@ -35,6 +35,8 @@ interface ImageUploadSectionProps {
   description?: string;
   isStepCompleted?: boolean;
   onToggleStep?: () => void;
+  hideCard?: boolean;
+  customBadge?: React.ReactNode;
 }
 
 export function ImageUploadSection({
@@ -45,6 +47,8 @@ export function ImageUploadSection({
   description = "Adjunta una foto o imagen (se comprimirá y guardará automáticamente).",
   isStepCompleted,
   onToggleStep,
+  hideCard = false,
+  customBadge,
 }: ImageUploadSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -172,8 +176,7 @@ export function ImageUploadSection({
     });
   };
 
-  return (
-    <StepCard title={title} isStepCompleted={isStepCompleted} onToggleStep={onToggleStep}>
+  const innerContent = (
       <div
         className={`mt-2 relative rounded-xl overflow-hidden border ${isDragging ? "border-primary border-dashed bg-primary/10" : "border-border/50 bg-secondary/10"} transition-colors flex flex-col items-center justify-center p-6 min-h-[200px]`}
         onDragOver={handleDragOver}
@@ -311,6 +314,15 @@ export function ImageUploadSection({
           className="hidden"
         />
       </div>
+  );
+
+  if (hideCard) {
+    return innerContent;
+  }
+
+  return (
+    <StepCard title={title} isStepCompleted={isStepCompleted} onToggleStep={onToggleStep} headerRight={customBadge}>
+      {innerContent}
     </StepCard>
   );
 }
@@ -404,6 +416,7 @@ interface MultiImageUploadSectionProps {
   onToggleStep?: () => void;
   /** Custom accept string for the file input. When set, also updates file validation. */
   acceptTypes?: string;
+  customBadge?: React.ReactNode;
 }
 
 export function MultiImageUploadSection({
@@ -416,6 +429,7 @@ export function MultiImageUploadSection({
   isStepCompleted,
   onToggleStep,
   acceptTypes,
+  customBadge,
 }: MultiImageUploadSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = React.useState(false);
@@ -576,9 +590,12 @@ export function MultiImageUploadSection({
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       headerRight={
-        <span className="text-xs normal-case font-normal text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full mr-2">
-          {images.length} de {maxImages}
-        </span>
+        <div className="flex items-center gap-2 mr-2">
+          {customBadge}
+          <span className="text-xs normal-case font-normal text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
+            {images.length} de {maxImages}
+          </span>
+        </div>
       }
     >
       {(subtitle || description) && (

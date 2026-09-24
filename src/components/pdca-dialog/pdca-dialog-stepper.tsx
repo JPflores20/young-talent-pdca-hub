@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useMemo, useCallback, useRef, Fragment } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef, Fragment } from "react";
 import {
   Check,
   UploadCloud,
@@ -126,15 +126,89 @@ const PHASE_STEPS_MAP: Record<string, string[]> = {
   Check: ["step-6", "step-7"],
   Act: ["step-8", "step-9"],
 };
-const customPhases = [
-  { id: "Plan", label: "1. DEFINICIÓN", sub: "Pasos 1 y 2" },
-  { id: "Do", label: "2. ANÁLISIS", sub: "Pasos 3, 4 y 5" },
-  { id: "Check", label: "3. CAUSA RAÍZ", sub: "Pasos 6 y 7" },
-  { id: "Act", label: "4. EJECUCIÓN", sub: "Pasos 8 y 9" },
-] as const;
+export const getCustomPhases = (isAdmin: boolean) => {
+  const base = [
+    { id: "Plan", label: "1. PLAN", sub: "" },
+    { id: "Do", label: "2. DO", sub: "" },
+    { id: "Check", label: "3. CHECK", sub: "" },
+    { id: "Act", label: "4. ACT", sub: "" },
+  ] as const;
+  
+  if (isAdmin) {
+    return [
+      ...base,
+      { id: "Evaluacion", label: "EVALUACIÓN R2D2", sub: "Solo Administradores" }
+    ] as const;
+  }
+  return base;
+};
 export const isPhaseStepsCompleted = (phaseId: string, completedSteps: Set<string>) => {
   const steps = PHASE_STEPS_MAP[phaseId as Phase] || [];
   return steps.length > 0 && steps.every((s) => completedSteps.has(s));
+};
+
+const getPhaseTabColors = (id: string, isCurrent: boolean) => {
+  if (isCurrent) {
+    switch (id) {
+      case "Plan": return "bg-red-600 text-white shadow-sm";
+      case "Do": return "bg-yellow-400 text-black shadow-sm";
+      case "Check": return "bg-emerald-500 text-white shadow-sm";
+      case "Act": return "bg-blue-600 text-white shadow-sm";
+      case "Evaluacion": return "bg-indigo-900 text-white shadow-sm"; // Dark blue from image
+      default: return "bg-primary text-primary-foreground shadow-sm";
+    }
+  }
+  switch (id) {
+    case "Plan": return "bg-red-500/10 text-red-700 hover:bg-red-500/20";
+    case "Do": return "bg-yellow-500/20 text-yellow-800 hover:bg-yellow-500/30";
+    case "Check": return "bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20";
+    case "Act": return "bg-blue-500/10 text-blue-700 hover:bg-blue-500/20";
+    case "Evaluacion": return "bg-indigo-900/10 text-indigo-900 hover:bg-indigo-900/20";
+    default: return "hover:bg-background/80 text-muted-foreground";
+  }
+};
+
+const getPhaseCircleColors = (id: string, isCurrent: boolean, isCompleted: boolean) => {
+  if (isCompleted) return "border-emerald-500 bg-emerald-500 text-white";
+  if (isCurrent) {
+    return id === "Do" ? "border-black/20 bg-black/10 text-black" : "border-white/20 bg-white/20 text-white";
+  }
+  switch (id) {
+    case "Plan": return "border-red-200 bg-red-100 text-red-700";
+    case "Do": return "border-yellow-400/40 bg-yellow-200/50 text-yellow-800";
+    case "Check": return "border-emerald-200 bg-emerald-100 text-emerald-700";
+    case "Act": return "border-blue-200 bg-blue-100 text-blue-700";
+    case "Evaluacion": return "border-indigo-200 bg-indigo-100 text-indigo-900";
+    default: return "border-border bg-background";
+  }
+};
+
+const getPhaseSubText = (id: string, isCurrent: boolean) => {
+  if (isCurrent) return id === "Do" ? "text-black/70" : "text-white/80";
+  switch (id) {
+    case "Plan": return "text-red-700/70";
+    case "Do": return "text-yellow-800/70";
+    case "Check": return "text-emerald-700/70";
+    case "Act": return "text-blue-700/70";
+    case "Evaluacion": return "text-indigo-900/70";
+    default: return "text-muted-foreground/80";
+  }
+};
+
+const getPhaseToggleBorder = (id: string, isCurrent: boolean, isCompleted: boolean) => {
+  if (isCompleted) return "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600";
+  if (isCurrent) {
+    return id === "Do" ? "border-black/30 text-black/40 hover:border-black hover:text-black" 
+                       : "border-white/40 text-white/50 hover:border-white hover:text-white";
+  }
+  switch (id) {
+    case "Plan": return "border-red-500/30 text-red-500/30 hover:border-red-500 hover:text-red-500";
+    case "Do": return "border-yellow-600/30 text-yellow-600/30 hover:border-yellow-600 hover:text-yellow-600";
+    case "Check": return "border-emerald-500/30 text-emerald-500/30 hover:border-emerald-500 hover:text-emerald-500";
+    case "Act": return "border-blue-500/30 text-blue-500/30 hover:border-blue-500 hover:text-blue-500";
+    case "Evaluacion": return "border-indigo-900/30 text-indigo-900/30 hover:border-indigo-900 hover:text-indigo-900";
+    default: return "border-muted-foreground/30 text-muted-foreground/30 hover:border-emerald-500 hover:text-emerald-500";
+  }
 };
 
 export function CustomStepper({
@@ -143,14 +217,17 @@ export function CustomStepper({
   completedPhases,
   onToggleComplete,
   completedSteps,
+  isAdmin,
 }: {
   current: Phase;
   onSelect: (p: Phase) => void;
   completedPhases: Set<string>;
   onToggleComplete: (p: Phase) => void;
   completedSteps: Set<string>;
+  isAdmin?: boolean;
 }) {
-  const currentIndex = phases.indexOf(current);
+  const customPhases = getCustomPhases(!!isAdmin);
+  const currentIndex = customPhases.findIndex(p => p.id === current);
   return (
     <div className="flex items-stretch gap-1 rounded-xl border border-border bg-secondary/60 p-1.5">
       {customPhases.map((phase, i) => {
@@ -162,9 +239,7 @@ export function CustomStepper({
             key={phase.id}
             className={cn(
               "flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors relative group",
-              isCurrent
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "hover:bg-background/80 text-muted-foreground",
+              getPhaseTabColors(phase.id, isCurrent)
             )}
           >
             <button
@@ -175,11 +250,7 @@ export function CustomStepper({
               <span
                 className={cn(
                   "grid size-6 shrink-0 place-items-center rounded-full border text-xs font-bold",
-                  isCompleted
-                    ? "border-emerald-500 bg-emerald-500 text-white"
-                    : isCurrent
-                      ? "border-brand-yellow bg-brand-yellow text-brand-yellow-foreground"
-                      : "border-border bg-background",
+                  getPhaseCircleColors(phase.id, isCurrent, isCompleted)
                 )}
               >
                 {i + 1}
@@ -188,14 +259,16 @@ export function CustomStepper({
                 <span className="block font-display text-sm font-semibold uppercase tracking-wide">
                   {phase.label}
                 </span>
-                <span
-                  className={cn(
-                    "hidden truncate text-[11px] sm:block",
-                    isCurrent ? "text-primary-foreground/75" : "text-muted-foreground/80",
-                  )}
-                >
-                  {phase.sub}
-                </span>
+                {phase.sub && (
+                  <span
+                    className={cn(
+                      "hidden truncate text-[11px] sm:block",
+                      getPhaseSubText(phase.id, isCurrent)
+                    )}
+                  >
+                    {phase.sub}
+                  </span>
+                )}
               </span>
             </button>
             {/* Toggle complete button */}
@@ -208,11 +281,7 @@ export function CustomStepper({
               title={isCompleted ? "Desmarcar fase como completada" : "Marcar fase como completada"}
               className={cn(
                 "shrink-0 size-7 grid place-items-center rounded-full border-2 transition-all cursor-pointer",
-                isCompleted
-                  ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600"
-                  : isCurrent
-                    ? "border-primary-foreground/40 text-primary-foreground/40 hover:border-white hover:text-white"
-                    : "border-muted-foreground/30 text-muted-foreground/30 hover:border-emerald-500 hover:text-emerald-500",
+                getPhaseToggleBorder(phase.id, isCurrent, isCompleted)
               )}
             >
               <Check className="size-3.5" />

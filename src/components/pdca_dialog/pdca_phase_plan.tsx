@@ -203,9 +203,9 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      {/* ── PASO 1: PROBLEM STATEMENT ─────────────────────────────────── */}
+      {/* ── PASO 1: DEFINICIÓN DEL PROBLEMA ─────────────────────────────────── */}
       <StepCard
-        title="PASO 1: PROBLEM STATEMENT"
+        title="PASO 1: DEFINICIÓN DEL PROBLEMA"
         isStepCompleted={completed_steps.has("step-1")}
         onToggleStep={() => on_toggle_step("step-1")}
       >

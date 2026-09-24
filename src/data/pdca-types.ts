@@ -4,7 +4,7 @@
  * Soporta tanto camelCase como snake_case para máxima retrocompatibilidad.
  */
 
-export type Phase = "Plan" | "Do" | "Check" | "Act";
+export type Phase = "Plan" | "Do" | "Check" | "Act" | "Evaluacion";
 
 export type ActionItem = {
   id: string;
@@ -20,7 +20,7 @@ export type ActionItem = {
   what?: string;
   who?: string;
   when?: string;
-  status: "Pendiente" | "En progreso" | "Completada";
+  status: "Pendiente" | "En progreso" | "Retrasado" | "Completada";
   responsable?: string;
   fecha?: string;
   done?: boolean;
@@ -243,6 +243,9 @@ export type Pdca = {
   hasFlavorCorrelation?: boolean;
   flavor_correlation_data?: FlavorCorrelationChart[];
   flavorCorrelationData?: FlavorCorrelationChart[];
+  // GOP Themes
+  gop_themes_columns?: boolean[];
+  gopThemesColumns?: boolean[];
   has_gop_themes?: boolean;
   hasGopThemes?: boolean;
   gop_themes_data?: GopThemeItem[];
@@ -251,6 +254,14 @@ export type Pdca = {
   processMappingImage?: string | null;
   process_mapping_files?: string[];
   processMappingFiles?: string[];
+  // Timeline
+  problem_timeline_option?: "A" | "B";
+  problemTimelineOption?: "A" | "B";
+  problem_timeline_filter?: "day" | "week" | "month" | "3months";
+  problemTimelineFilter?: "day" | "week" | "month" | "3months";
+  problem_timeline_events?: { id: string; time: string; description: string }[];
+  problemTimelineEvents?: { id: string; time: string; description: string }[];
+
   // Resultados finales
   kpi_final_result_data?: { mes: string; target: number; actual: number | null }[];
   kpiFinalResultData?: { mes: string; target: number; actual: number | null }[];
@@ -270,6 +281,108 @@ export type Pdca = {
   statistical_analysis_files?: string[];
   itf_r2d2_evaluation?: ItfR2d2Evaluation;
   itfR2d2Evaluation?: ItfR2d2Evaluation;
+
+  // --------- NUEVOS CAMPOS AÑADIDOS ---------
+  
+  // Paso 3 Baseline
+  baselineImage?: string;
+  baseline_image?: string;
+
+  // Paso 5 Tabla de estandarización
+  tablaEstandarizacion?: TablaEstandarizacionItem[];
+  tabla_estandarizacion?: TablaEstandarizacionItem[];
+  
+  tablaEstandarizacionVpo?: TablaEstandarizacionVpoItem[];
+  tabla_estandarizacion_vpo?: TablaEstandarizacionVpoItem[];
+  
+  resultadosFinales?: ResultadosFinalesData;
+  resultados_finales?: ResultadosFinalesData;
+
+  // Paso 9 Implementación de soluciones
+  kpiTreeFocoImage?: string;
+  kpi_tree_foco_image?: string;
+  evidenciasSolucion?: EvidenciaSolucionItem[];
+  evidencias_solucion?: EvidenciaSolucionItem[];
+
+  // Mapeo de Proceso (Paso Opcional 13)
+  hasMapeoProceso?: boolean;
+  has_mapeo_proceso?: boolean;
+  mapeoProcesoImage?: string;
+  mapeo_proceso_image?: string;
+  mapeoProcesoDesc?: string;
+  mapeo_proceso_desc?: string;
+
+  // Colección de Datos (Tabla previa al Análisis Estadístico)
+  coleccionDatos?: ColeccionDatosItem[];
+  coleccion_datos?: ColeccionDatosItem[];
+
+  // Especificación de Procesos (Posterior al Análisis Estadístico)
+  especificacionProcesosText?: string;
+  especificacion_procesos_text?: string;
+  especificacionProcesosImage?: string;
+  especificacion_procesos_image?: string;
+
+  // Final Time Series (Current Times final)
+  finalTimeSeriesTitle?: string;
+  final_time_series_title?: string;
+  finalTimeSeriesData?: { mes: string; target: number; actual: number | null }[];
+  final_time_series_data?: { mes: string; target: number; actual: number | null }[];
+  finalTimeSeriesUnit?: string;
+  final_time_series_unit?: string;
+
+  // Current Times General (Para step-3 u otros)
+  currentTimesTitle?: string;
+  current_times_title?: string;
+
+  // Concepto de para Ishikawa
+  ishikawaConceptos?: Record<string, string>;
+  ishikawa_conceptos?: Record<string, string>;
+
+  // Información Adicional GOPs multiples fotos
+  informacionAdicionalFiles?: string[];
+  informacion_adicional_files?: string[];
+};
+
+export type TablaEstandarizacionItem = {
+  id: string;
+  actividad: string;
+  responsable: string;
+  frecuencia: string;
+  estandar: string;
+};
+
+export type TablaEstandarizacionVpoItem = {
+  id: string;
+  nombreEstandar: string;
+  herramientaVpo: string;
+  dueno: string;
+  equipoComunicara: string;
+  datosEntrenamiento: string;
+  gopPresentacion: string;
+  fechaFinalizacion: string;
+  status: string;
+  evidencia: string;
+};
+
+export type ResultadosFinalesData = {
+  fechaFinalizacion?: string;
+  mejoroPI?: string;
+  mejoroKPI?: string;
+  kpi?: { de: string; a: string; verdeEs: string; mejoraPct: string };
+  piRows?: { id: string; pi: string; de: string; a: string; verdeEs: string; mejoraPct: string }[];
+};
+
+export type EvidenciaSolucionItem = {
+  actionId: string;
+  image: string;
+};
+
+export type ColeccionDatosItem = {
+  id: string;
+  fecha: string;
+  variable: string;
+  valor: number | string;
+  comentario: string;
 };
 
 export type ItfR2d2Evaluation = {

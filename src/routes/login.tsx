@@ -174,7 +174,7 @@ function AuthPage() {
           <div className="mx-auto w-full max-w-sm px-8 py-12">
             <div className="mb-10 flex flex-col items-center justify-center text-center">
               <img
-                src="/logos/MAZ.jpeg"
+                src="/logos/MAZ.webp"
                 alt="Logo MAZ"
                 className="mb-6 h-36 w-auto object-contain rounded-2xl shadow-2xl transition-transform duration-700 hover:scale-105"
               />
@@ -273,7 +273,7 @@ function AuthPage() {
             <div className="mb-8 text-center">
               <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-white shadow-md">
                 <img
-                  src="/logos/MAZ.jpeg"
+                  src="/logos/MAZ.webp"
                   alt="Logo"
                   className="h-full w-full object-cover rounded-xl opacity-90"
                 />

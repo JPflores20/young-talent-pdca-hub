@@ -20,6 +20,7 @@ export const ALL_STEP_IDS = [
   "step-9", // Act: Gemba
   "step-10", // Act: KPI Final Result
   "step-11", // Act: Evidencia de acciones (GEMBA FINAL)
+  "step-13", // Act: Mapeo de proceso
 ] as const;
 
 export const TOTAL_STEPS = ALL_STEP_IDS.length;

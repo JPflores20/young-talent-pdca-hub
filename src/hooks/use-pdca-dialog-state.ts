@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type {
   Pdca,
   Phase,
@@ -96,6 +96,16 @@ export function usePdcaDialogState(data: Pdca, currentUser: any) {
   const [processMappingImages, setProcessMappingImages] = useState<string[]>(
     data.processMappingImage ? [data.processMappingImage] : [],
   );
+
+  const [problemTimelineOption, setProblemTimelineOption] = useState<"A" | "B">(
+    data.problemTimelineOption || "A",
+  );
+  const [problemTimelineFilter, setProblemTimelineFilter] = useState<
+    "day" | "week" | "month" | "3months"
+  >(data.problemTimelineFilter || "day");
+  const [problemTimelineEvents, setProblemTimelineEvents] = useState<
+    { id: string; time: string; description: string }[]
+  >(data.problemTimelineEvents || []);
 
   const [fiveWhysTables, setFiveWhysTables] = useState<FiveWhysTableData[]>(() => {
     if (data.fiveWhysTables && data.fiveWhysTables.length > 0) return data.fiveWhysTables;
@@ -226,6 +236,12 @@ export function usePdcaDialogState(data: Pdca, currentUser: any) {
     setGopThemesColumns,
     processMappingImages,
     setProcessMappingImages,
+    problemTimelineOption,
+    setProblemTimelineOption,
+    problemTimelineFilter,
+    setProblemTimelineFilter,
+    problemTimelineEvents,
+    setProblemTimelineEvents,
     fiveWhysTables,
     setFiveWhysTables,
     fiveWhysImages,

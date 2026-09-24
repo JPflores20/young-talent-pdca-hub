@@ -24,7 +24,7 @@ const PDCA_STEPS = [
   "Paso 7: 5 Por Qués",
   "Paso 8.1: Matriz de impacto",
   "Paso 8.2: Plan de acción",
-  "Paso 9: Gemba (Evidencias)",
+  "Paso 9: Implementación de soluciones",
   "Paso 10: KPI Final",
   "Paso 11: Gemba Final",
 ];

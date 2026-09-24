@@ -226,7 +226,7 @@ export function IshikawaSection({
   return (
     <StepCard
       className="space-y-6"
-      title="PASO 6: FISHBONE"
+      title="PASO 6: DIAGRAMA DE ISHIKAWA"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
     >
@@ -363,22 +363,22 @@ export function IshikawaInteractive({
   setTitle?: ((t: string) => void) | undefined;
 }) {
   const categories = [
-    { id: "machine", label: customLabels["machine"] ?? "Máquina", position: "top" as const },
-    { id: "method", label: customLabels["method"] ?? "Método", position: "top" as const },
-    { id: "material", label: customLabels["material"] ?? "Material", position: "top" as const },
+    { id: "machine", label: customLabels["machine"] ?? "Concepto de: Máquina", position: "top" as const },
+    { id: "method", label: customLabels["method"] ?? "Concepto de: Método", position: "top" as const },
+    { id: "material", label: customLabels["material"] ?? "Concepto de: Material", position: "top" as const },
     {
       id: "manpower",
-      label: customLabels["manpower"] ?? "Mano de Obra",
+      label: customLabels["manpower"] ?? "Concepto de: Mano de Obra",
       position: "bottom" as const,
     },
     {
       id: "measurement",
-      label: customLabels["measurement"] ?? "Medición",
+      label: customLabels["measurement"] ?? "Concepto de: Medición",
       position: "bottom" as const,
     },
     {
       id: "environment",
-      label: customLabels["environment"] ?? "Medio Amb.",
+      label: customLabels["environment"] ?? "Concepto de: Medio Amb.",
       position: "bottom" as const,
     },
   ];

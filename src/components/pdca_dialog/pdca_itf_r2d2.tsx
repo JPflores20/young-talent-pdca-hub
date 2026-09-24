@@ -1,7 +1,13 @@
 import React from "react";
 import { ItfR2d2Evaluation } from "@/data/pdca-types";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 interface PdcaItfR2d2Props {
@@ -19,21 +25,28 @@ const EVALUATION_OPTIONS = [
   { value: "4", label: "4 (Benchmark)" },
 ];
 
-export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, disabled, currentUser }) => {
+export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
+  evaluation,
+  onChange,
+  disabled,
+  currentUser,
+}) => {
   const updateField = (
     key: keyof ItfR2d2Evaluation,
     field: "check" | "score" | "comment",
-    value: any
+    value: any,
   ) => {
     let newEvaluators = Array.isArray(evaluation.evaluators) ? [...evaluation.evaluators] : [];
-    
+
     // Convert old string array to object array just in case
-    newEvaluators = newEvaluators.map(e => typeof e === 'string' ? { name: e, timestamp: new Date().toISOString() } : e);
+    newEvaluators = newEvaluators.map((e) =>
+      typeof e === "string" ? { name: e, timestamp: new Date().toISOString() } : e,
+    );
 
     const evaluatorName = currentUser?.name || currentUser?.email || "";
-    
+
     if (evaluatorName) {
-      const existingIndex = newEvaluators.findIndex(e => e.name === evaluatorName);
+      const existingIndex = newEvaluators.findIndex((e) => e.name === evaluatorName);
       if (existingIndex >= 0) {
         // Update timestamp for existing evaluator
         newEvaluators[existingIndex] = { name: evaluatorName, timestamp: new Date().toISOString() };
@@ -58,7 +71,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, 
     letter: string,
     titleEn: string,
     titleEs: string,
-    description: string[]
+    description: string[],
   ) => {
     const data = evaluation[key] || { check: false, score: 0, comment: "" };
 
@@ -69,7 +82,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, 
         </div>
         <div className="w-48 bg-card rounded-md shadow-sm border border-border p-3">
           <p className="font-bold text-sm text-foreground">{titleEn}</p>
-          <p className="text-xs text-muted-foreground">{titleEs}</p>
+          {titleEs && <p className="text-xs text-muted-foreground">{titleEs}</p>}
         </div>
         <div className="flex-1 bg-cyan-700 text-white rounded-md shadow-sm p-3 text-xs leading-relaxed">
           <ul className="list-disc pl-4 space-y-1">
@@ -92,7 +105,9 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, 
             </div>
           </div>
           <div>
-            <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">Puntuación</Label>
+            <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">
+              Puntuación
+            </Label>
             <Select
               disabled={disabled}
               value={data.score.toString()}
@@ -111,7 +126,9 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, 
             </Select>
           </div>
           <div>
-            <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">¿Cómo lo estamos haciendo?</Label>
+            <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">
+              ¿Cómo lo estamos haciendo?
+            </Label>
             <Textarea
               disabled={disabled}
               value={data.comment}
@@ -126,10 +143,10 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, 
   };
 
   const totalScore = Object.entries(evaluation).reduce((acc, [key, curr]) => {
-    if (key === 'evaluators' || !curr || typeof curr !== 'object') return acc;
+    if (key === "evaluators" || !curr || typeof curr !== "object") return acc;
     return acc + ((curr as any).score || 0) * 5;
   }, 0);
-  
+
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden mt-6">
       <div className="bg-blue-900 text-white p-3 flex justify-between items-center">
@@ -139,65 +156,41 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, 
         </div>
       </div>
       <div className="p-4 bg-muted/20">
-        {renderRow(
-          "rightPeople",
-          "R",
-          "Right People",
-          "Gente Correcta",
-          [
-            "Evite demasiados chefs y no suficientes cocineros",
-            "Los ojos externos pueden ser muy perspicaces.",
-            "¡El Front Line es tu amigo!",
-            "El rol de consultor es una opción"
-          ]
-        )}
-        {renderRow(
-          "rightProblem",
-          "R",
-          "Right Problem",
-          "Problema Correcto",
-          [
-            "Alinee con un objetivo y un cronograma realistas, pero adecuadamente extendidos para lograrlo",
-            "Acuerde cómo medirá el éxito; puede que no sea a través del KPI principal al principio",
-            "Los buenos equipos de ITF y PDCA no dudan en volver a escribir la definición de su problema"
-          ]
-        )}
-        {renderRow(
-          "dataWillSetYouFree",
-          "D",
-          "Data will set you free",
-          "Datos te liberaran",
-          [
-            "¿Tienes datos? Córtalo y córtalo / ¿No tienes datos? Ve a buscarlo",
-            "Manténgalo simple ... los paretos para reducir el enfoque del equipo rápidamente",
-            "Comience a usar Plan de acción del PDCA inmediatamente"
-          ]
-        )}
+        {renderRow("rightPeople", "R", "Gente Correcta", "", [
+          "Evite demasiados chefs y no suficientes cocineros",
+          "Los ojos externos pueden ser muy perspicaces",
+          "¡La primera línea es tu amiga!",
+          "El rol de consultor es una opción",
+        ])}
+        {renderRow("rightProblem", "R", "Problema Correcto", "", [
+          "Alinee con un objetivo y un cronograma realistas, pero adecuadamente extendidos para lograrlo",
+          "Acuerde cómo medirá el éxito; puede que no sea a través del KPI principal al principio",
+          "Los buenos equipos de ITF y PDCA no dudan en volver a escribir la definición de su problema",
+        ])}
+        {renderRow("dataWillSetYouFree", "D", "Los datos te liberarán", "", [
+          "¿Tienes datos? Córtalos y córtalos / ¿No tienes datos? Ve a buscarlos",
+          "Manténgalo simple... los paretos para reducir el enfoque del equipo rápidamente",
+          "Comience a usar el Plan de acción del PDCA inmediatamente",
+        ])}
         {renderRow(
           "dontReinventTheWheel",
           "D",
-          "Dont re-invent the wheel",
-          "No re-inventar la rueda",
+          "No reinventes la rueda",
+          "",
           [
             "Buenas prácticas operativas (GOP)",
             "Recomendaciones de proveedores",
-            "Amigos de ABI en todo el mundo",
-            "Lista de Verificación SDCA"
-          ]
+            "Amigos en todo el mundo",
+            "Lista de Verificación SDCA",
+          ],
         )}
-        {renderRow(
-          "noHippos",
-          "+1",
-          "No hippos",
-          "No te quedes atascado en el barro",
-          [
-            "Lista de verificación SDCA debe ser rapida.",
-            "Multiples PDCAs como ramificaciones",
-            "Zona involucrada",
-            "Nuevos miembros al equipo",
-            "Re-definir objetivos. Obtener mas datos"
-          ]
-        )}
+        {renderRow("noHippos", "+1", "Sin hipopótamos", "No te quedes atascado en el barro", [
+          "La lista de verificación SDCA debe ser rápida",
+          "Múltiples PDCAs como ramificaciones",
+          "Zona involucrada",
+          "Nuevos miembros al equipo",
+          "Redefinir objetivos. Obtener más datos",
+        ])}
       </div>
       <div className="bg-muted/50 border-t border-border p-3 text-xs text-muted-foreground flex items-center gap-2">
         <span className="font-semibold">Evaluado por:</span>
@@ -206,14 +199,25 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({ evaluation, onChange, 
             ? evaluation.evaluators.map((e, idx) => {
                 const isObj = typeof e === "object" && e !== null;
                 const name = isObj ? e.name : e;
-                const dateStr = isObj && e.timestamp ? new Date(e.timestamp).toLocaleString("es-MX", {
-                  day: '2-digit', month: '2-digit', year: 'numeric',
-                  hour: '2-digit', minute: '2-digit'
-                }) : "";
-                
+                const dateStr =
+                  isObj && e.timestamp
+                    ? new Date(e.timestamp).toLocaleString("es-MX", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "";
+
                 return (
                   <span key={idx} className="inline-flex items-center gap-1">
-                    {name} {dateStr && <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">({dateStr})</span>}
+                    {name}{" "}
+                    {dateStr && (
+                      <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                        ({dateStr})
+                      </span>
+                    )}
                   </span>
                 );
               })

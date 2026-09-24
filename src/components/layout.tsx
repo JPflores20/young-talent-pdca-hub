@@ -11,6 +11,9 @@ import {
   CheckCircle2,
   ArrowRight,
   Calendar,
+  Clock,
+  ShieldAlert,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
@@ -21,6 +24,7 @@ import { format, isValid } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { updatePdcaDeadline } from "@/services/pdca-service";
+import { cn } from "@/lib/utils";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const router = useRouterState();
@@ -28,6 +32,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { currentUser, logout, loading } = useAuth();
   const currentPath = router.location.pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const { allPdcas } = usePdcas();
   const [deadlinePickerOpenId, setDeadlinePickerOpenId] = useState<string | null>(null);
 
@@ -97,82 +102,117 @@ export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       {/* Sidebar (Desktop) */}
-      <aside className="hidden w-[280px] flex-col bg-gradient-to-b from-[#0a1428] via-[#0f1c38] to-[#080e1e] text-white border-r border-slate-800/80 md:flex shadow-xl z-10 transition-all">
-        <div className="flex flex-col items-center justify-center pt-6 pb-3 px-6 text-center shrink-0">
-          <div className="size-16 rounded-2xl bg-white/10 p-1.5 flex items-center justify-center border border-white/15 shadow-md mb-2.5 hover:scale-105 transition-transform">
+      <aside
+        className={cn(
+          "hidden flex-col bg-gradient-to-b from-[#0a1428] via-[#0f1c38] to-[#080e1e] text-white border-r border-slate-800/80 shadow-xl z-10 transition-all duration-300 md:flex",
+          desktopSidebarOpen ? "w-[280px]" : "w-[72px]",
+        )}
+      >
+        <div className="flex flex-col items-center justify-center pt-6 pb-3 px-3 text-center shrink-0">
+          <div className="size-12 rounded-2xl bg-white/10 p-1 flex items-center justify-center border border-white/15 shadow-md mb-2 hover:scale-105 transition-transform">
             <img
-              src="/logos/MAZ.jpeg"
+              src="/logos/MAZ.webp"
               alt="Logo MAZ"
-              className="h-13 w-13 object-cover rounded-xl"
+              className="h-10 w-10 object-cover rounded-xl"
             />
           </div>
-          <span className="font-display text-2xl font-extrabold tracking-wider text-white uppercase leading-none">
-            PDCA Hub
-          </span>
-          <span className="text-[11px] text-blue-300 font-bold tracking-[0.25em] uppercase mt-1">
-            Zacatecas
-          </span>
+          {desktopSidebarOpen && (
+            <>
+              <span className="font-display text-2xl font-extrabold tracking-wider text-white uppercase leading-none mt-1">
+                PDCA Hub
+              </span>
+              <span className="text-[11px] text-blue-300 font-bold tracking-[0.25em] uppercase mt-1">
+                Zacatecas
+              </span>
+            </>
+          )}
         </div>
-
         <div className="px-5 py-2">
           <div className="h-px w-full bg-white/10"></div>
         </div>
 
-        <nav className="flex-1 space-y-1 p-4 pt-2">
-          <div className="text-xs font-bold text-blue-200/60 mb-3 uppercase tracking-wider px-3">
-            Menú Principal
-          </div>
+        <nav className="flex-1 space-y-1 p-4 pt-2 overflow-x-hidden">
+          {desktopSidebarOpen && (
+            <div className="text-xs font-bold text-blue-200/60 mb-3 uppercase tracking-wider px-3 whitespace-nowrap">
+              Menú Principal
+            </div>
+          )}
           {navItems.map((item) => {
             const isActive = currentPath === item.href;
             return (
               <Link
                 key={item.href}
                 to={item.href}
-                className={`group flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-150 ${
+                className={cn(
+                  "group flex items-center rounded-xl text-sm font-semibold transition-all duration-150 whitespace-nowrap overflow-hidden",
+                  desktopSidebarOpen ? "gap-3.5 px-4 py-3" : "justify-center p-3",
                   isActive
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-600/35"
-                    : "text-blue-100/75 hover:bg-white/10 hover:text-white"
-                }`}
+                    : "text-blue-100/75 hover:bg-white/10 hover:text-white",
+                )}
+                title={!desktopSidebarOpen ? item.label : undefined}
               >
                 <item.icon
                   className={`size-5 shrink-0 transition-colors ${isActive ? "text-white" : "text-blue-200/70 group-hover:text-white"}`}
                 />
-                <span className="truncate">{item.label}</span>
-                {isActive && <div className="ml-auto size-1.5 rounded-full bg-white/60 shrink-0" />}
+                <span
+                  className={cn(
+                    "truncate transition-all duration-300",
+                    desktopSidebarOpen ? "w-auto opacity-100 ml-0" : "w-0 opacity-0 hidden",
+                  )}
+                >
+                  {item.label}
+                </span>
+                {isActive && desktopSidebarOpen && (
+                  <div className="ml-auto size-1.5 rounded-full bg-white/60 shrink-0" />
+                )}
               </Link>
             );
           })}
         </nav>
 
         {/* User Profile Footer */}
-        <div className="border-t border-white/10 p-4 space-y-3 bg-black/20">
-          <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl bg-white/5 border border-white/8">
+        <div className="border-t border-white/10 p-4 space-y-3 bg-black/20 overflow-x-hidden">
+          <div
+            className={cn(
+              "flex items-center gap-3 rounded-xl bg-white/5 border border-white/8 transition-all",
+              desktopSidebarOpen ? "px-2 py-2.5" : "p-0 justify-center border-transparent",
+            )}
+          >
             <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white text-sm shadow-md ring-2 ring-blue-500/30">
               {userInitials}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white leading-none">
-                {currentUser.name}
-              </p>
-              <p className="truncate text-xs text-blue-300/80 mt-0.5">{currentUser.area}</p>
-            </div>
-            <span
-              className={`shrink-0 inline-flex items-center text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
-                currentUser.role === "admin"
-                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
-                  : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-              }`}
-            >
-              {currentUser.role === "admin" ? "Admin" : "User"}
-            </span>
+            {desktopSidebarOpen && (
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-white leading-none">
+                    {currentUser.name}
+                  </p>
+                  <p className="truncate text-xs text-blue-300/80 mt-0.5">{currentUser.area}</p>
+                </div>
+                <span
+                  className={`shrink-0 inline-flex items-center text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
+                    currentUser.role === "admin"
+                      ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
+                      : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                  }`}
+                >
+                  {currentUser.role === "admin" ? "Admin" : "User"}
+                </span>
+              </>
+            )}
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-start text-blue-200/70 hover:bg-red-500/15 hover:text-red-300 h-9 text-sm font-medium rounded-xl gap-3"
+            title={!desktopSidebarOpen ? "Cerrar Sesión" : undefined}
+            className={cn(
+              "w-full text-blue-200/70 hover:bg-red-500/15 hover:text-red-300 h-9 text-sm font-medium rounded-xl gap-3 transition-all",
+              desktopSidebarOpen ? "justify-start" : "justify-center px-0",
+            )}
             onClick={handleLogout}
           >
             <LogOut className="size-4 shrink-0" />
-            Cerrar Sesión
+            {desktopSidebarOpen && <span>Cerrar Sesión</span>}
           </Button>
         </div>
       </aside>
@@ -190,14 +230,48 @@ export function AppLayout({ children }: { children: ReactNode }) {
             >
               <Menu className="size-5" />
             </Button>
-            <img
-              src="/logos/MAZ.jpeg"
-              alt="Logo MAZ"
-              className="h-7 w-auto object-contain rounded md:hidden"
-            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
+              className="text-white hover:bg-white/10 hidden md:flex"
+            >
+              <Menu className="size-5" />
+            </Button>
+
+            <div
+              className={cn(
+                "flex items-center gap-3",
+                desktopSidebarOpen ? "md:hidden" : "hidden md:flex lg:flex",
+              )}
+            >
+              <img
+                src="/logos/MAZ.webp"
+                alt="Logo MAZ"
+                className={cn(
+                  "h-7 w-auto object-contain rounded",
+                  desktopSidebarOpen ? "md:hidden" : "",
+                )}
+              />
+              {!desktopSidebarOpen && (
+                <span className="font-display font-bold uppercase tracking-wider hidden md:block">
+                  PDCA Hub
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="hidden md:flex gap-2 h-9 border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+            >
+              <Printer className="size-4" />
+              <span>Imprimir / PDF</span>
+            </Button>
+            
             <ThemeToggle className="text-blue-200/80 hover:bg-white/10 hover:text-white" />
 
             {/* Notification Bell */}
@@ -338,7 +412,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
                 <div className="flex items-center gap-3">
                   <img
-                    src="/logos/MAZ.jpeg"
+                    src="/logos/MAZ.webp"
                     alt="Logo MAZ"
                     className="h-8 w-auto object-contain rounded"
                   />

@@ -9,6 +9,7 @@ interface FooterProps {
   is_user_permitted_to_edit: boolean;
   on_proceed_next_phase: () => Promise<void>;
   on_close_dialog: () => void;
+  isAdmin?: boolean;
 }
 
 export const PdcaDialogFooter: React.FC<FooterProps> = ({
@@ -17,7 +18,10 @@ export const PdcaDialogFooter: React.FC<FooterProps> = ({
   is_user_permitted_to_edit,
   on_proceed_next_phase,
   on_close_dialog,
+  isAdmin,
 }) => {
+  const isFinalPhase = (current_phase === "Act" && !isAdmin) || current_phase === "Evaluacion";
+  
   return (
     <div
       className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5 mt-6"
@@ -37,7 +41,7 @@ export const PdcaDialogFooter: React.FC<FooterProps> = ({
           disabled={!is_user_permitted_to_edit}
           onClick={on_proceed_next_phase}
         >
-          {current_phase === "Act" ? "Finalizar PDCA" : "Siguiente Paso"}
+          {isFinalPhase ? "Finalizar PDCA" : "Siguiente Paso"}
           <ArrowRight className="size-4" />
         </Button>
       </div>

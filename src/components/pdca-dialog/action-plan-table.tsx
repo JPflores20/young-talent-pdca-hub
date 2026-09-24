@@ -26,12 +26,13 @@ import { DatePicker } from "@/components/ui/date-picker";
 import type { ActionItem } from "@/data/pdca";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const STATUS_OPTIONS = ["Pendiente", "En progreso", "Completada"] as const;
+const STATUS_OPTIONS = ["Pendiente", "En progreso", "Retrasado", "Completada"] as const;
 const SDCA_OPTIONS = ["", "SDCA", "SOP", "OPL", "Lección de 1 Punto", "Otra"] as const;
 
 const STATUS_COLOR: Record<string, string> = {
   Pendiente: "bg-[#fef7e0] text-[#b06000] border-[#b06000]/30",
   "En progreso": "bg-[#e8f0fe] text-[#1a73e8] border-[#1a73e8]/30",
+  Retrasado: "bg-[#fce8e6] text-[#c5221f] border-[#c5221f]/30",
   Completada: "bg-[#e6f4ea] text-[#137333] border-[#137333]/30",
 };
 
@@ -210,8 +211,6 @@ export function ActionPlanTable({
               </TableHead>
 
               {[
-                { label: "CAUSA RAÍZ", w: "min-w-[150px]" },
-                { label: "ACCIÓN", w: "min-w-[200px]" },
                 { label: "COMENTARIOS", w: "min-w-[180px]" },
                 { label: "RESPONSABLE", w: "min-w-[140px]" },
                 { label: "FECHA", w: "min-w-[110px]" },
@@ -410,28 +409,6 @@ export function ActionPlanTable({
                       </SelectContent>
                     </Select>
                   </div>
-                </TableCell>
-
-                {/* CAUSA RAIZ */}
-                <TableCell className="p-1 border-r min-w-[150px]">
-                  <TextareaAutosize
-                    minRows={1}
-                    value={row.causaRaiz2 || ""}
-                    onChange={(e) => updateRow(row.id, "causaRaiz2", e.target.value)}
-                    placeholder="Causa raíz..."
-                    className="w-full text-xs p-2 bg-transparent border-0 resize-none outline-none focus:ring-1 focus:ring-primary rounded"
-                  />
-                </TableCell>
-
-                {/* ACCION */}
-                <TableCell className="p-1 border-r min-w-[200px]">
-                  <TextareaAutosize
-                    minRows={1}
-                    value={row.accion2 || ""}
-                    onChange={(e) => updateRow(row.id, "accion2", e.target.value)}
-                    placeholder="Acción..."
-                    className="w-full text-xs p-2 bg-transparent border-0 resize-none outline-none focus:ring-1 focus:ring-primary rounded"
-                  />
                 </TableCell>
 
                 {/* COMENTARIOS */}

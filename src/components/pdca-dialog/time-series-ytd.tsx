@@ -128,9 +128,10 @@ export function TimeSeriesYTD({
   onUnitChange,
   isStepCompleted,
   onToggleStep,
-  title = "PASO 3: CURRENT TIME SERIES",
-  chartTitle = "CURRENT TIME SERIES",
+  title = "PASO 3: SITUACIÓN ACTUAL",
+  chartTitle = "SITUACIÓN ACTUAL",
   onTitleChange,
+  customBadge,
 }: {
   value?: { mes: string; target: number; actual: number | null }[];
   onChange?: (newSeries: { mes: string; target: number; actual: number | null }[]) => void;
@@ -141,6 +142,7 @@ export function TimeSeriesYTD({
   title?: string | undefined;
   chartTitle?: string | undefined;
   onTitleChange?: ((newTitle: string) => void) | undefined;
+  customBadge?: React.ReactNode;
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
 
@@ -285,6 +287,7 @@ export function TimeSeriesYTD({
       title={title}
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      headerRight={customBadge}
     >
       <StepInstructions>
         <p className="mb-1">1. Rellena el campo gris con su problema.</p>

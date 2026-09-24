@@ -5,7 +5,7 @@
  */
 import type { Phase, ParticipantesData, VpoCheckpointItem, ParetoItem } from "./pdca-types";
 
-export const PHASES: Phase[] = ["Plan", "Do", "Check", "Act"];
+export const PHASES: Phase[] = ["Plan", "Do", "Check", "Act", "Evaluacion"];
 
 /** @deprecated Usar PHASES. Mantenido por compatibilidad durante la migración. */
 export const phases = PHASES;
@@ -15,6 +15,7 @@ export const PHASE_STYLES: Record<Phase, string> = {
   Do: "bg-phase-do/25 text-brand-yellow-foreground border-phase-do/50",
   Check: "bg-phase-check/15 text-phase-check border-phase-check/35",
   Act: "bg-phase-act/15 text-phase-act border-phase-act/35",
+  Evaluacion: "bg-primary/15 text-primary border-primary/35",
 };
 
 /** @deprecated Usar PHASE_STYLES. Mantenido por compatibilidad durante la migración. */

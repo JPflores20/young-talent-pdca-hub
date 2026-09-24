@@ -75,7 +75,7 @@ export const use_pdca_dialog_state = (
     initial_pdca.targetVsActualUnit || "",
   );
   const [target_vs_actual_title, set_target_vs_actual_title] = useState<string>(
-    initial_pdca.targetVsActualTitle || "CURRENT TIME SERIES",
+    initial_pdca.targetVsActualTitle || "SITUACIÓN ACTUAL",
   );
 
   const [kpi_final_result_data, set_kpi_final_result_data] = useState<
@@ -112,14 +112,98 @@ export const use_pdca_dialog_state = (
       (initial_pdca.processMappingImage ? [initial_pdca.processMappingImage] : []),
   );
 
+  // --- NUEVOS ESTADOS ---
+  const [baseline_image, set_baseline_image] = useState<string | undefined>(
+    initial_pdca.baselineImage || initial_pdca.baseline_image,
+  );
+  
+  const [tabla_estandarizacion, set_tabla_estandarizacion] = useState<any[]>(
+    initial_pdca.tablaEstandarizacion || initial_pdca.tabla_estandarizacion || [],
+  );
+
+  const [tabla_estandarizacion_vpo, set_tabla_estandarizacion_vpo] = useState<any[]>(
+    initial_pdca.tablaEstandarizacionVpo || initial_pdca.tabla_estandarizacion_vpo || [],
+  );
+
+  const [resultados_finales, set_resultados_finales] = useState<any>(
+    initial_pdca.resultadosFinales || initial_pdca.resultados_finales || {},
+  );
+
+  const [kpi_tree_foco_image, set_kpi_tree_foco_image] = useState<string | undefined>(
+    initial_pdca.kpiTreeFocoImage || initial_pdca.kpi_tree_foco_image,
+  );
+  
+  const [evidencias_solucion, set_evidencias_solucion] = useState<any[]>(
+    initial_pdca.evidenciasSolucion || initial_pdca.evidencias_solucion || [],
+  );
+
+  const [has_mapeo_proceso, set_has_mapeo_proceso] = useState<boolean>(
+    initial_pdca.hasMapeoProceso ?? initial_pdca.has_mapeo_proceso ?? false,
+  );
+  
+  const [mapeo_proceso_image, set_mapeo_proceso_image] = useState<string | undefined>(
+    initial_pdca.mapeoProcesoImage || initial_pdca.mapeo_proceso_image,
+  );
+
+  const [mapeo_proceso_desc, set_mapeo_proceso_desc] = useState<string | undefined>(
+    initial_pdca.mapeoProcesoDesc || initial_pdca.mapeo_proceso_desc,
+  );
+
+  const [coleccion_datos, set_coleccion_datos] = useState<any[]>(
+    initial_pdca.coleccionDatos || initial_pdca.coleccion_datos || [],
+  );
+
+  const [especificacion_procesos_text, set_especificacion_procesos_text] = useState<string | undefined>(
+    initial_pdca.especificacionProcesosText || initial_pdca.especificacion_procesos_text,
+  );
+  
+  const [especificacion_procesos_image, set_especificacion_procesos_image] = useState<string | undefined>(
+    initial_pdca.especificacionProcesosImage || initial_pdca.especificacion_procesos_image,
+  );
+
+  const [final_time_series_title, set_final_time_series_title] = useState<string>(
+    initial_pdca.finalTimeSeriesTitle || initial_pdca.final_time_series_title || "RESULTADO FINAL",
+  );
+  
+  const [final_time_series_data, set_final_time_series_data] = useState<any[]>(
+    initial_pdca.finalTimeSeriesData || initial_pdca.final_time_series_data || DEFAULT_TARGET_VS_ACTUAL,
+  );
+  
+  const [final_time_series_unit, set_final_time_series_unit] = useState<string>(
+    initial_pdca.finalTimeSeriesUnit || initial_pdca.final_time_series_unit || "",
+  );
+
+  const [current_times_title, set_current_times_title] = useState<string>(
+    initial_pdca.currentTimesTitle || initial_pdca.current_times_title || "SITUACIÓN ACTUAL",
+  );
+
+  const [ishikawa_conceptos, set_ishikawa_conceptos] = useState<Record<string, string>>(
+    initial_pdca.ishikawaConceptos || initial_pdca.ishikawa_conceptos || {},
+  );
+
+  const [informacion_adicional_files, set_informacion_adicional_files] = useState<string[]>(
+    initial_pdca.informacionAdicionalFiles || initial_pdca.informacion_adicional_files || [],
+  );
+
+  const [problem_timeline_option, set_problem_timeline_option] = useState<"A" | "B">(
+    initial_pdca.problemTimelineOption || "A",
+  );
+  const [problem_timeline_filter, set_problem_timeline_filter] = useState<
+    "day" | "week" | "month" | "3months"
+  >(initial_pdca.problemTimelineFilter || "day");
+  const [problem_timeline_events, set_problem_timeline_events] = useState<
+    { id: string; time: string; description: string }[]
+  >(initial_pdca.problemTimelineEvents || []);
+
   const [itf_r2d2_evaluation, set_itf_r2d2_evaluation] = useState<any>(
-    initial_pdca.itfR2d2Evaluation || initial_pdca.itf_r2d2_evaluation || {
-      rightPeople: { check: false, score: 0, comment: "" },
-      rightProblem: { check: false, score: 0, comment: "" },
-      dataWillSetYouFree: { check: false, score: 0, comment: "" },
-      dontReinventTheWheel: { check: false, score: 0, comment: "" },
-      noHippos: { check: false, score: 0, comment: "" },
-    }
+    initial_pdca.itfR2d2Evaluation ||
+      initial_pdca.itf_r2d2_evaluation || {
+        rightPeople: { check: false, score: 0, comment: "" },
+        rightProblem: { check: false, score: 0, comment: "" },
+        dataWillSetYouFree: { check: false, score: 0, comment: "" },
+        dontReinventTheWheel: { check: false, score: 0, comment: "" },
+        noHippos: { check: false, score: 0, comment: "" },
+      },
   );
 
   const [five_whys_tables, set_five_whys_tables] = useState<FiveWhysTableData[]>(() => {
@@ -261,6 +345,12 @@ export const use_pdca_dialog_state = (
     set_gop_themes_data,
     process_mapping_files,
     set_process_mapping_files,
+    problem_timeline_option,
+    set_problem_timeline_option,
+    problem_timeline_filter,
+    set_problem_timeline_filter,
+    problem_timeline_events,
+    set_problem_timeline_events,
     five_whys_tables,
     set_five_whys_tables,
     impact_matrix,
@@ -284,5 +374,42 @@ export const use_pdca_dialog_state = (
     set_statistical_analysis_files,
     itf_r2d2_evaluation,
     set_itf_r2d2_evaluation,
+    // --- NUEVOS CAMPOS ---
+    baseline_image,
+    set_baseline_image,
+    tabla_estandarizacion,
+    set_tabla_estandarizacion,
+    tabla_estandarizacion_vpo,
+    set_tabla_estandarizacion_vpo,
+    resultados_finales,
+    set_resultados_finales,
+    kpi_tree_foco_image,
+    set_kpi_tree_foco_image,
+    evidencias_solucion,
+    set_evidencias_solucion,
+    has_mapeo_proceso,
+    set_has_mapeo_proceso,
+    mapeo_proceso_image,
+    set_mapeo_proceso_image,
+    mapeo_proceso_desc,
+    set_mapeo_proceso_desc,
+    coleccion_datos,
+    set_coleccion_datos,
+    especificacion_procesos_text,
+    set_especificacion_procesos_text,
+    especificacion_procesos_image,
+    set_especificacion_procesos_image,
+    final_time_series_title,
+    set_final_time_series_title,
+    final_time_series_data,
+    set_final_time_series_data,
+    final_time_series_unit,
+    set_final_time_series_unit,
+    current_times_title,
+    set_current_times_title,
+    ishikawa_conceptos,
+    set_ishikawa_conceptos,
+    informacion_adicional_files,
+    set_informacion_adicional_files,
   };
 };

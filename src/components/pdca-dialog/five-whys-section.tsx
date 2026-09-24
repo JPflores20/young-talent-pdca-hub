@@ -225,7 +225,7 @@ export function FiveWhysSection({
   return (
     <StepCard
       className="overflow-hidden"
-      title="PASO 7: 5 WHYS"
+      title="PASO 7: 5 POR QUÉS"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
     >
@@ -447,9 +447,6 @@ export function FiveWhysInteractive({
             <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[150px] border-r border-white/20">
               ACCION(ES)
             </th>
-            <th className="font-bold uppercase text-center p-2 text-[10px] min-w-[80px] border-r border-white/20">
-              EVIDENCIA
-            </th>
             <th className="w-8"></th>
           </tr>
         </thead>
@@ -539,85 +536,7 @@ export function FiveWhysInteractive({
                     className="w-full min-h-[80px] rounded-none border-none shadow-none bg-transparent font-medium focus-visible:ring-1 focus-visible:ring-black/20 text-xs text-center resize-none p-2 dark:text-foreground overflow-hidden"
                   />
                 </td>
-                <td
-                  rowSpan={2}
-                  className="bg-background align-middle text-center border-r border-white/20 p-1"
-                >
-                  <div className="flex flex-col items-center justify-center min-h-[40px]">
-                    {row.evidencia ? (
-                      <div className="relative group flex justify-center">
-                        {row.evidencia.includes("application/pdf") ? (
-                          <a
-                            href={row.evidencia}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center justify-center size-10 rounded bg-red-100 text-red-600 hover:bg-red-200"
-                            title="Ver PDF"
-                          >
-                            <span className="text-[10px] font-bold">PDF</span>
-                          </a>
-                        ) : (
-                          <a
-                            href={row.evidencia}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="Ver Imagen"
-                          >
-                            <img
-                              src={row.evidencia}
-                              alt="Evidencia"
-                              className="size-10 object-cover rounded shadow-sm border border-border"
-                            />
-                          </a>
-                        )}
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute -top-2 -right-2 size-5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-0"
-                          onClick={() => updateRow(row.id, "evidencia", "")}
-                        >
-                          <X className="size-3" />
-                        </Button>
-                      </div>
-                    ) : uploadingRows.has(row.id) ? (
-                      <div className="flex flex-col items-center">
-                        <RefreshCw className="size-4 animate-spin text-muted-foreground" />
-                      </div>
-                    ) : (
-                      <label className="cursor-pointer text-muted-foreground hover:text-blue-600 flex flex-col items-center">
-                        <Paperclip className="size-4" />
-                        <span className="text-[9px] mt-1 text-center leading-tight">
-                          Añadir
-                          <br />
-                          Evidencia
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*,application/pdf"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              try {
-                                setUploadingRows((prev) => new Set(prev).add(row.id));
-                                const url = await uploadToFirebase(file);
-                                updateRow(row.id, "evidencia", url);
-                              } catch (error) {
-                                console.error("Error subiendo evidencia:", error);
-                              } finally {
-                                setUploadingRows((prev) => {
-                                  const next = new Set(prev);
-                                  next.delete(row.id);
-                                  return next;
-                                });
-                              }
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
-                </td>
+
                 <td rowSpan={2} className="bg-background align-middle">
                   {(value?.length || 0) > 1 && (
                     <AlertDialog>
@@ -679,6 +598,90 @@ export function FiveWhysInteractive({
           ))}
         </tbody>
       </table>
+      
+      <div className="mt-6 p-4">
+        <h4 className="text-sm font-bold text-slate-700 uppercase mb-4">Evidencias por Acción</h4>
+        {(!value || value.filter(r => r.accion && r.accion.trim() !== "").length === 0) ? (
+          <p className="text-xs text-muted-foreground italic">No hay acciones definidas en esta tabla.</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {value.filter(r => r.accion && r.accion.trim() !== "").map((row, i) => {
+              const existing = row.evidencia;
+              const isUploading = uploadingRows.has(row.id);
+              const isYes = row.isRootCause === "Sí";
+              const isNo = row.isRootCause === "No";
+              const cardClass = cn(
+                "flex flex-col border rounded-xl p-3",
+                isYes ? "bg-red-50 border-red-200" : isNo ? "bg-green-50 border-green-200" : "bg-white border-border"
+              );
+              const dropzoneClass = cn(
+                "relative mt-auto h-32 border-2 border-dashed rounded-lg flex items-center justify-center overflow-hidden group",
+                isYes ? "bg-red-100/50 border-red-300" : isNo ? "bg-green-100/50 border-green-300" : "bg-slate-50 border-slate-200"
+              );
+
+              return (
+                <div key={row.id} className={cardClass}>
+                  <p className="text-xs font-semibold text-slate-700 mb-2 line-clamp-2" title={row.accion}>
+                    {i + 1}. {row.accion}
+                  </p>
+                  <div className={dropzoneClass}>
+                    {existing ? (
+                      <>
+                        {existing.includes("application/pdf") ? (
+                          <a href={existing} target="_blank" rel="noreferrer" className="flex items-center justify-center w-full h-full text-red-500 font-bold hover:bg-red-50">
+                            <FileText className="size-8 mr-2" /> PDF
+                          </a>
+                        ) : (
+                          <img src={existing} alt={`Evidencia ${i + 1}`} className="w-full h-full object-contain" />
+                        )}
+                        <button
+                          onClick={() => updateRow(row.id, "evidencia", "")}
+                          className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-0 group-hover:opacity-100 transition text-red-500 hover:text-red-700 hover:bg-white shadow-sm"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </>
+                    ) : isUploading ? (
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <RefreshCw className="size-6 mb-1 animate-spin" />
+                        <span className="text-[10px] uppercase font-semibold">Subiendo...</span>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer text-slate-400 hover:text-primary transition hover:bg-slate-100/50">
+                        <UploadCloud className="size-6 mb-1" />
+                        <span className="text-[10px] uppercase font-semibold">Subir Foto/PDF</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                setUploadingRows((prev) => new Set(prev).add(row.id));
+                                const url = await uploadToFirebase(file);
+                                updateRow(row.id, "evidencia", url);
+                              } catch (error) {
+                                console.error("Error subiendo evidencia:", error);
+                              } finally {
+                                setUploadingRows((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(row.id);
+                                  return next;
+                                });
+                              }
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 

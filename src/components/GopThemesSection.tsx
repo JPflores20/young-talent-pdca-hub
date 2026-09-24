@@ -144,6 +144,8 @@ export function GopThemesSection({
                   {m}
                 </th>
               ))}
+              <th className="border border-border p-2 w-28 text-center text-xs">Fecha Compromiso</th>
+              <th className="border border-border p-2 w-20 text-center text-xs">% Avance</th>
               <th className="border border-border p-2 w-24 text-center text-xs">Focus GOP Items</th>
               <th className="border border-border p-2 w-32 text-center text-xs">
                 Focus GOP status
@@ -154,7 +156,7 @@ export function GopThemesSection({
           <tbody>
             {data.length === 0 && (
               <tr>
-                <td colSpan={17} className="p-4 text-center text-muted-foreground">
+                <td colSpan={19} className="p-4 text-center text-muted-foreground">
                   No hay temas registrados. Haz clic en "Agregar Tema" para comenzar.
                 </td>
               </tr>
@@ -205,7 +207,38 @@ export function GopThemesSection({
                     </td>
                   );
                 })}
-                <td className="border border-border p-0">
+                <td className="border border-border p-1 align-top">
+                  <Input
+                    type="date"
+                    value={(item as any).fechaCompromiso || ""}
+                    onChange={(e) => updateRow(item.id, "fechaCompromiso" as any, e.target.value)}
+                    className="h-8 text-xs px-1 border-0 shadow-none bg-transparent"
+                  />
+                </td>
+                <td className="border border-border p-1 text-center relative align-top">
+                  <div className="flex items-center justify-center h-8">
+                    <Input
+                      type="number"
+                      value={(item as any).porcentajeAvance || ""}
+                      onChange={(e) => updateRow(item.id, "porcentajeAvance" as any, e.target.value)}
+                      className="h-full w-16 text-center text-xs border-0 shadow-none bg-transparent hide-arrows px-1"
+                      placeholder="0"
+                    />
+                    <span className="text-xs text-muted-foreground ml-1">%</span>
+                  </div>
+                  {/* Retrasado badge */}
+                  {(item as any).fechaCompromiso && (item as any).porcentajeAvance !== undefined && (
+                    <div className="mt-1">
+                      {new Date((item as any).fechaCompromiso + "T00:00:00") < new Date(new Date().setHours(0,0,0,0)) &&
+                        Number((item as any).porcentajeAvance || 0) < 100 && (
+                          <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1 py-0.5 rounded uppercase">
+                            Retrasado
+                          </span>
+                      )}
+                    </div>
+                  )}
+                </td>
+                <td className="border border-border p-0 align-top">
                   <div className="flex h-full min-h-[60px] items-center">
                     <select
                       value={(item as any).focusType || "#"}
