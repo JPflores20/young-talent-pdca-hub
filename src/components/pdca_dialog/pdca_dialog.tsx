@@ -131,6 +131,10 @@ export const PdcaDialog: React.FC<{
       nuevo_performance_image: state.nuevo_performance_image,
       analisisRiesgosEstandarizacion: state.analisis_riesgos_estandarizacion,
       conclusionesFinales: state.conclusiones_finales,
+      sops_documentos_image: state.sops_documentos_image,
+      plan_entrenamiento_image: state.plan_entrenamiento_image,
+      plan_control_image: state.plan_control_image,
+      lecciones_aprendidas: state.lecciones_aprendidas,
       benchmarkImage: state.benchmark_image,
       comentarios: state.comments_list,
       historial: state.history_events,
@@ -502,19 +506,9 @@ export const PdcaDialog: React.FC<{
         <div className={state.active_tab !== "Act" ? "hidden" : "block"}>
           <div className="space-y-6">
             <PdcaPhaseAct
-            gemba_final_images={state.gemba_final_images}
-            on_gemba_final_images_change={(imgs) => {
-              state.set_gemba_final_images(imgs);
-              autosave.mark_as_modified();
-            }}
             tabla_estandarizacion={state.tabla_estandarizacion}
             on_tabla_estandarizacion_change={(data) => {
               state.set_tabla_estandarizacion(data);
-              autosave.mark_as_modified();
-            }}
-            tabla_estandarizacion_vpo={state.tabla_estandarizacion_vpo}
-            on_tabla_estandarizacion_vpo_change={(data) => {
-              state.set_tabla_estandarizacion_vpo(data);
               autosave.mark_as_modified();
             }}
             completed_steps={state.completed_steps}
@@ -522,9 +516,24 @@ export const PdcaDialog: React.FC<{
             on_toggle_step={handle_toggle_step}
             on_toggle_na={handle_toggle_na}
             is_editable={is_editable}
-            analisis_riesgos_estandarizacion={state.analisis_riesgos_estandarizacion}
-            on_analisis_riesgos_estandarizacion_change={(a) => {
-              state.set_analisis_riesgos_estandarizacion(a);
+            sops_documentos_image={state.sops_documentos_image}
+            on_sops_documentos_image_change={(img) => {
+              state.set_sops_documentos_image(img);
+              autosave.mark_as_modified();
+            }}
+            plan_entrenamiento_image={state.plan_entrenamiento_image}
+            on_plan_entrenamiento_image_change={(img) => {
+              state.set_plan_entrenamiento_image(img);
+              autosave.mark_as_modified();
+            }}
+            plan_control_image={state.plan_control_image}
+            on_plan_control_image_change={(img) => {
+              state.set_plan_control_image(img);
+              autosave.mark_as_modified();
+            }}
+            lecciones_aprendidas={state.lecciones_aprendidas}
+            on_lecciones_aprendidas_change={(text) => {
+              state.set_lecciones_aprendidas(text);
               autosave.mark_as_modified();
             }}
             conclusiones_finales={state.conclusiones_finales}

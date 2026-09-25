@@ -129,7 +129,7 @@ const PHASE_STEPS_MAP: Record<string, string[]> = {
   ],
   Do: ["step-18", "step-19", "step-20"],
   Check: ["step-21", "step-22", "step-23", "step-24"],
-  Act: ["step-24-act", "step-25", "step-26"],
+  Act: ["step-25", "step-26", "step-27", "step-28", "step-29", "step-30"],
 };
 export const getCustomPhases = (isAdmin: boolean) => {
   const base = [

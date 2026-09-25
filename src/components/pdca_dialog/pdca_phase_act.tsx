@@ -1,53 +1,58 @@
 import React from "react";
-import { GembaEvidenciasStep } from "../pdca-dialog/gemba-evidencias-step";
 import { TablaEstandarizacion } from "./tabla-estandarizacion";
-import { TablaEstandarizacionVpo } from "./tabla-estandarizacion-vpo";
 import { StepCard } from "@/components/ui/step-card";
-import { Badge } from "@/components/ui/badge";
-import { AnalisisRiesgosTable } from "./analisis-riesgos-table";
+import { ImageUploadSection } from "../image-upload-section";
 import { Textarea } from "@/components/ui/textarea";
 
 interface PhaseActProps {
-  gemba_final_images: string[];
-  on_gemba_final_images_change: (imgs: string[]) => void;
   tabla_estandarizacion: any[];
   on_tabla_estandarizacion_change: (data: any[]) => void;
-  tabla_estandarizacion_vpo: any[];
-  on_tabla_estandarizacion_vpo_change: (data: any[]) => void;
   completed_steps: Set<string>;
-  na_steps?: Set<string>;
+  na_steps?: Set<string> | undefined;
   on_toggle_step: (step_id: string) => void;
-  on_toggle_na?: (step_id: string) => void;
+  on_toggle_na?: ((step_id: string) => void) | undefined;
   is_editable: boolean;
-  
-  analisis_riesgos_estandarizacion?: any[];
-  on_analisis_riesgos_estandarizacion_change?: (items: any[]) => void;
-  conclusiones_finales?: string;
-  on_conclusiones_finales_change?: (text: string) => void;
+
+  sops_documentos_image?: string | undefined;
+  on_sops_documentos_image_change?: ((img?: string) => void) | undefined;
+
+  plan_entrenamiento_image?: string | undefined;
+  on_plan_entrenamiento_image_change?: ((img?: string) => void) | undefined;
+
+  plan_control_image?: string | undefined;
+  on_plan_control_image_change?: ((img?: string) => void) | undefined;
+
+  lecciones_aprendidas?: string | undefined;
+  on_lecciones_aprendidas_change?: ((text: string) => void) | undefined;
+
+  conclusiones_finales?: string | undefined;
+  on_conclusiones_finales_change?: ((text: string) => void) | undefined;
 }
 
 export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
-  gemba_final_images,
-  on_gemba_final_images_change,
   tabla_estandarizacion,
   on_tabla_estandarizacion_change,
-  tabla_estandarizacion_vpo,
-  on_tabla_estandarizacion_vpo_change,
   completed_steps, na_steps, on_toggle_step, on_toggle_na,
   is_editable,
-  analisis_riesgos_estandarizacion,
-  on_analisis_riesgos_estandarizacion_change,
+  sops_documentos_image,
+  on_sops_documentos_image_change,
+  plan_entrenamiento_image,
+  on_plan_entrenamiento_image_change,
+  plan_control_image,
+  on_plan_control_image_change,
+  lecciones_aprendidas,
+  on_lecciones_aprendidas_change,
   conclusiones_finales,
   on_conclusiones_finales_change,
 }) => {
   return (
     <div className="space-y-6">
-      {/* ── PASO 24: Estandarización de proceso ─────────────────────────── */}
-      <StepCard 
-        title="PASO 24: ESTANDARIZACIÓN DE PROCESO"
-        isStepCompleted={completed_steps.has("step-24-act")}
-        onToggleStep={() => on_toggle_step("step-24-act")}
-        isNa={na_steps?.has("step-24-act")} onToggleNa={() => on_toggle_na?.("step-24-act")}
+      {/* ── PASO 25: Estandarización de Procesos ─────────────────────────── */}
+      <StepCard
+        title="PASO 25: ESTANDARIZACIÓN DE PROCESOS"
+        isStepCompleted={completed_steps.has("step-25")}
+        onToggleStep={() => on_toggle_step("step-25")}
+        isNa={na_steps?.has("step-25")} onToggleNa={() => on_toggle_na?.("step-25")}
       >
         <TablaEstandarizacion
           items={tabla_estandarizacion || []}
@@ -55,25 +60,67 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
         />
       </StepCard>
 
-      {/* ── PASO 25: Análisis de riesgo del proceso ─────────────────────── */}
-      <AnalisisRiesgosTable
-        title="PASO 25: ANÁLISIS DE RIESGOS DE LAS ACCIONES ESTANDARIZADAS"
-        items={analisis_riesgos_estandarizacion || []}
-        onChange={on_analisis_riesgos_estandarizacion_change!}
-        isStepCompleted={completed_steps.has("step-25")}
-        onToggleStep={() => on_toggle_step("step-25")}
-        isNa={na_steps?.has("step-25")} onToggleNa={() => on_toggle_na?.("step-25")}
-      />
-
-      {/* ── PASO 26: Conclusión ─────────────────────────────────────────── */}
-      <StepCard 
-        title="PASO 26: CONCLUSIÓN"
+      {/* ── PASO 26: SOPs & Documentos ──────────────────────────────────── */}
+      <ImageUploadSection
+        image={sops_documentos_image || null}
+        onChange={(img) => on_sops_documentos_image_change?.(img || undefined)}
+        title="PASO 26: SOPs & DOCUMENTOS"
+        subtitle="Sube una imagen o documento de los SOPs"
         isStepCompleted={completed_steps.has("step-26")}
         onToggleStep={() => on_toggle_step("step-26")}
         isNa={na_steps?.has("step-26")} onToggleNa={() => on_toggle_na?.("step-26")}
+      />
+
+      {/* ── PASO 27: Plan de Entrenamiento ──────────────────────────────── */}
+      <ImageUploadSection
+        image={plan_entrenamiento_image || null}
+        onChange={(img) => on_plan_entrenamiento_image_change?.(img || undefined)}
+        title="PASO 27: PLAN DE ENTRENAMIENTO"
+        subtitle="Sube una imagen del plan de entrenamiento"
+        isStepCompleted={completed_steps.has("step-27")}
+        onToggleStep={() => on_toggle_step("step-27")}
+        isNa={na_steps?.has("step-27")} onToggleNa={() => on_toggle_na?.("step-27")}
+      />
+
+      {/* ── PASO 28: Plan de Control ─────────────────────────────────────── */}
+      <ImageUploadSection
+        image={plan_control_image || null}
+        onChange={(img) => on_plan_control_image_change?.(img || undefined)}
+        title="PASO 28: PLAN DE CONTROL"
+        subtitle="Sube una imagen del plan de control"
+        isStepCompleted={completed_steps.has("step-28")}
+        onToggleStep={() => on_toggle_step("step-28")}
+        isNa={na_steps?.has("step-28")} onToggleNa={() => on_toggle_na?.("step-28")}
+      />
+
+      {/* ── PASO 29: Lecciones Aprendidas ───────────────────────────────── */}
+      <StepCard
+        title="PASO 29: LECCIONES APRENDIDAS"
+        isStepCompleted={completed_steps.has("step-29")}
+        onToggleStep={() => on_toggle_step("step-29")}
+        isNa={na_steps?.has("step-29")} onToggleNa={() => on_toggle_na?.("step-29")}
       >
         <div className="p-4 space-y-4">
-          <p className="text-sm text-muted-foreground">Escribe las conclusiones finales y lecciones aprendidas de este proyecto PDCA.</p>
+          <p className="text-sm text-muted-foreground">Documenta las lecciones aprendidas durante el proyecto PDCA.</p>
+          <Textarea
+            value={lecciones_aprendidas || ""}
+            onChange={(e) => on_lecciones_aprendidas_change?.(e.target.value)}
+            placeholder="Lecciones aprendidas..."
+            disabled={!is_editable}
+            className="min-h-[120px]"
+          />
+        </div>
+      </StepCard>
+
+      {/* ── PASO 30: Conclusiones ───────────────────────────────────────── */}
+      <StepCard
+        title="PASO 30: CONCLUSIONES"
+        isStepCompleted={completed_steps.has("step-30")}
+        onToggleStep={() => on_toggle_step("step-30")}
+        isNa={na_steps?.has("step-30")} onToggleNa={() => on_toggle_na?.("step-30")}
+      >
+        <div className="p-4 space-y-4">
+          <p className="text-sm text-muted-foreground">Escribe las conclusiones finales de este proyecto PDCA.</p>
           <Textarea
             value={conclusiones_finales || ""}
             onChange={(e) => on_conclusiones_finales_change?.(e.target.value)}

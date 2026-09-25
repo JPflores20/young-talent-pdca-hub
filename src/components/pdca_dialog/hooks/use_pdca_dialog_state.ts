@@ -216,6 +216,22 @@ export const use_pdca_dialog_state = (
     initial_pdca.conclusionesFinales || initial_pdca.conclusiones_finales || "",
   );
 
+  const [sops_documentos_image, set_sops_documentos_image] = useState<string | undefined>(
+    (initial_pdca as any).sopsDocumentosImage || (initial_pdca as any).sops_documentos_image,
+  );
+
+  const [plan_entrenamiento_image, set_plan_entrenamiento_image] = useState<string | undefined>(
+    (initial_pdca as any).planEntrenamientoImage || (initial_pdca as any).plan_entrenamiento_image,
+  );
+
+  const [plan_control_image, set_plan_control_image] = useState<string | undefined>(
+    (initial_pdca as any).planControlImage || (initial_pdca as any).plan_control_image,
+  );
+
+  const [lecciones_aprendidas, set_lecciones_aprendidas] = useState<string>(
+    (initial_pdca as any).leccionesAprendidas || (initial_pdca as any).lecciones_aprendidas || "",
+  );
+
   const [benchmark_image, set_benchmark_image] = useState<string | undefined>(
     (initial_pdca as any).benchmarkImage || (initial_pdca as any).benchmark_image,
   );
@@ -467,6 +483,14 @@ export const use_pdca_dialog_state = (
     set_analisis_riesgos_estandarizacion,
     conclusiones_finales,
     set_conclusiones_finales,
+    sops_documentos_image,
+    set_sops_documentos_image,
+    plan_entrenamiento_image,
+    set_plan_entrenamiento_image,
+    plan_control_image,
+    set_plan_control_image,
+    lecciones_aprendidas,
+    set_lecciones_aprendidas,
     benchmark_image,
     set_benchmark_image,
   };
