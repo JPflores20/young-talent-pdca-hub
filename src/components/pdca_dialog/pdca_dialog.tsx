@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
 import { usePdcas } from "@/context/pdca-context";
@@ -123,9 +123,19 @@ export const PdcaDialog: React.FC<{
       currentTimesTitle: state.current_times_title,
       ishikawaConceptos: state.ishikawa_conceptos,
       informacionAdicionalFiles: state.informacion_adicional_files,
+      vozConsumidor: state.voz_consumidor,
+      analisisRiesgosProyecto: state.analisis_riesgos_proyecto,
+      conclusionesCausaRaiz: state.conclusiones_causa_raiz,
+      pruebasEjecutadas: state.pruebas_ejecutadas,
+      nuevoPerformance: state.nuevo_performance,
+      nuevo_performance_image: state.nuevo_performance_image,
+      analisisRiesgosEstandarizacion: state.analisis_riesgos_estandarizacion,
+      conclusionesFinales: state.conclusiones_finales,
+      benchmarkImage: state.benchmark_image,
       comentarios: state.comments_list,
       historial: state.history_events,
       completedSteps: Array.from(state.completed_steps),
+      naSteps: Array.from(state.na_steps),
       completedPhases: Array.from(state.completed_phases),
       progreso: computed_progress,
       fechaFinalizacion: state.deadline_date
@@ -156,6 +166,16 @@ export const PdcaDialog: React.FC<{
     refresh,
   );
 
+  const [mounted_tabs, set_mounted_tabs] = useState<Set<Phase>>(new Set([state.active_tab]));
+  useEffect(() => {
+    set_mounted_tabs((prev) => {
+      if (prev.has(state.active_tab)) return prev;
+      const next = new Set(prev);
+      next.add(state.active_tab);
+      return next;
+    });
+  }, [state.active_tab]);
+
   const handle_toggle_step = useCallback(
     (step_id: string) => {
       if (!is_admin) {
@@ -163,6 +183,23 @@ export const PdcaDialog: React.FC<{
         return;
       }
       state.set_completed_steps((prev) => {
+        const next_steps = new Set(prev);
+        if (next_steps.has(step_id)) next_steps.delete(step_id);
+        else next_steps.add(step_id);
+        return next_steps;
+      });
+      autosave.mark_as_modified();
+    },
+    [is_admin, state, autosave],
+  );
+
+  const handle_toggle_na = useCallback(
+    (step_id: string) => {
+      if (!is_admin) {
+        toast.error("Solo administradores pueden marcar pasos como N/A.");
+        return;
+      }
+      state.set_na_steps((prev) => {
         const next_steps = new Set(prev);
         if (next_steps.has(step_id)) next_steps.delete(step_id);
         else next_steps.add(step_id);
@@ -211,6 +248,7 @@ export const PdcaDialog: React.FC<{
         }
         deadline_string={current_pdca.fechaFinalizacion ?? null}
         completed_steps={state.completed_steps}
+        na_steps={state.na_steps}
         is_saving_in_progress={autosave.is_saving}
         has_pending_modifications={autosave.has_unsaved_changes}
         is_user_permitted_to_edit={is_editable}
@@ -224,12 +262,14 @@ export const PdcaDialog: React.FC<{
         completedPhases={state.completed_phases}
         onToggleComplete={() => {}}
         completedSteps={state.completed_steps}
+        naSteps={state.na_steps}
         isAdmin={is_admin}
       />
 
-      {state.active_tab === "Plan" && (
-        <PdcaPhasePlan
-          title_value={state.title_value}
+      {mounted_tabs.has("Plan") && (
+        <div className={state.active_tab !== "Plan" ? "hidden" : "block"}>
+          <PdcaPhasePlan
+            title_value={state.title_value}
           on_title_change={(t) => {
             state.set_title_value(t);
             autosave.mark_as_modified();
@@ -288,7 +328,9 @@ export const PdcaDialog: React.FC<{
             autosave.mark_as_modified();
           }}
           completed_steps={state.completed_steps}
+          na_steps={state.na_steps}
           on_toggle_step={handle_toggle_step}
+          on_toggle_na={handle_toggle_na}
           is_editable={is_editable}
           process_mapping_files={state.process_mapping_files}
           on_process_mapping_files_change={(f) => {
@@ -350,11 +392,48 @@ export const PdcaDialog: React.FC<{
             state.set_five_whys_tables(w);
             autosave.mark_as_modified();
           }}
+          voz_consumidor={state.voz_consumidor}
+          on_voz_consumidor_change={(v) => {
+            state.set_voz_consumidor(v);
+            autosave.mark_as_modified();
+          }}
+          analisis_riesgos_proyecto={state.analisis_riesgos_proyecto}
+          on_analisis_riesgos_proyecto_change={(a) => {
+            state.set_analisis_riesgos_proyecto(a);
+            autosave.mark_as_modified();
+          }}
+          especificacion_procesos_image={state.especificacion_procesos_image}
+          on_especificacion_procesos_image_change={(img) => {
+            state.set_especificacion_procesos_image(img);
+            autosave.mark_as_modified();
+          }}
+          benchmark_image={state.benchmark_image}
+          on_benchmark_image_change={(img) => {
+            state.set_benchmark_image(img);
+            autosave.mark_as_modified();
+          }}
+          conclusiones_causa_raiz={state.conclusiones_causa_raiz}
+          on_conclusiones_causa_raiz_change={(c) => {
+            state.set_conclusiones_causa_raiz(c);
+            autosave.mark_as_modified();
+          }}
+          has_flavor_correlation={state.has_flavor_correlation}
+          set_has_flavor_correlation={(val) => {
+            state.set_has_flavor_correlation(val);
+            autosave.mark_as_modified();
+          }}
+          gop_themes_data={state.gop_themes_data}
+          on_gop_themes_data_change={(data) => {
+            state.set_gop_themes_data(data);
+            autosave.mark_as_modified();
+          }}
         />
+        </div>
       )}
 
-      {state.active_tab === "Do" && (
-        <PdcaPhaseDo
+      {mounted_tabs.has("Do") && (
+        <div className={state.active_tab !== "Do" ? "hidden" : "block"}>
+          <PdcaPhaseDo
           action_items={state.action_items}
           on_action_items_change={(a) => {
             state.set_action_items(a);
@@ -371,35 +450,58 @@ export const PdcaDialog: React.FC<{
             autosave.mark_as_modified();
           }}
           completed_steps={state.completed_steps}
+          na_steps={state.na_steps}
           on_toggle_step={handle_toggle_step}
+          on_toggle_na={handle_toggle_na}
         />
+        </div>
       )}
 
-      {state.active_tab === "Check" && (
-        <PdcaPhaseCheck
-          final_time_series_data={state.final_time_series_data}
-          on_final_time_series_data_change={(k) => {
-            state.set_final_time_series_data(k);
-            autosave.mark_as_modified();
-          }}
-          final_time_series_unit={state.final_time_series_unit}
-          on_final_time_series_unit_change={(u) => {
-            state.set_final_time_series_unit(u);
-            autosave.mark_as_modified();
-          }}
-          final_time_series_title={state.final_time_series_title}
-          on_final_time_series_title_change={(t) => {
-            state.set_final_time_series_title(t);
-            autosave.mark_as_modified();
-          }}
-          completed_steps={state.completed_steps}
-          on_toggle_step={handle_toggle_step}
-        />
+      {mounted_tabs.has("Check") && (
+        <div className={state.active_tab !== "Check" ? "hidden" : "block"}>
+          <PdcaPhaseCheck
+            final_time_series_data={state.final_time_series_data}
+            on_final_time_series_data_change={(k) => {
+              state.set_final_time_series_data(k);
+              autosave.mark_as_modified();
+            }}
+            final_time_series_unit={state.final_time_series_unit}
+            on_final_time_series_unit_change={(u) => {
+              state.set_final_time_series_unit(u);
+              autosave.mark_as_modified();
+            }}
+            final_time_series_title={state.final_time_series_title}
+            on_final_time_series_title_change={(t) => {
+              state.set_final_time_series_title(t);
+              autosave.mark_as_modified();
+            }}
+            completed_steps={state.completed_steps}
+            na_steps={state.na_steps}
+            on_toggle_step={handle_toggle_step}
+            on_toggle_na={handle_toggle_na}
+            mapeo_proceso_image={state.mapeo_proceso_image}
+            on_mapeo_proceso_image_change={(img) => {
+              state.set_mapeo_proceso_image(img);
+              autosave.mark_as_modified();
+            }}
+            pruebas_ejecutadas={state.pruebas_ejecutadas}
+            on_pruebas_ejecutadas_change={(p) => {
+              state.set_pruebas_ejecutadas(p);
+              autosave.mark_as_modified();
+            }}
+            nuevo_performance={state.nuevo_performance}
+            on_nuevo_performance_change={(n) => {
+              state.set_nuevo_performance(n);
+              autosave.mark_as_modified();
+            }}
+          />
+        </div>
       )}
 
-      {state.active_tab === "Act" && (
-        <div className="space-y-6">
-          <PdcaPhaseAct
+      {mounted_tabs.has("Act") && (
+        <div className={state.active_tab !== "Act" ? "hidden" : "block"}>
+          <div className="space-y-6">
+            <PdcaPhaseAct
             gemba_final_images={state.gemba_final_images}
             on_gemba_final_images_change={(imgs) => {
               state.set_gemba_final_images(imgs);
@@ -416,9 +518,22 @@ export const PdcaDialog: React.FC<{
               autosave.mark_as_modified();
             }}
             completed_steps={state.completed_steps}
+            na_steps={state.na_steps}
             on_toggle_step={handle_toggle_step}
+            on_toggle_na={handle_toggle_na}
             is_editable={is_editable}
+            analisis_riesgos_estandarizacion={state.analisis_riesgos_estandarizacion}
+            on_analisis_riesgos_estandarizacion_change={(a) => {
+              state.set_analisis_riesgos_estandarizacion(a);
+              autosave.mark_as_modified();
+            }}
+            conclusiones_finales={state.conclusiones_finales}
+            on_conclusiones_finales_change={(c) => {
+              state.set_conclusiones_finales(c);
+              autosave.mark_as_modified();
+            }}
           />
+        </div>
         </div>
       )}
 
@@ -464,16 +579,18 @@ export const PdcaDialog: React.FC<{
         )}
       </div>
 
-      {state.active_tab === "Evaluacion" && is_admin && (
-        <PdcaItfR2d2
-          evaluation={state.itf_r2d2_evaluation}
-          onChange={(ev) => {
-            state.set_itf_r2d2_evaluation(ev);
-            autosave.mark_as_modified();
-          }}
-          disabled={!is_editable}
-          currentUser={auth_user}
-        />
+      {is_admin && mounted_tabs.has("Evaluacion") && (
+        <div className={state.active_tab !== "Evaluacion" ? "hidden" : "block"}>
+          <PdcaItfR2d2
+            evaluation={state.itf_r2d2_evaluation}
+            onChange={(ev) => {
+              state.set_itf_r2d2_evaluation(ev);
+              autosave.mark_as_modified();
+            }}
+            disabled={!is_editable}
+            currentUser={auth_user}
+          />
+        </div>
       )}
 
       <PdcaDialogFooter

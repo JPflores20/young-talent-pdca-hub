@@ -10,6 +10,8 @@ interface StepCardProps {
   defaultExpanded?: boolean | undefined;
   className?: string | undefined;
   headerRight?: React.ReactNode;
+  isNa?: boolean | undefined;
+  onToggleNa?: (() => void) | undefined;
   /** Explicit storage key for persisting collapsed state. */
   storageId?: string | undefined;
 }
@@ -18,8 +20,7 @@ export type { StepCardProps };
 
 export function StepCard({
   title,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
   children,
   defaultExpanded = false, // Obliga a cerrarse por defecto
   className,
@@ -83,7 +84,7 @@ export function StepCard({
         "transition-all",
         isFullscreen
           ? "fixed inset-4 z-[100] bg-background border border-border shadow-2xl rounded-xl p-6 overflow-y-auto"
-          : "rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]",
+          : cn("rounded-xl border border-border p-4 shadow-[var(--shadow-card)]", isNa ? "bg-muted/30" : "bg-card"),
         className,
       )}
     >
@@ -132,10 +133,28 @@ export function StepCard({
             )}
           >
             <span>{title}</span>
-            {isStepCompleted && (
+            {isStepCompleted && !isNa && (
               <span className="text-xs font-normal normal-case px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-sans">
                 Completado
               </span>
+            )}
+            {onToggleNa && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleNa();
+                }}
+                className={cn(
+                  "text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isNa 
+                    ? "bg-slate-500 text-white border-slate-500" 
+                    : "bg-transparent text-slate-500 border-slate-500/50 hover:bg-slate-500/10"
+                )}
+                title={isNa ? "Reactivar paso" : "Marcar paso como No Aplica (N/A)"}
+              >
+                N/A
+              </button>
             )}
           </h3>
         </div>
@@ -168,6 +187,7 @@ export function StepCard({
         className={cn(
           "grid transition-all duration-300 ease-in-out",
           isExpanded ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 mt-0",
+          isNa && "opacity-50 pointer-events-none grayscale"
         )}
       >
         <div

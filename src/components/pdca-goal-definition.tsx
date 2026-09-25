@@ -50,18 +50,6 @@ export function PdcaGoalDefinition({ value, onChange, readOnly = false }: PdcaGo
 
   return (
     <div className="w-full space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Target className="size-5 text-primary" />
-          <h3 className="text-base font-bold text-foreground">
-            Definición de la Meta (VPO Standard)
-          </h3>
-        </div>
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Info className="size-3.5" /> Formato oficial A3 / AB InBev
-        </span>
-      </div>
-
       <div className="w-full overflow-x-auto rounded-lg border border-border/80 bg-card shadow-sm">
         <table className="w-full min-w-[700px] border-collapse text-xs">
           {/* Main Title Row */}
@@ -268,11 +256,7 @@ export function PdcaParticipants({
 
   return (
     <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-      <div className="flex items-center gap-2 mb-3">
-        <h3 className="font-display text-base font-semibold uppercase tracking-wide flex items-center gap-2">
-          Participantes del Proyecto
-        </h3>
-      </div>
+
       <div className="overflow-x-auto rounded-sm border border-[#174373]">
         <table className="w-full border-collapse text-xs text-center">
           <thead>
@@ -288,7 +272,7 @@ export function PdcaParticipants({
           <tbody>
             {/* PARTICIPANTES LOCALES */}
             <tr>
-              <td className="bg-[#174373] text-white font-bold p-2 w-[20%] border border-white/20 align-middle">
+              <td className="bg-[#174373] text-white font-bold p-2 w-[20%] border border-white/20 align-middle text-justify">
                 PARTICIPANTES LOCALES
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 w-[30%] border border-[#174373]/20">
@@ -301,8 +285,8 @@ export function PdcaParticipants({
                 />
               </td>
               <td className="bg-[#174373] text-white p-3 w-[20%] text-[10px] leading-tight text-left border border-white/20">
-                <strong className="block mb-1">PAPEL/RESPONSABILIDAD EN ESTE EQUIPO:</strong>
-                <span className="text-white/80">
+                <strong className="block mb-1 text-justify">PAPEL/RESPONSABILIDAD EN ESTE EQUIPO:</strong>
+                <span className="text-white/80 text-justify block">
                   (No el título del trabajo de la persona... ¿cuál es su rol en el equipo?
                   Ejemplos... facilitador, analista de datos/experto en Excel, experto en la
                   materia, perspectiva de primera línea, ojos externos, etc.)
@@ -321,7 +305,7 @@ export function PdcaParticipants({
 
             {/* RECURSOS EXTERNOS */}
             <tr>
-              <td className="bg-[#174373] text-white font-bold p-2 border border-white/20 align-middle">
+              <td className="bg-[#174373] text-white font-bold p-2 border border-white/20 align-middle text-justify">
                 RECURSOS EXTERNOS
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 border border-[#174373]/20">
@@ -334,8 +318,8 @@ export function PdcaParticipants({
                 />
               </td>
               <td className="bg-[#174373] text-white p-3 text-[10px] leading-tight text-left border border-white/20">
-                <strong className="block mb-1">PAPEL/RESPONSABILIDAD EN ESTE EQUIPO:</strong>
-                <span className="text-white/80">
+                <strong className="block mb-1 text-justify">PAPEL/RESPONSABILIDAD EN ESTE EQUIPO:</strong>
+                <span className="text-white/80 text-justify block">
                   (No el título del trabajo de la persona... ¿cuál es su papel en el equipo?
                   Ejemplos... Consultor, Fabricante Equipo Original, experto técnico para el tema
                   xx, entrenador del método PDCA, etc)
@@ -354,8 +338,8 @@ export function PdcaParticipants({
 
             {/* FECHAS REUNIONES */}
             <tr>
-              <td className="bg-[#174373] text-white font-bold p-2 text-[10px] border border-white/20 text-right pr-4 align-middle">
-                Fecha de la reunión inicial:
+              <td className="bg-[#174373] text-white font-bold p-2 border border-white/20 align-middle uppercase text-justify">
+                Fecha de la reunión inicial
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-2 border border-[#174373]/20">
                 <DatePicker
@@ -372,8 +356,8 @@ export function PdcaParticipants({
                   className="h-8 w-full text-xs font-bold justify-center shadow-none focus-visible:ring-1 focus-visible:ring-black/20 bg-transparent border-black/10 hover:bg-transparent"
                 />
               </td>
-              <td className="bg-[#174373] text-white font-bold p-2 text-[10px] border border-white/20 text-right pr-4 align-middle">
-                Reunión de revisión de rutina:
+              <td className="bg-[#174373] text-white font-bold p-2 border border-white/20 align-middle uppercase text-justify">
+                Reunión de revisión de rutina
               </td>
               <td className="bg-[#F2F8FC] dark:bg-secondary p-0 border border-[#174373]/20">
                 <Input
@@ -382,6 +366,28 @@ export function PdcaParticipants({
                   disabled={readOnly}
                   className="h-9 w-full text-xs font-bold text-center border-none shadow-none bg-transparent focus-visible:ring-1 focus-visible:ring-black/20"
                   placeholder="Ej. Semanal Miércoles 14:00 Hrs"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td className="bg-[#174373] text-white font-bold p-2 border border-white/20 align-middle uppercase text-justify">
+                Fecha de la reunión final
+              </td>
+              <td colSpan={3} className="bg-[#F2F8FC] dark:bg-secondary p-2 border border-[#174373]/20 text-center">
+                <DatePicker
+                  date={
+                    value.fechaReunionFinal && isValid(parseISO(value.fechaReunionFinal))
+                      ? parseISO(value.fechaReunionFinal)
+                      : value.fecha_reunion_final && isValid(parseISO(value.fecha_reunion_final))
+                      ? parseISO(value.fecha_reunion_final)
+                      : undefined
+                  }
+                  setDate={(date) =>
+                    updateField("fechaReunionFinal", date ? format(date, "yyyy-MM-dd") : "")
+                  }
+                  placeholder="Seleccionar"
+                  disabled={readOnly}
+                  className="h-8 w-[50%] mx-auto text-xs font-bold justify-center shadow-none focus-visible:ring-1 focus-visible:ring-black/20 bg-transparent border-black/10 hover:bg-transparent"
                 />
               </td>
             </tr>

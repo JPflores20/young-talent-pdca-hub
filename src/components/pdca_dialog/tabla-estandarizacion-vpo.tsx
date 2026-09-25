@@ -69,7 +69,7 @@ export const TablaEstandarizacionVpo: React.FC<TablaEstandarizacionVpoProps> = (
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-700">Tabla de Estandarización VPO</h3>
+        <h3 className="text-sm font-bold text-slate-700">TABLA DE ESTANDARIZACIÓN VPO</h3>
         <Button onClick={handleAdd} variant="outline" size="sm">
           <Plus className="size-4 mr-2" /> Agregar Fila
         </Button>
@@ -79,15 +79,15 @@ export const TablaEstandarizacionVpo: React.FC<TablaEstandarizacionVpoProps> = (
         <Table className="min-w-[1200px] text-xs">
           <TableHeader>
             <TableRow className="bg-[#0078D7] hover:bg-[#0078D7]">
-              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">Nombre del Estandar</TableHead>
+              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">NOMBRE DEL ESTANDAR</TableHead>
               <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">HERRAMIENTA VPO</TableHead>
-              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">DUEÑO / Responsable</TableHead>
+              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">DUEÑO / RESPONSABLE</TableHead>
               <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px] min-w-[150px]">EQUIPO QUE SE COMUNICARÁ / ENTRENARÁ</TableHead>
               <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px] min-w-[150px]">DATOS DE ENTRENAMIENTO</TableHead>
               <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px] min-w-[150px]">GOP O LA PRESENTACIÓN DE MEJORES PRÁCTICAS?</TableHead>
               <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">FECHA DE FINALIZACIÓN</TableHead>
-              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">Status</TableHead>
-              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px] w-24">Evidencia</TableHead>
+              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px]">STATUS</TableHead>
+              <TableHead className="font-bold text-white uppercase text-center border-r border-white/20 text-[10px] w-24">EVIDENCIA</TableHead>
               <TableHead className="w-12 border-none"></TableHead>
             </TableRow>
           </TableHeader>

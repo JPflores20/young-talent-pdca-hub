@@ -11,7 +11,9 @@ interface GembaEvidenciasStepProps {
   images: string[];
   onChange: (images: string[]) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
   title?: string;
   description?: string;
 }
@@ -66,8 +68,7 @@ async function uploadToFirebase(file: File): Promise<string> {
 export function GembaEvidenciasStep({
   images,
   onChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
   title = "PASO 9: GEMBA (EVIDENCIAS)",
   description = "Sube fotos del Gemba o documentos que respalden que el plan de acción se ejecutó correctamente.",
 }: GembaEvidenciasStepProps) {
@@ -132,6 +133,8 @@ export function GembaEvidenciasStep({
       title={title}
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
       headerRight={
         <span className="text-xs text-muted-foreground font-medium">
           {images.length} de {MAX_FILES}

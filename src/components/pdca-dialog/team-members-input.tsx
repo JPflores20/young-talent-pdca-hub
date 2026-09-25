@@ -150,7 +150,6 @@ export function TeamMembersInput({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="equipo">Equipo / Integrantes</Label>
       <div className="flex flex-wrap gap-2 mb-2">
         {members.map((member, index) => (
           <div

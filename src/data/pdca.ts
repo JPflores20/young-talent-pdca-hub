@@ -27,6 +27,12 @@ export type {
   FlavorCorrelationPoint,
   FlavorCorrelationChart,
   Pdca,
+  VozDelConsumidorItem,
+  AnalisisRiesgoItem,
+  ConclusionCausaRaizItem,
+  PruebaEjecutadaItem,
+  NuevoPerformanceItem,
+  ColeccionDatosItem,
 } from "./pdca-types";
 
 // Constantes y valores por defecto

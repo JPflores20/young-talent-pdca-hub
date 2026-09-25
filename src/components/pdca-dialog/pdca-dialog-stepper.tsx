@@ -124,7 +124,7 @@ const PHASE_STEPS_MAP: Record<string, string[]> = {
   Plan: [
     "step-1", "step-2", "step-3", "step-4", "step-5", 
     "step-6", "step-12", "step-7", "step-8", "step-9", "step-10", 
-    "step-11", "step-13", "step-14", "step-15",
+    "step-11", "step-13", "step-gops", "step-14", "step-15",
     "step-16", "step-17"
   ],
   Do: ["step-18", "step-19", "step-20"],
@@ -147,9 +147,9 @@ export const getCustomPhases = (isAdmin: boolean) => {
   }
   return base;
 };
-export const isPhaseStepsCompleted = (phaseId: string, completedSteps: Set<string>) => {
+export const isPhaseStepsCompleted = (phaseId: string, completedSteps: Set<string>, naSteps?: Set<string>) => {
   const steps = PHASE_STEPS_MAP[phaseId as Phase] || [];
-  return steps.length > 0 && steps.every((s) => completedSteps.has(s));
+  return steps.length > 0 && steps.every((s) => completedSteps.has(s) || (naSteps && naSteps.has(s)));
 };
 
 const getPhaseTabColors = (id: string, isCurrent: boolean) => {
@@ -222,6 +222,7 @@ export function CustomStepper({
   completedPhases,
   onToggleComplete,
   completedSteps,
+  naSteps,
   isAdmin,
 }: {
   current: Phase;
@@ -229,6 +230,7 @@ export function CustomStepper({
   completedPhases: Set<string>;
   onToggleComplete: (p: Phase) => void;
   completedSteps: Set<string>;
+  naSteps?: Set<string>;
   isAdmin?: boolean;
 }) {
   const customPhases = getCustomPhases(!!isAdmin);
@@ -238,7 +240,7 @@ export function CustomStepper({
       {customPhases.map((phase, i) => {
         const isCurrent = i === currentIndex;
         const isCompleted =
-          completedPhases.has(phase.id) || isPhaseStepsCompleted(phase.id, completedSteps);
+          completedPhases.has(phase.id) || isPhaseStepsCompleted(phase.id, completedSteps, naSteps);
         return (
           <div
             key={phase.id}

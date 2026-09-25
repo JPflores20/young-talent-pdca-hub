@@ -12,7 +12,9 @@ interface PhaseDoProps {
   kpi_tree_foco_image?: string;
   on_kpi_tree_foco_image_change: (img: string | undefined) => void;
   completed_steps: Set<string>;
+  na_steps?: Set<string>;
   on_toggle_step: (step_id: string) => void;
+  on_toggle_na?: (step_id: string) => void;
 }
 
 export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
@@ -22,8 +24,7 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
   on_evidencias_solucion_change,
   kpi_tree_foco_image,
   on_kpi_tree_foco_image_change,
-  completed_steps,
-  on_toggle_step,
+  completed_steps, na_steps, on_toggle_step, on_toggle_na,
 }) => {
   return (
     <div className="space-y-6">
@@ -33,6 +34,7 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
         onChange={on_action_items_change}
         isStepCompleted={completed_steps.has("step-18")}
         onToggleStep={() => on_toggle_step("step-18")}
+        isNa={na_steps?.has("step-18")} onToggleNa={() => on_toggle_na?.("step-18")}
       />
 
       {/* ── PASO 19: Evidencia de soluciones ──────────────────────────── */}
@@ -42,6 +44,7 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
         onEvidenciasChange={on_evidencias_solucion_change}
         isStepCompleted={completed_steps.has("step-19")}
         onToggleStep={() => on_toggle_step("step-19")}
+        isNa={na_steps?.has("step-19")} onToggleNa={() => on_toggle_na?.("step-19")}
       />
 
       {/* ── PASO 20: Arbol de KPII's con PIS foco ─────────────────────── */}
@@ -53,6 +56,7 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
           subtitle="Sube la imagen del KPI Tree objetivo"
           isStepCompleted={completed_steps.has("step-20")}
           onToggleStep={() => on_toggle_step("step-20")}
+          isNa={na_steps?.has("step-20")} onToggleNa={() => on_toggle_na?.("step-20")}
         />
       </div>
     </div>

@@ -93,7 +93,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
         </div>
         <div className="w-full md:w-64 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <Label className="text-xs font-semibold">¿Cumple?</Label>
+            <Label className="text-xs font-semibold">¿CUMPLE?</Label>
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -106,7 +106,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
           </div>
           <div>
             <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">
-              Puntuación
+              PUNTUACIÓN
             </Label>
             <Select
               disabled={disabled}
@@ -127,7 +127,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
           </div>
           <div>
             <Label className="text-[10px] uppercase text-muted-foreground mb-1 block">
-              ¿Cómo lo estamos haciendo?
+              ¿CÓMO LO ESTAMOS HACIENDO?
             </Label>
             <Textarea
               disabled={disabled}

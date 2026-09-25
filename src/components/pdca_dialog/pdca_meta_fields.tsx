@@ -48,7 +48,7 @@ export const PdcaMetaFields: React.FC<MetaFieldsProps> = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl border border-border/80 bg-card/60">
       <div className="space-y-1.5 sm:col-span-2">
-        <Label className="text-xs font-semibold">Título del Proyecto</Label>
+        <Label className="text-xs font-semibold">TÍTULO DEL PROYECTO</Label>
         <Input
           value={title_value}
           onChange={(e) => on_title_change(e.target.value)}
@@ -59,7 +59,7 @@ export const PdcaMetaFields: React.FC<MetaFieldsProps> = ({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs font-semibold">Área Operativa</Label>
+        <Label className="text-xs font-semibold">ÁREA OPERATIVA</Label>
         <Select value={area_value} onValueChange={on_area_change} disabled={!is_editable}>
           <SelectTrigger className="h-9 text-xs">
             <SelectValue placeholder="Seleccionar área" />
@@ -77,7 +77,7 @@ export const PdcaMetaFields: React.FC<MetaFieldsProps> = ({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs font-semibold">Fecha Límite</Label>
+        <Label className="text-xs font-semibold">FECHA LÍMITE</Label>
         <DatePicker
           date={deadline_date}
           setDate={on_deadline_change}
@@ -90,7 +90,7 @@ export const PdcaMetaFields: React.FC<MetaFieldsProps> = ({
       {is_admin_user && (
         <>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label className="text-xs font-semibold">Autor Principal</Label>
+            <Label className="text-xs font-semibold">AUTOR PRINCIPAL</Label>
             <Select
               value={author_email}
               onValueChange={(selected_email) => {
@@ -112,7 +112,7 @@ export const PdcaMetaFields: React.FC<MetaFieldsProps> = ({
           </div>
 
           <div className="space-y-1.5 sm:col-span-2">
-            <Label className="text-xs font-semibold">Co-responsables Asignados</Label>
+            <Label className="text-xs font-semibold">CO-RESPONSABLES ASIGNADOS</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button

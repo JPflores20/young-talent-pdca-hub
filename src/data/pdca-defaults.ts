@@ -27,6 +27,7 @@ export const DEFAULT_PARTICIPANTES: ParticipantesData = {
   externos_nombres: "",
   externos_roles: "",
   fecha_reunion_inicial: "",
+  fecha_reunion_final: "",
   reunion_rutina: "",
 };
 

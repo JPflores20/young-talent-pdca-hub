@@ -34,7 +34,9 @@ interface ImageUploadSectionProps {
   subtitle?: string;
   description?: string;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
   hideCard?: boolean;
   customBadge?: React.ReactNode;
 }
@@ -45,8 +47,7 @@ export function ImageUploadSection({
   title = "Imagen Adjunta",
   subtitle = "Sube tu imagen",
   description = "Adjunta una foto o imagen (se comprimirá y guardará automáticamente).",
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
   hideCard = false,
   customBadge,
 }: ImageUploadSectionProps) {
@@ -321,7 +322,7 @@ export function ImageUploadSection({
   }
 
   return (
-    <StepCard title={title} isStepCompleted={isStepCompleted} onToggleStep={onToggleStep} headerRight={customBadge}>
+    <StepCard title={title} isStepCompleted={isStepCompleted} onToggleStep={onToggleStep} isNa={isNa} onToggleNa={onToggleNa} headerRight={customBadge}>
       {innerContent}
     </StepCard>
   );
@@ -413,7 +414,9 @@ interface MultiImageUploadSectionProps {
   description?: string;
   maxImages?: number;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
   /** Custom accept string for the file input. When set, also updates file validation. */
   acceptTypes?: string;
   customBadge?: React.ReactNode;
@@ -426,8 +429,7 @@ export function MultiImageUploadSection({
   subtitle = "Sube tus imágenes",
   description = "Adjunta fotos o imágenes (se comprimirán y guardarán automáticamente).",
   maxImages = 6,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
   acceptTypes,
   customBadge,
 }: MultiImageUploadSectionProps) {
@@ -589,6 +591,8 @@ export function MultiImageUploadSection({
       title={title}
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
       headerRight={
         <div className="flex items-center gap-2 mr-2">
           {customBadge}

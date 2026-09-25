@@ -193,7 +193,7 @@ function AuthPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="loginEmail">Correo Electrónico</Label>
+                <Label htmlFor="loginEmail">CORREO ELECTRÓNICO</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -210,7 +210,7 @@ function AuthPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="loginPassword">Contraseña</Label>
+                  <Label htmlFor="loginPassword">CONTRASEÑA</Label>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -301,7 +301,7 @@ function AuthPage() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1 sm:col-span-2">
                     <Label htmlFor="nombre" className="text-xs">
-                      Nombre(s) *
+                      NOMBRE(S) *
                     </Label>
                     <Input
                       id="nombre"
@@ -313,7 +313,7 @@ function AuthPage() {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="paterno" className="text-xs">
-                      Apellido Paterno *
+                      APELLIDO PATERNO *
                     </Label>
                     <Input
                       id="paterno"
@@ -325,7 +325,7 @@ function AuthPage() {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="materno" className="text-xs">
-                      Apellido Materno
+                      APELLIDO MATERNO
                     </Label>
                     <Input
                       id="materno"
@@ -343,7 +343,7 @@ function AuthPage() {
                 </h3>
                 <div className="space-y-1">
                   <Label htmlFor="regEmail" className="text-xs">
-                    Correo Electrónico Corporativo *
+                    CORREO ELECTRÓNICO CORPORATIVO *
                   </Label>
                   <Input
                     id="regEmail"
@@ -358,7 +358,7 @@ function AuthPage() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label htmlFor="regPassword" className="text-xs">
-                      Contraseña *
+                      CONTRASEÑA *
                     </Label>
                     <div className="relative">
                       <Input
@@ -391,7 +391,7 @@ function AuthPage() {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="confirmPassword" className="text-xs">
-                      Confirmar *
+                      CONFIRMAR *
                     </Label>
                     <div className="relative">
                       <Input

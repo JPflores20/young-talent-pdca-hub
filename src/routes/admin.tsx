@@ -217,7 +217,7 @@ function AdminPanel() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre Completo</Label>
+              <Label htmlFor="name">NOMBRE COMPLETO</Label>
               <Input
                 id="name"
                 required
@@ -228,7 +228,7 @@ function AdminPanel() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico (Obligatorio)</Label>
+              <Label htmlFor="email">CORREO ELECTRÓNICO (OBLIGATORIO)</Label>
               <Input
                 id="email"
                 type="email"
@@ -240,7 +240,7 @@ function AdminPanel() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña temporal</Label>
+              <Label htmlFor="password">CONTRASEÑA TEMPORAL</Label>
               <Input
                 id="password"
                 type="password"
@@ -252,7 +252,7 @@ function AdminPanel() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="area">Área / Departamento</Label>
+              <Label htmlFor="area">ÁREA / DEPARTAMENTO</Label>
               <Input
                 id="area"
                 required
@@ -263,7 +263,7 @@ function AdminPanel() {
             </div>
 
             <div className="space-y-2">
-              <Label>Rol del Sistema</Label>
+              <Label>ROL DEL SISTEMA</Label>
               <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -295,14 +295,14 @@ function AdminPanel() {
           <Table>
             <TableHeader>
               <TableRow className="bg-secondary/80">
-                <TableHead className="font-semibold text-foreground/80">Nombre</TableHead>
-                <TableHead className="font-semibold text-foreground/80">Correo</TableHead>
-                <TableHead className="font-semibold text-foreground/80">Área</TableHead>
+                <TableHead className="font-semibold text-foreground/80">NOMBRE</TableHead>
+                <TableHead className="font-semibold text-foreground/80">CORREO</TableHead>
+                <TableHead className="font-semibold text-foreground/80">ÁREA</TableHead>
                 <TableHead className="w-40 font-semibold text-foreground/80">
-                  Modificar Permisos
+                  MODIFICAR PERMISOS
                 </TableHead>
                 <TableHead className="w-20 font-semibold text-foreground/80 text-center">
-                  Acciones
+                  ACCIONES
                 </TableHead>
               </TableRow>
             </TableHeader>

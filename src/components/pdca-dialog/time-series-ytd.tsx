@@ -126,8 +126,7 @@ export function TimeSeriesYTD({
   onChange,
   unit = "$",
   onUnitChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
   title = "PASO 3: SITUACIÓN ACTUAL",
   chartTitle = "SITUACIÓN ACTUAL",
   onTitleChange,
@@ -138,7 +137,9 @@ export function TimeSeriesYTD({
   unit?: string;
   onUnitChange?: (newUnit: string) => void;
   isStepCompleted?: boolean | undefined;
+  isNa?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
+  onToggleNa?: (() => void) | undefined;
   title?: string | undefined;
   chartTitle?: string | undefined;
   onTitleChange?: ((newTitle: string) => void) | undefined;
@@ -288,6 +289,8 @@ export function TimeSeriesYTD({
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       headerRight={customBadge}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
     >
       <StepInstructions>
         <p className="mb-1">1. Rellena el campo gris con su problema.</p>

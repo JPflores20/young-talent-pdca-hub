@@ -178,8 +178,7 @@ export function KpiTreeInteractive({
   initialNodes,
   initialEdges,
   onChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }: KpiTreeProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const startNodes =
@@ -257,6 +256,8 @@ export function KpiTreeInteractive({
       title="PASO 4: KPI TREE (IP)"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
       headerRight={
         <div className="flex gap-2">
           <Button

@@ -29,10 +29,10 @@ export function ParetoDataTable({
       <Table className="text-xs">
         <TableHeader className="bg-secondary/40">
           <TableRow>
-            <TableHead className="py-2 px-3">Área / Categoría</TableHead>
-            <TableHead className="py-2 px-3 w-24">Valor (Gap)</TableHead>
-            <TableHead className="py-2 px-3 w-20">% Ind.</TableHead>
-            <TableHead className="py-2 px-3 w-20">% Acum.</TableHead>
+            <TableHead className="py-2 px-3">ÁREA / CATEGORÍA</TableHead>
+            <TableHead className="py-2 px-3 w-24">VALOR (GAP)</TableHead>
+            <TableHead className="py-2 px-3 w-20">% IND.</TableHead>
+            <TableHead className="py-2 px-3 w-20">% ACUM.</TableHead>
             <TableHead className="w-10" />
           </TableRow>
         </TableHeader>

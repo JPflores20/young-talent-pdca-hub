@@ -57,7 +57,9 @@ interface ParetoInteractiveProps {
   unit?: string;
   onUnitChange?: (new_unit: string) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
   onAddRoot?: () => void;
   chart_title?: string;
   on_chart_title_change?: (new_title: string) => void;
@@ -231,8 +233,7 @@ export function ParetoInteractive({
   onClose,
   unit = "",
   onUnitChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
   onAddRoot,
   chart_title: external_chart_title,
   on_chart_title_change: external_on_title_change,
@@ -371,6 +372,8 @@ export function ParetoInteractive({
       }
       {...(level === 0 && isStepCompleted !== undefined ? { isStepCompleted } : {})}
       {...(level === 0 && onToggleStep ? { onToggleStep } : {})}
+      {...(level === 0 && isNa !== undefined ? { isNa } : {})}
+      {...(level === 0 && onToggleNa ? { onToggleNa } : {})}
       headerRight={
         <div className="flex gap-2">
           {onClose && (
@@ -511,10 +514,10 @@ export function ParetoInteractive({
           <Table className="text-xs">
             <TableHeader className="bg-secondary/40">
               <TableRow>
-                <TableHead className="py-2 px-3">Area / Categoria</TableHead>
-                <TableHead className="py-2 px-3 w-24">Valor (Gap)</TableHead>
-                <TableHead className="py-2 px-3 w-20">% Ind.</TableHead>
-                <TableHead className="py-2 px-3 w-20">% Acum.</TableHead>
+                <TableHead className="py-2 px-3">AREA / CATEGORIA</TableHead>
+                <TableHead className="py-2 px-3 w-24">VALOR (GAP)</TableHead>
+                <TableHead className="py-2 px-3 w-20">% IND.</TableHead>
+                <TableHead className="py-2 px-3 w-20">% ACUM.</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -632,8 +635,7 @@ export function ParetoSection({
   onUnitChange,
   paretoTitles,
   onParetoTitlesChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }: {
   drillDowns: string[];
   setDrillDowns: (d: string[]) => void;
@@ -644,7 +646,9 @@ export function ParetoSection({
   paretoTitles?: Record<string, string> | undefined;
   onParetoTitlesChange?: ((titles: Record<string, string>) => void) | undefined;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }) {
   const [internal_title_map, set_internal_title_map] = useState<Record<string, string>>({});
   const title_map = paretoTitles ?? internal_title_map;

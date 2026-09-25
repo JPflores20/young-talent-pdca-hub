@@ -11,15 +11,16 @@ interface EvidenciasSolucionStepProps {
   evidencias: EvidenciaSolucionItem[];
   onEvidenciasChange: (evs: EvidenciaSolucionItem[]) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }
 
 export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
   actions,
   evidencias,
   onEvidenciasChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }) => {
   const handleImageChange = (actionId: string, image: string | undefined) => {
     const newEvidencias = [...evidencias];
@@ -58,7 +59,8 @@ export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
       title="PASO 19: EVIDENCIA DE SOLUCIONES"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
-      headerRight={<Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold border-0 ml-2">REVISIÓN</Badge>}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
     >
       <StepInstructions>
         Por cada acción del plan, adjunta una foto o PDF como evidencia.
@@ -66,7 +68,7 @@ export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
 
       <div className="mt-4 space-y-8">
         <div className="space-y-4">
-          <h4 className="text-sm font-bold text-slate-700 uppercase">Evidencias por Acción</h4>
+          <h4 className="text-sm font-bold text-slate-700 uppercase">EVIDENCIAS POR ACCIÓN</h4>
           {actions.length === 0 ? (
             <p className="text-xs text-muted-foreground italic">No hay acciones definidas en el Paso 8.</p>
           ) : (

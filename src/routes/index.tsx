@@ -361,25 +361,25 @@ function MisPdcas() {
           <TableHeader>
             <TableRow className="bg-secondary/80 hover:bg-secondary/80">
               <TableHead className="font-semibold text-foreground/80">
-                Título del Proyecto
+                TÍTULO DEL PROYECTO
               </TableHead>
               {currentUser?.role === "admin" && (
                 <TableHead className="hidden sm:table-cell font-semibold text-foreground/80">
-                  Autor / Creador
+                  AUTOR / CREADOR
                 </TableHead>
               )}
               <TableHead className="hidden md:table-cell font-semibold text-foreground/80">
-                Área
+                ÁREA
               </TableHead>
-              <TableHead className="w-32 font-semibold text-foreground/80">Fase Actual</TableHead>
+              <TableHead className="w-32 font-semibold text-foreground/80">FASE ACTUAL</TableHead>
               <TableHead className="hidden w-36 lg:table-cell font-semibold text-foreground/80">
-                Fecha Límite
+                FECHA LÍMITE
               </TableHead>
               <TableHead className="hidden w-40 lg:table-cell font-semibold text-foreground/80">
-                Actualización
+                ACTUALIZACIÓN
               </TableHead>
               <TableHead className="w-24 text-right font-semibold text-foreground/80">
-                Acción
+                ACCIÓN
               </TableHead>
             </TableRow>
           </TableHeader>

@@ -18,7 +18,7 @@ describe("PdcaPhasePlan", () => {
         problem_description="Descripción de prueba"
         vpo_checkpoints={DEFAULT_VPO_CHECKPOINTS}
         on_vpo_checkpoints_change={vi.fn()}
-        completed_steps={new Set()}
+        completed_steps={new Set()} na_steps={new Set()}
         on_toggle_step={vi.fn()}
         is_editable={true}
       />,

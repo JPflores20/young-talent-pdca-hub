@@ -149,13 +149,17 @@ export function VpoCheckpointTable({
   onChange,
   problemaTexto,
   completedSteps,
+  naSteps,
   onToggleStep,
+  onToggleNa,
 }: {
   checkpoints: VpoCheckpointItem[];
   onChange: (newCheckpoints: VpoCheckpointItem[]) => void;
   problemaTexto: string;
   completedSteps: Set<string>;
+  naSteps?: Set<string> | undefined;
   onToggleStep: (stepId: string) => void;
+  onToggleNa?: ((stepId: string) => void) | undefined;
 }) {
   const updateStatus = (id: string, newStatus: "YES" | "NO" | "N/A" | "") => {
     const updated = checkpoints.map((item) =>
@@ -179,6 +183,8 @@ export function VpoCheckpointTable({
       title="PASO 2: PHASE SDCA CHECKLIST"
       isStepCompleted={completedSteps.has("step-2")}
       onToggleStep={() => onToggleStep("step-2")}
+      isNa={naSteps?.has("step-2")}
+      onToggleNa={() => onToggleNa?.("step-2")}
     >
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <StepInstructions>
@@ -196,7 +202,7 @@ export function VpoCheckpointTable({
 
         <div className="w-full flex rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-950/20 overflow-hidden shadow-sm">
           <div className="flex w-[120px] shrink-0 items-center justify-center bg-white dark:bg-background border-r border-sky-500/30 p-4">
-            <span className="font-bold text-sky-500">Guía</span>
+            <span className="font-bold text-sky-500 uppercase tracking-widest">GUÍA</span>
           </div>
           <div className="flex-1 space-y-3 p-4 text-sm font-medium text-foreground/90">
             <p>
@@ -268,16 +274,16 @@ export function VpoCheckpointTable({
           <TableHeader className="bg-gradient-to-r from-[#0a1428] via-[#0f1c38] to-[#0a1428] text-white">
             <TableRow className="border-b border-slate-800/80">
               <TableHead className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-blue-200 w-56 border-r border-slate-800/60">
-                Bloque Pilar Gestión
+                BLOQUE PILAR GESTIÓN
               </TableHead>
               <TableHead className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-blue-200 border-r border-slate-800/60">
-                VPO Tool Checkpoint
+                VPO TOOL CHECKPOINT
               </TableHead>
               <TableHead className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-blue-200 w-72 border-r border-slate-800/60">
-                Evidencias / comentarios
+                EVIDENCIAS / COMENTARIOS
               </TableHead>
               <TableHead className="py-3.5 px-4 text-[11px] font-extrabold uppercase tracking-wider text-blue-200 w-44 text-center">
-                Estatus
+                ESTATUS
               </TableHead>
             </TableRow>
           </TableHeader>

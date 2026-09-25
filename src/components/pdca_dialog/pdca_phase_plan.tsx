@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Bold, Italic, List, ListOrdered } from "lucide-react";
+import { Bold, Italic, List, ListOrdered, Plus, X } from "lucide-react";
 import { PdcaGoalDefinition, PdcaParticipants } from "@/components/pdca-goal-definition";
 import { StepCard } from "@/components/ui/step-card";
 import { StepInstructions } from "../pdca-dialog/step-instructions";
@@ -10,7 +10,12 @@ import { ImageUploadSection, MultiImageUploadSection, ALL_ACCEPT_STRING } from "
 import { ParetoSection } from "@/components/pdca-dialog/pareto-section";
 import { IshikawaSection } from "../pdca-dialog/ishikawa-section";
 import { FiveWhysSection } from "../pdca-dialog/five-whys-section";
+import { FlavorCorrelationSection } from "../pdca-dialog/flavor-correlation-section";
+import { GopThemesSection } from "../GopThemesSection";
 import { ColeccionDatosTable } from "./coleccion-datos-table";
+import { VozConsumidorTable } from "./voz-consumidor-table";
+import { AnalisisRiesgosTable } from "./analisis-riesgos-table";
+import { ConclusionesCausaRaizTable } from "./conclusiones-causa-raiz-table";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -30,7 +35,8 @@ import type {
   VpoCheckpointItem,
   ParetoItem,
   IshikawaItem,
-  FiveWhysTableData
+  FiveWhysTableData,
+  GopThemeItem
 } from "@/data/pdca";
 
 // ─── Áreas disponibles ────────────────────────────────────────────────────────
@@ -181,7 +187,9 @@ interface PhasePlanProps {
   vpo_checkpoints: VpoCheckpointItem[];
   on_vpo_checkpoints_change: (checkpoints: VpoCheckpointItem[]) => void;
   completed_steps: Set<string>;
+  na_steps?: Set<string>;
   on_toggle_step: (step_id: string) => void;
+  on_toggle_na?: (step_id: string) => void;
   is_editable: boolean;
   
   // Nuevos props migrados
@@ -209,6 +217,20 @@ interface PhasePlanProps {
   on_ishikawas_change?: (items: IshikawaItem[]) => void;
   five_whys_tables?: FiveWhysTableData[];
   on_five_whys_tables_change?: (tables: FiveWhysTableData[]) => void;
+  voz_consumidor?: any[];
+  on_voz_consumidor_change?: (items: any[]) => void;
+  analisis_riesgos_proyecto?: any[];
+  on_analisis_riesgos_proyecto_change?: (items: any[]) => void;
+  especificacion_procesos_image?: string;
+  on_especificacion_procesos_image_change?: (img?: string) => void;
+  benchmark_image?: string;
+  on_benchmark_image_change?: (img?: string) => void;
+  conclusiones_causa_raiz?: any[];
+  on_conclusiones_causa_raiz_change?: (items: any[]) => void;
+  has_flavor_correlation?: boolean;
+  set_has_flavor_correlation?: (val: boolean) => void;
+  gop_themes_data?: GopThemeItem[];
+  on_gop_themes_data_change?: (data: GopThemeItem[]) => void;
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -236,8 +258,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
   on_participants_info_change,
   vpo_checkpoints,
   on_vpo_checkpoints_change,
-  completed_steps,
-  on_toggle_step,
+  completed_steps, na_steps, on_toggle_step, on_toggle_na,
   is_editable,
   process_mapping_files,
   on_process_mapping_files_change,
@@ -263,6 +284,20 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
   on_ishikawas_change,
   five_whys_tables,
   on_five_whys_tables_change,
+  voz_consumidor,
+  on_voz_consumidor_change,
+  analisis_riesgos_proyecto,
+  on_analisis_riesgos_proyecto_change,
+  especificacion_procesos_image,
+  on_especificacion_procesos_image_change,
+  benchmark_image,
+  on_benchmark_image_change,
+  conclusiones_causa_raiz,
+  on_conclusiones_causa_raiz_change,
+  has_flavor_correlation,
+  set_has_flavor_correlation,
+  gop_themes_data,
+  on_gop_themes_data_change,
 }) => {
   return (
     <div className="space-y-6">
@@ -271,6 +306,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         title="PASO 1: PROYECT STATEMENT"
         isStepCompleted={completed_steps.has("step-1")}
         onToggleStep={() => on_toggle_step("step-1")}
+        isNa={na_steps?.has("step-1")} onToggleNa={() => on_toggle_na?.("step-1")}
       >
         <StepInstructions>
           <p>
@@ -282,7 +318,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
           {/* Fila: Título, Área, Fecha Límite, Autor */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1.5 lg:col-span-1">
-              <Label className="text-xs font-semibold">Título del proyecto</Label>
+              <Label className="text-xs font-semibold">TÍTULO DEL PROYECTO</Label>
               <Input
                 value={title_value}
                 onChange={(e) => on_title_change(e.target.value)}
@@ -293,7 +329,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Área</Label>
+              <Label className="text-xs font-semibold">ÁREA</Label>
               <Select value={area_value} onValueChange={on_area_change} disabled={!is_editable}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Seleccionar área" />
@@ -309,7 +345,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Fecha Límite</Label>
+              <Label className="text-xs font-semibold">FECHA LÍMITE</Label>
               <DatePicker
                 date={deadline_date}
                 setDate={on_deadline_change}
@@ -320,7 +356,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Autor Original</Label>
+              <Label className="text-xs font-semibold">AUTOR ORIGINAL</Label>
               {is_admin_user ? (
                 <Select
                   value={author_email}
@@ -348,7 +384,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
 
           {/* Usuarios Asignados */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Usuarios Asignados (Co-responsables)</Label>
+            <Label className="text-xs font-semibold">USUARIOS ASIGNADOS (CO-RESPONSABLES)</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -392,15 +428,9 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
             </Popover>
           </div>
 
-          {/* Equipo / Integrantes */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Equipo / Integrantes</Label>
-            <TeamMembersInput members={team_members_list} onChange={on_team_members_change} />
-          </div>
-
           {/* Descripción del Problema */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Descripción del Problema</Label>
+            <Label className="text-xs font-semibold">DESCRIPCIÓN DEL PROBLEMA</Label>
             <RichTextEditor
               value={problem_description}
               onChange={on_problem_change}
@@ -411,7 +441,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
           {/* Definición de la Meta (VPO Standard) */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold">Definición de la Meta (VPO Standard)</Label>
+              <Label className="text-xs font-semibold">DEFINICIÓN DE LA META (VPO STANDARD)</Label>
               <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                 ⏱ Formato oficial A3 / A8 InBev
               </span>
@@ -437,7 +467,9 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         onChange={on_vpo_checkpoints_change}
         problemaTexto={problem_description}
         completedSteps={completed_steps}
+        naSteps={na_steps}
         onToggleStep={on_toggle_step}
+        onToggleNa={on_toggle_na}
       />
 
       {/* ── PASO 3: SIPOC MAP (Placeholder) ─────────────────────────── */}
@@ -445,6 +477,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         title="PASO 3: SIPOC MAP"
         isStepCompleted={completed_steps.has("step-3")}
         onToggleStep={() => on_toggle_step("step-3")}
+        isNa={na_steps?.has("step-3")} onToggleNa={() => on_toggle_na?.("step-3")}
       >
         <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
           <p className="text-muted-foreground font-medium">Sección en construcción</p>
@@ -463,54 +496,51 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         acceptTypes={ALL_ACCEPT_STRING}
         isStepCompleted={completed_steps.has("step-4")}
         onToggleStep={() => on_toggle_step("step-4")}
+        isNa={na_steps?.has("step-4")} onToggleNa={() => on_toggle_na?.("step-4")}
       />
 
-      {/* ── PASO 5: Voz del Consumidor (Placeholder) ────────────────── */}
-      <StepCard
-        title="PASO 5: VOZ DEL CONSUMIDOR"
+      {/* ── PASO 5: Voz del Consumidor ────────────────── */}
+      <VozConsumidorTable
+        items={voz_consumidor || []}
+        onChange={on_voz_consumidor_change!}
         isStepCompleted={completed_steps.has("step-5")}
         onToggleStep={() => on_toggle_step("step-5")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para la Voz del Consumidor.</p>
-        </div>
-      </StepCard>
+        isNa={na_steps?.has("step-5")} onToggleNa={() => on_toggle_na?.("step-5")}
+      />
 
-      {/* ── PASO 6: Análisis de Riesgos (Placeholder) ───────────────── */}
-      <StepCard
+      {/* ── PASO 6: Análisis de Riesgos ───────────────── */}
+      <AnalisisRiesgosTable
         title="PASO 6: ANÁLISIS DE RIESGOS DEL PROYECTO"
+        items={analisis_riesgos_proyecto || []}
+        onChange={on_analisis_riesgos_proyecto_change!}
         isStepCompleted={completed_steps.has("step-6")}
         onToggleStep={() => on_toggle_step("step-6")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para el Análisis de Riesgos del proceso.</p>
-        </div>
-      </StepCard>
+        isNa={na_steps?.has("step-6")} onToggleNa={() => on_toggle_na?.("step-6")}
+      />
 
-      {/* ── PASO 7: Situación Actual PI's (Antes Paso 12) ─────────────── */}
+      {/* ── PASO 7: Situación Actual ─────────────── */}
       <TimeSeriesYTD
         value={target_vs_actual}
         onChange={on_target_vs_actual_change}
         unit={target_vs_actual_unit}
         onUnitChange={on_target_vs_actual_unit_change}
-        title="PASO 7: CURRENT PROCESS PERMANANCE (SITUACIÓN ACTUAL PI'S)"
+        title="PASO 7: SITUACIÓN ACTUAL"
         chartTitle={target_vs_actual_title}
         onTitleChange={on_target_vs_actual_title_change}
         isStepCompleted={completed_steps.has("step-12")}
         onToggleStep={() => on_toggle_step("step-12")}
+        isNa={na_steps?.has("step-12")} onToggleNa={() => on_toggle_na?.("step-12")}
       />
 
       {/* ── PASO 8: Línea base ──────────────────────────────────────── */}
       <ImageUploadSection
         image={baseline_image || null}
         onChange={(img) => on_baseline_image_change?.(img || undefined)}
-        title="PASO 8: LÍNEA BASE (BASE LINE)"
+        title="PASO 8: LÍNEA BASE"
         subtitle="Sube una imagen representativa del baseline"
-        customBadge={<Badge className="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold border-0 ml-2">REVISIÓN</Badge>}
         isStepCompleted={completed_steps.has("step-7")}
         onToggleStep={() => on_toggle_step("step-7")}
+        isNa={na_steps?.has("step-7")} onToggleNa={() => on_toggle_na?.("step-7")}
       />
 
       {/* ── PASO 9: Data collection Plan ────────────────────────────── */}
@@ -519,6 +549,7 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         onChange={(d) => on_coleccion_datos_change?.(d)}
         isStepCompleted={completed_steps.has("step-8")}
         onToggleStep={() => on_toggle_step("step-8")}
+        isNa={na_steps?.has("step-8")} onToggleNa={() => on_toggle_na?.("step-8")}
       />
 
       {/* ── PASO 10: Pareto ──────────────────────────────────────────── */}
@@ -533,82 +564,145 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         onParetoTitlesChange={on_pareto_titles_change}
         isStepCompleted={completed_steps.has("step-9")}
         onToggleStep={() => on_toggle_step("step-9")}
+        isNa={na_steps?.has("step-9")} onToggleNa={() => on_toggle_na?.("step-9")}
       />
 
-      {/* ── PASO 11: PTS/6TES (Placeholder) ─────────────────────────── */}
-      <StepCard
-        title="PASO 11: PTS/6TES"
+      {/* Correlaciones (Análisis de Flavors) */}
+      <div className="pt-2">
+        {has_flavor_correlation ? (
+          <div className="relative group/flavor pt-4 border-t border-border/40 mt-4">
+            {is_admin_user && (
+              <div className="absolute top-2 right-2 opacity-0 group-hover/flavor:opacity-100 transition-opacity z-10 bg-background/80 backdrop-blur-sm p-1 rounded-md shadow-sm border border-border/50">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                      <X className="size-4 mr-2" /> Quitar Análisis
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80" align="end">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-sm">¿QUITAR CORRELACIÓN DE FLAVORS?</h4>
+                      <p className="text-xs text-muted-foreground">
+                        Esta acción ocultará la sección.
+                      </p>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => set_has_flavor_correlation?.(false)}
+                        >
+                          Sí, quitar
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+            <FlavorCorrelationSection
+              isStepCompleted={completed_steps.has("step-flavor")}
+              onToggleStep={() => on_toggle_step("step-flavor")}
+              isNa={na_steps?.has("step-flavor")} onToggleNa={() => on_toggle_na?.("step-flavor")}
+            />
+          </div>
+        ) : (
+          is_admin_user && (
+            <div className="flex justify-center mt-4">
+              <Button
+                onClick={() => set_has_flavor_correlation?.(true)}
+                variant="outline"
+                className="gap-2 shadow-sm bg-card hover:bg-card/80"
+              >
+                <Plus className="size-4" /> Agregar Análisis de Flavors (Correlaciones)
+              </Button>
+            </div>
+          )
+        )}
+      </div>
+
+      {/* ── PASO 11: Especificaciones del Proceso ─────────────────────────── */}
+      <ImageUploadSection
+        image={especificacion_procesos_image || null}
+        onChange={(img) => on_especificacion_procesos_image_change?.(img || undefined)}
+        title="PASO 11: ESPECIFICACIONES DEL PROCESO"
+        subtitle="Sube una imagen con las especificaciones"
         isStepCompleted={completed_steps.has("step-10")}
         onToggleStep={() => on_toggle_step("step-10")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para PTS/6TES.</p>
-        </div>
-      </StepCard>
+        isNa={na_steps?.has("step-10")} onToggleNa={() => on_toggle_na?.("step-10")}
+      />
 
-      {/* ── PASO 12: Bench Mark (Placeholder) ───────────────────────── */}
-      <StepCard
-        title="PASO 12: BENCH MARK"
+      {/* ── PASO 12: Benchmark ───────────────────────── */}
+      <ImageUploadSection
+        image={benchmark_image || null}
+        onChange={(img) => on_benchmark_image_change?.(img || undefined)}
+        title="PASO 12: BENCHMARK"
+        subtitle="Sube una imagen representativa del Benchmark"
         isStepCompleted={completed_steps.has("step-11")}
         onToggleStep={() => on_toggle_step("step-11")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para Bench Mark.</p>
-        </div>
-      </StepCard>
+        isNa={na_steps?.has("step-11")} onToggleNa={() => on_toggle_na?.("step-11")}
+      />
 
-      {/* ── PASO 13: 60 PI's identificados (Placeholder) ────────────── */}
+      {/* ── PASO 13: Performance Actual del Proceso ────────────── */}
       <StepCard
-        title="PASO 13: 60 PI'S IDENTIFICADOS"
+        title="PASO 13: PERFORMANCE ACTUAL DEL PROCESO (ANÁLISIS DE PI'S)"
         isStepCompleted={completed_steps.has("step-13")}
         onToggleStep={() => on_toggle_step("step-13")}
+        isNa={na_steps?.has("step-13")} onToggleNa={() => on_toggle_na?.("step-13")}
       >
         <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para los 60 PI's identificados.</p>
+          <p className="text-muted-foreground font-medium">Revisión de PI's identificados</p>
+          <p className="text-xs text-muted-foreground mt-1">Sube la matriz de correlación o información pertinente aquí.</p>
         </div>
       </StepCard>
 
-      {/* ── PASO 14: Fishbone ───────────────────────────────────────── */}
+      {/* ── PASO 14: GOP Themes ───────────────────────────────────────── */}
+      <GopThemesSection
+        data={gop_themes_data || []}
+        onChange={on_gop_themes_data_change!}
+        isStepCompleted={completed_steps.has("step-gops")}
+        onToggleStep={() => on_toggle_step("step-gops")}
+        isNa={na_steps?.has("step-gops")} onToggleNa={() => on_toggle_na?.("step-gops")}
+      />
+
+      {/* ── PASO 15: Fishbone ───────────────────────────────────────── */}
       <IshikawaSection
         ishikawas={ishikawas || []}
         onChange={on_ishikawas_change!}
         isStepCompleted={completed_steps.has("step-14")}
         onToggleStep={() => on_toggle_step("step-14")}
+        isNa={na_steps?.has("step-14")} onToggleNa={() => on_toggle_na?.("step-14")}
       />
 
-      {/* ── PASO 15: 5 Why's ────────────────────────────────────────── */}
+      {/* ── PASO 16: 5 Why's ────────────────────────────────────────── */}
       <FiveWhysSection
         tables={five_whys_tables || []}
         onChange={on_five_whys_tables_change!}
         isStepCompleted={completed_steps.has("step-15")}
         onToggleStep={() => on_toggle_step("step-15")}
+        isNa={na_steps?.has("step-15")} onToggleNa={() => on_toggle_na?.("step-15")}
       />
-      {/* ── PASO 16: Acciones de validacion (Placeholder) ─────────────── */}
+      {/* ── PASO 17: Acciones de validacion ─────────────── */}
       <StepCard
-        title="PASO 16: ACCIONES DE VALIDACIÓN"
+        title="PASO 17: ACCIONES DE VALIDACIÓN"
         isStepCompleted={completed_steps.has("step-16")}
         onToggleStep={() => on_toggle_step("step-16")}
+        isNa={na_steps?.has("step-16")} onToggleNa={() => on_toggle_na?.("step-16")}
       >
         <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para las Acciones de validación.</p>
+          <p className="text-muted-foreground font-medium">Validación en progreso</p>
+          <p className="text-xs text-muted-foreground mt-1">Registra aquí las acciones de validación correspondientes.</p>
         </div>
       </StepCard>
 
-      {/* ── PASO 17: Conclusión de causas raíz (Placeholder) ──────────── */}
-      <StepCard
-        title="PASO 17: CONCLUSIÓN DE CAUSAS RAÍZ"
+      {/* ── PASO 18: Causas Raíz Definidas ──────────── */}
+      <ConclusionesCausaRaizTable
+        title="PASO 18: CAUSAS RAÍZ DEFINIDAS"
+        items={conclusiones_causa_raiz || []}
+        onChange={on_conclusiones_causa_raiz_change!}
         isStepCompleted={completed_steps.has("step-17")}
         onToggleStep={() => on_toggle_step("step-17")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para la Definición de causas raíz.</p>
-        </div>
-      </StepCard>
+        isNa={na_steps?.has("step-17")} onToggleNa={() => on_toggle_na?.("step-17")}
+      />
     </div>
   );
 };

@@ -124,14 +124,15 @@ interface ActionPlanTableProps {
   items: ActionItem[];
   onChange: (items: ActionItem[]) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }
 
 export function ActionPlanTable({
   items,
   onChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }: ActionPlanTableProps) {
   const addRow = () => onChange([...items, newActionRow()]);
 
@@ -146,6 +147,8 @@ export function ActionPlanTable({
       title="PASO 8: MATRIZ DE IMPACTO Y PLAN DE ACCIÓN"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
       headerRight={
         <Button
           variant="outline"
@@ -194,7 +197,7 @@ export function ActionPlanTable({
                   key={label}
                   className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[100px] leading-tight"
                 >
-                  {label}
+                  {label.toUpperCase()}
                 </TableHead>
               ))}
               <TableHead className="text-white font-bold h-8 py-1 px-1 border-r border-white/20 text-center min-w-[110px] leading-tight">
@@ -224,7 +227,7 @@ export function ActionPlanTable({
                     w,
                   )}
                 >
-                  {label}
+                  {label.toUpperCase()}
                 </TableHead>
               ))}
               <TableHead className="w-8 h-8 py-1 px-1" />

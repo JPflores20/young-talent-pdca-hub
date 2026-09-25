@@ -23,7 +23,9 @@ interface ProblemTimelineSectionProps {
   events: { id: string; time: string; description: string }[];
   onEventsChange: (events: { id: string; time: string; description: string }[]) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }
 
 export const ProblemTimelineSection: React.FC<ProblemTimelineSectionProps> = ({
@@ -33,8 +35,7 @@ export const ProblemTimelineSection: React.FC<ProblemTimelineSectionProps> = ({
   onFilterChange,
   events,
   onEventsChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }) => {
   const handleAddEvent = () => {
     onEventsChange([...events, { id: crypto.randomUUID(), time: "", description: "" }]);
@@ -73,7 +74,7 @@ export const ProblemTimelineSection: React.FC<ProblemTimelineSectionProps> = ({
       <CardContent className="space-y-6">
         <div className="flex flex-col md:flex-row gap-6 p-4 bg-gray-50 rounded-lg border">
           <div className="flex-1 space-y-3">
-            <Label className="text-sm font-semibold">Opción de Visualización</Label>
+            <Label className="text-sm font-semibold">OPCIÓN DE VISUALIZACIÓN</Label>
             <RadioGroup
               value={timelineOption}
               onValueChange={(val) => onOptionChange(val as "A" | "B")}
@@ -81,17 +82,17 @@ export const ProblemTimelineSection: React.FC<ProblemTimelineSectionProps> = ({
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="A" id="option-a" />
-                <Label htmlFor="option-a">Opción A (Flujo visual)</Label>
+                <Label htmlFor="option-a">OPCIÓN A (FLUJO VISUAL)</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="B" id="option-b" />
-                <Label htmlFor="option-b">Opción B (Tabla)</Label>
+                <Label htmlFor="option-b">OPCIÓN B (TABLA)</Label>
               </div>
             </RadioGroup>
           </div>
 
           <div className="flex-1 space-y-3">
-            <Label className="text-sm font-semibold">Filtro Temporal</Label>
+            <Label className="text-sm font-semibold">FILTRO TEMPORAL</Label>
             <Select value={timelineFilter} onValueChange={onFilterChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar filtro..." />
@@ -192,13 +193,13 @@ export const ProblemTimelineSection: React.FC<ProblemTimelineSectionProps> = ({
             <table className="w-full text-sm text-left">
               <thead className="bg-[#0070C0] text-white">
                 <tr>
-                  <th className="px-4 py-3 w-1/4 font-semibold border-r border-blue-600">
-                    Periodo ({timelineFilter})
+                  <th className="px-4 py-3 w-1/4 font-semibold border-r border-blue-600 uppercase">
+                    PERIODO ({timelineFilter})
                   </th>
-                  <th className="px-4 py-3 font-semibold border-r border-blue-600">
-                    Descripción / Evento
+                  <th className="px-4 py-3 font-semibold border-r border-blue-600 uppercase">
+                    DESCRIPCIÓN / EVENTO
                   </th>
-                  <th className="px-4 py-3 w-16 text-center">Acciones</th>
+                  <th className="px-4 py-3 w-16 text-center uppercase">ACCIONES</th>
                 </tr>
               </thead>
               <tbody>

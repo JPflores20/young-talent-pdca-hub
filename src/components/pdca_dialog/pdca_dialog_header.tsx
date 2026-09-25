@@ -33,6 +33,7 @@ interface HeaderProps {
   creation_date?: string;
   deadline_string?: string | null;
   completed_steps: Set<string>;
+  na_steps: Set<string>;
   is_saving_in_progress: boolean;
   has_pending_modifications: boolean;
   is_user_permitted_to_edit: boolean;
@@ -48,14 +49,16 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
   creation_date,
   deadline_string,
   completed_steps,
+  na_steps,
   is_saving_in_progress,
   has_pending_modifications,
   is_user_permitted_to_edit,
   on_trigger_firestore_save,
   on_go_back,
 }) => {
-  const completed_count = ALL_STEP_IDS.filter((id) => completed_steps.has(id)).length;
-  const progress_pct = TOTAL_STEPS > 0 ? Math.round((completed_count / TOTAL_STEPS) * 100) : 0;
+  const valid_steps = ALL_STEP_IDS.filter((id) => !na_steps.has(id));
+  const completed_count = valid_steps.filter((id) => completed_steps.has(id)).length;
+  const progress_pct = valid_steps.length > 0 ? Math.round((completed_count / valid_steps.length) * 100) : 0;
 
   let deadline_info = null;
   if (deadline_string && deadline_string !== "Sin límite") {

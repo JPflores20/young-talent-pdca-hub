@@ -62,17 +62,18 @@ const SERIES_COLORS = [
 ];
 
 export function FlavorCorrelationSection({
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }: {
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }) {
   const [positiveTitle, setPositiveTitle] = useState(
-    "Sensory (Global Panel) vs % of tasters who identify the positive attributes",
+    "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE POSITIVE ATTRIBUTES",
   );
   const [negativeTitle, setNegativeTitle] = useState(
-    "Sensory (Global Panel) vs % of tasters who identify the Negative Attributes",
+    "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE NEGATIVE ATTRIBUTES",
   );
 
   // Estado dinámico para todas las series, iniciado con 4 en cada lado
@@ -313,6 +314,8 @@ export function FlavorCorrelationSection({
       title="Correlación"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
       headerRight={
         <Dialog>
           <DialogTrigger asChild>
@@ -321,7 +324,7 @@ export function FlavorCorrelationSection({
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-            <h3 className="text-lg font-bold">Gestor Dinámico de Correlaciones</h3>
+            <h3 className="text-lg font-bold">GESTOR DINÁMICO DE CORRELACIONES</h3>
             <div className="flex-1 overflow-y-auto grid md:grid-cols-2 gap-6 pr-2">
               {/* Columna Positivos */}
               <div className="space-y-4">

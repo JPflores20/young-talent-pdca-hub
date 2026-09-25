@@ -185,6 +185,41 @@ export const use_pdca_dialog_state = (
     initial_pdca.informacionAdicionalFiles || initial_pdca.informacion_adicional_files || [],
   );
 
+  const [voz_consumidor, set_voz_consumidor] = useState<any[]>(
+    initial_pdca.vozConsumidor || initial_pdca.voz_consumidor || [],
+  );
+
+  const [analisis_riesgos_proyecto, set_analisis_riesgos_proyecto] = useState<any[]>(
+    initial_pdca.analisisRiesgosProyecto || initial_pdca.analisis_riesgos_proyecto || [],
+  );
+
+  const [conclusiones_causa_raiz, set_conclusiones_causa_raiz] = useState<any[]>(
+    initial_pdca.conclusionesCausaRaiz || initial_pdca.conclusiones_causa_raiz || [],
+  );
+
+  const [pruebas_ejecutadas, set_pruebas_ejecutadas] = useState<any[]>(
+    initial_pdca.pruebasEjecutadas || initial_pdca.pruebas_ejecutadas || [],
+  );
+
+  const [nuevo_performance, set_nuevo_performance] = useState<any[]>(
+    initial_pdca.nuevoPerformance || initial_pdca.nuevo_performance || [],
+  );
+  const [nuevo_performance_image, set_nuevo_performance_image] = useState<string | undefined>(
+    initial_pdca.nuevo_performance_image,
+  );
+
+  const [analisis_riesgos_estandarizacion, set_analisis_riesgos_estandarizacion] = useState<any[]>(
+    initial_pdca.analisisRiesgosEstandarizacion || initial_pdca.analisis_riesgos_estandarizacion || [],
+  );
+
+  const [conclusiones_finales, set_conclusiones_finales] = useState<string>(
+    initial_pdca.conclusionesFinales || initial_pdca.conclusiones_finales || "",
+  );
+
+  const [benchmark_image, set_benchmark_image] = useState<string | undefined>(
+    (initial_pdca as any).benchmarkImage || (initial_pdca as any).benchmark_image,
+  );
+
   const [problem_timeline_option, set_problem_timeline_option] = useState<"A" | "B">(
     initial_pdca.problemTimelineOption || "A",
   );
@@ -267,7 +302,10 @@ export const use_pdca_dialog_state = (
     new Set(initial_pdca.completedPhases || []),
   );
   const [completed_steps, set_completed_steps] = useState<Set<string>>(
-    new Set(initial_pdca.completedSteps || []),
+    new Set(initial_pdca.completedSteps || initial_pdca.completed_steps || []),
+  );
+  const [na_steps, set_na_steps] = useState<Set<string>>(
+    new Set(initial_pdca.naSteps || initial_pdca.na_steps || []),
   );
   const [definition_goal, set_definition_goal] = useState<DefinicionMeta>(
     initial_pdca.definicionMeta || DEFAULT_DEFINICION_META,
@@ -364,6 +402,8 @@ export const use_pdca_dialog_state = (
     set_completed_phases,
     completed_steps,
     set_completed_steps,
+    na_steps,
+    set_na_steps,
     definition_goal,
     set_definition_goal,
     team_members,
@@ -411,5 +451,23 @@ export const use_pdca_dialog_state = (
     set_ishikawa_conceptos,
     informacion_adicional_files,
     set_informacion_adicional_files,
+    voz_consumidor,
+    set_voz_consumidor,
+    analisis_riesgos_proyecto,
+    set_analisis_riesgos_proyecto,
+    conclusiones_causa_raiz,
+    set_conclusiones_causa_raiz,
+    pruebas_ejecutadas,
+    set_pruebas_ejecutadas,
+    nuevo_performance,
+    set_nuevo_performance,
+    nuevo_performance_image,
+    set_nuevo_performance_image,
+    analisis_riesgos_estandarizacion,
+    set_analisis_riesgos_estandarizacion,
+    conclusiones_finales,
+    set_conclusiones_finales,
+    benchmark_image,
+    set_benchmark_image,
   };
 };

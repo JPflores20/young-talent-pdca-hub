@@ -76,7 +76,7 @@ export function ParetoChart({
       {/* Controles de límites del eje Y */}
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
-          <Label className="text-[10px] uppercase tracking-wide">Y mín:</Label>
+          <Label className="text-[10px] uppercase tracking-wide">Y MÍN:</Label>
           <Input
             type="number"
             value={y_axis_min}
@@ -85,7 +85,7 @@ export function ParetoChart({
           />
         </div>
         <div className="flex items-center gap-1">
-          <Label className="text-[10px] uppercase tracking-wide">Y máx:</Label>
+          <Label className="text-[10px] uppercase tracking-wide">Y MÁX:</Label>
           <Input
             type="number"
             value={y_axis_max === "auto" ? "" : y_axis_max}

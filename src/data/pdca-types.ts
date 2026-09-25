@@ -114,6 +114,8 @@ export type ParticipantesData = {
   externosRoles?: string;
   fecha_reunion_inicial?: string;
   fechaReunionInicial?: string;
+  fecha_reunion_final?: string;
+  fechaReunionFinal?: string;
   reunion_rutina?: string;
   reunionRutina?: string;
 };
@@ -195,6 +197,8 @@ export type Pdca = {
   completedPhases?: string[];
   completed_steps?: string[];
   completedSteps?: string[];
+  na_steps?: string[];
+  naSteps?: string[];
   // Ishikawa
   ishikawa_causes?: Record<string, string[]>;
   ishikawaCauses?: Record<string, string[]>;
@@ -341,6 +345,24 @@ export type Pdca = {
   // Información Adicional GOPs multiples fotos
   informacionAdicionalFiles?: string[];
   informacion_adicional_files?: string[];
+
+  // Nuevas tablas
+  vozConsumidor?: VozDelConsumidorItem[];
+  voz_consumidor?: VozDelConsumidorItem[];
+  analisisRiesgosProyecto?: AnalisisRiesgoItem[];
+  analisis_riesgos_proyecto?: AnalisisRiesgoItem[];
+  conclusionesCausaRaiz?: ConclusionCausaRaizItem[];
+  conclusiones_causa_raiz?: ConclusionCausaRaizItem[];
+  pruebasEjecutadas?: PruebaEjecutadaItem[];
+  pruebas_ejecutadas?: PruebaEjecutadaItem[];
+  nuevoPerformance?: NuevoPerformanceItem[];
+  nuevo_performance?: NuevoPerformanceItem[];
+  nuevo_performance_image?: string;
+
+  analisisRiesgosEstandarizacion?: AnalisisRiesgoItem[];
+  analisis_riesgos_estandarizacion?: AnalisisRiesgoItem[];
+  conclusionesFinales?: string;
+  conclusiones_finales?: string;
 };
 
 export type TablaEstandarizacionItem = {
@@ -379,10 +401,64 @@ export type EvidenciaSolucionItem = {
 
 export type ColeccionDatosItem = {
   id: string;
-  fecha: string;
+  // ¿Qué Medir?
+  xs_ys: string;
   variable: string;
-  valor: number | string;
+  tipo_dato: string;
+  definicion_operacional: string;
+  // ¿Cómo Medirlo?
+  metodo_medicion: string;
+  estratificacion: string;
+  metodo_recoleccion: string;
+  // Plan de Muestreo
+  quien: string;
+  tipo_muestreo: string;
+  cuantos: string;
+  cada_cuando: string;
+};
+
+export type VozDelConsumidorItem = {
+  id: string;
+  necesidad: string;
+  importancia: string;
+  metrica: string;
   comentario: string;
+};
+
+export type AnalisisRiesgoItem = {
+  id: string;
+  riesgo: string;
+  tipo_impacto?: string;
+  probabilidad: string;
+  impacto: string;
+  prioridad?: string;
+  mitigacion: string;
+  responsable: string;
+  fecha_limite?: string;
+};
+
+export type ConclusionCausaRaizItem = {
+  id: string;
+  causaRaiz: string;
+  validacion: string;
+  conclusion: string;
+  esReal: "SI" | "NO" | "";
+};
+
+export type PruebaEjecutadaItem = {
+  id: string;
+  prueba: string;
+  fecha: string;
+  resultado: string;
+  estado: "Exitoso" | "Fallido" | "Pendiente" | "";
+};
+
+export type NuevoPerformanceItem = {
+  id: string;
+  indicador: string;
+  antes: string;
+  despues: string;
+  mejora: string;
 };
 
 export type ItfR2d2Evaluation = {

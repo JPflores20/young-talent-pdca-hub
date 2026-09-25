@@ -186,13 +186,14 @@ export const CategoryBox = ({
 export function IshikawaSection({
   ishikawas,
   onChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }: {
   ishikawas: IshikawaItem[];
   onChange: (items: IshikawaItem[]) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }) {
   const addIshikawa = () => {
     onChange([
@@ -229,6 +230,8 @@ export function IshikawaSection({
       title="PASO 14: FISHBONE"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
     >
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700">

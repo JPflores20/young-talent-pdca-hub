@@ -174,13 +174,14 @@ async function uploadToFirebase(file: File): Promise<string> {
 export function FiveWhysSection({
   tables,
   onChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }: {
   tables: FiveWhysTableData[];
   onChange: (tables: FiveWhysTableData[]) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }) {
   const addTable = () => {
     const newId = `fivewhys-${Date.now()}`;
@@ -228,6 +229,8 @@ export function FiveWhysSection({
       title="PASO 15: 5 WHY'S"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
     >
       <div className="space-y-8">
         {tables.map((table, index) => (
@@ -600,7 +603,7 @@ export function FiveWhysInteractive({
       </table>
       
       <div className="mt-6 p-4">
-        <h4 className="text-sm font-bold text-slate-700 uppercase mb-4">Evidencias por Acción</h4>
+        <h4 className="text-sm font-bold text-slate-700 uppercase mb-4">EVIDENCIAS POR ACCIÓN</h4>
         {(!value || value.filter(r => r.accion && r.accion.trim() !== "").length === 0) ? (
           <p className="text-xs text-muted-foreground italic">No hay acciones definidas en esta tabla.</p>
         ) : (

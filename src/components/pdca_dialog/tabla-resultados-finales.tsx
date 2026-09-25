@@ -163,11 +163,11 @@ export const TablaResultadosFinales: React.FC<TablaResultadosFinalesProps> = ({ 
             <table className="w-full text-xs">
               <thead className="bg-[#cc0000] text-white">
                 <tr>
-                  <th className="font-bold p-2 border-r border-white/20 text-center">PI</th>
-                  <th className="font-bold p-2 border-r border-white/20 text-center">De:</th>
-                  <th className="font-bold p-2 border-r border-white/20 text-center">A:</th>
-                  <th className="font-bold p-2 border-r border-white/20 text-center">Verde es:</th>
-                  <th className="font-bold p-2 text-center">% de Mejora</th>
+                  <th className="font-bold p-2 border-r border-white/20 text-center uppercase">PI</th>
+                  <th className="font-bold p-2 border-r border-white/20 text-center uppercase">DE:</th>
+                  <th className="font-bold p-2 border-r border-white/20 text-center uppercase">A:</th>
+                  <th className="font-bold p-2 border-r border-white/20 text-center uppercase">VERDE ES:</th>
+                  <th className="font-bold p-2 text-center uppercase">% DE MEJORA</th>
                   <th className="w-8"></th>
                 </tr>
               </thead>

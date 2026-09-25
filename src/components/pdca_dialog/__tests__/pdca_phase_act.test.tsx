@@ -17,7 +17,7 @@ describe("PdcaPhaseAct", () => {
         on_gemba_evidencias_change={vi.fn()}
         gemba_final_images={[]}
         on_gemba_final_images_change={vi.fn()}
-        completed_steps={new Set()}
+        completed_steps={new Set()} na_steps={new Set()}
         on_toggle_step={vi.fn()}
         is_editable={true}
       />,

@@ -22,7 +22,9 @@ interface GopThemesSectionProps {
   data: GopThemeItem[];
   onChange: (data: GopThemeItem[]) => void;
   isStepCompleted?: boolean;
+  isNa?: boolean | undefined;
   onToggleStep?: () => void;
+  onToggleNa?: (() => void) | undefined;
 }
 
 const MONTHS = ["Ene", "FEB", "MAR", "Abr", "MAY", "Jun", "JUL", "Ago", "SEP", "OCT", "NOV", "Dic"];
@@ -37,8 +39,7 @@ const STATUS_COLORS = {
 export function GopThemesSection({
   data,
   onChange,
-  isStepCompleted,
-  onToggleStep,
+  isStepCompleted, isNa, onToggleStep, onToggleNa,
 }: GopThemesSectionProps) {
   const addRow = () => {
     onChange([
@@ -124,9 +125,11 @@ export function GopThemesSection({
 
   return (
     <StepCard
-      title="Cumplimiento de GOPs Aplicables"
+      title="PASO 14: GOPS"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
+      isNa={isNa}
+      onToggleNa={onToggleNa}
     >
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-border text-sm">
@@ -144,11 +147,11 @@ export function GopThemesSection({
                   {m}
                 </th>
               ))}
-              <th className="border border-border p-2 w-28 text-center text-xs">Fecha Compromiso</th>
-              <th className="border border-border p-2 w-20 text-center text-xs">% Avance</th>
-              <th className="border border-border p-2 w-24 text-center text-xs">Focus GOP Items</th>
+              <th className="border border-border p-2 w-28 text-center text-xs">FECHA COMPROMISO</th>
+              <th className="border border-border p-2 w-20 text-center text-xs">% AVANCE</th>
+              <th className="border border-border p-2 w-24 text-center text-xs">FOCUS GOP ITEMS</th>
               <th className="border border-border p-2 w-32 text-center text-xs">
-                Focus GOP status
+                FOCUS GOP STATUS
               </th>
               <th className="border border-border p-2 w-10 text-center"></th>
             </tr>
