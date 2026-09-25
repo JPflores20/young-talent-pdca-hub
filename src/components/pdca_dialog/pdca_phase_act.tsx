@@ -2,7 +2,7 @@ import React from "react";
 import { TablaEstandarizacion } from "./tabla-estandarizacion";
 import { StepCard } from "@/components/ui/step-card";
 import { ImageUploadSection } from "../image-upload-section";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "./rich-text-editor";
 
 interface PhaseActProps {
   tabla_estandarizacion: any[];
@@ -100,14 +100,13 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
         onToggleStep={() => on_toggle_step("step-29")}
         isNa={na_steps?.has("step-29")} onToggleNa={() => on_toggle_na?.("step-29")}
       >
-        <div className="p-4 space-y-4">
-          <p className="text-sm text-muted-foreground">Documenta las lecciones aprendidas durante el proyecto PDCA.</p>
-          <Textarea
+        <div className="p-4 space-y-3">
+          <RichTextEditor
             value={lecciones_aprendidas || ""}
-            onChange={(e) => on_lecciones_aprendidas_change?.(e.target.value)}
-            placeholder="Lecciones aprendidas..."
+            onChange={(v) => on_lecciones_aprendidas_change?.(v)}
             disabled={!is_editable}
-            className="min-h-[120px]"
+            placeholder="Documenta las lecciones aprendidas durante el proyecto PDCA..."
+            minHeight="140px"
           />
         </div>
       </StepCard>
@@ -119,14 +118,13 @@ export const PdcaPhaseAct: React.FC<PhaseActProps> = ({
         onToggleStep={() => on_toggle_step("step-30")}
         isNa={na_steps?.has("step-30")} onToggleNa={() => on_toggle_na?.("step-30")}
       >
-        <div className="p-4 space-y-4">
-          <p className="text-sm text-muted-foreground">Escribe las conclusiones finales de este proyecto PDCA.</p>
-          <Textarea
+        <div className="p-4 space-y-3">
+          <RichTextEditor
             value={conclusiones_finales || ""}
-            onChange={(e) => on_conclusiones_finales_change?.(e.target.value)}
-            placeholder="Conclusiones..."
+            onChange={(v) => on_conclusiones_finales_change?.(v)}
             disabled={!is_editable}
-            className="min-h-[150px]"
+            placeholder="Escribe las conclusiones finales de este proyecto PDCA..."
+            minHeight="160px"
           />
         </div>
       </StepCard>
