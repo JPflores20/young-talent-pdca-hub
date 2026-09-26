@@ -1,14 +1,14 @@
-/**
+﻿/**
  * Tipos e interfaces del dominio PDCA.
- * Este módulo contiene EXCLUSIVAMENTE definiciones de tipos TypeScript.
- * Soporta tanto camelCase como snake_case para máxima retrocompatibilidad.
+ * Este mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo contiene EXCLUSIVAMENTE definiciones de tipos TypeScript.
+ * Soporta tanto camelCase como snake_case para mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡xima retrocompatibilidad.
  */
 
 export type Phase = "Plan" | "Do" | "Check" | "Act" | "Evaluacion";
 
 export type ActionItem = {
   id: string;
-  // Campos nuevos (tabla de Plan de Acción)
+  // Campos nuevos (tabla de Plan de AcciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n)
   tema?: string;
   causaRaiz?: string;
   causaRaiz2?: string;
@@ -165,6 +165,26 @@ export type FlavorCorrelationChart = {
   yMax?: number | "";
 };
 
+export type ConclusionesKpiData = {
+  fechaFinalizacion: string;
+  mejoroPi: string;
+  mejoroKpi: string;
+  kpiName: string;
+  kpiDe: string;
+  kpiA: string;
+  kpiVerdeEs: string;
+  kpiMejora: string;
+};
+
+export type ConclusionesPiItem = {
+  id: string;
+  piName: string;
+  piDe: string;
+  piA: string;
+  piVerdeEs: string;
+  piMejora: string;
+};
+
 export type Pdca = {
   id: string;
   titulo: string;
@@ -182,7 +202,7 @@ export type Pdca = {
   estandarizacion: string;
   indicador: { etiqueta: string; antes: number; despues: number; unidad: string };
   serie: { mes: string; valor: number }[];
-  // Fecha finalización
+  // Fecha finalizaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
   fecha_finalizacion?: string;
   fechaFinalizacion?: string;
   // KPI Tree
@@ -280,19 +300,19 @@ export type Pdca = {
   // Comentarios e Historial
   comentarios?: PdcaComment[];
   historial?: PdcaHistoryEvent[];
-  // Análisis Estadístico
+  // AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis EstadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stico
   statisticalAnalysisFiles?: string[];
   statistical_analysis_files?: string[];
   itf_r2d2_evaluation?: ItfR2d2Evaluation;
   itfR2d2Evaluation?: ItfR2d2Evaluation;
 
-  // --------- NUEVOS CAMPOS AÑADIDOS ---------
+  // --------- NUEVOS CAMPOS AÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“ADIDOS ---------
   
   // Paso 3 Baseline
-  baselineImage?: string;
-  baseline_image?: string;
+  baselineImage?: string | undefined;
+  baseline_image?: string | undefined;
 
-  // Paso 5 Tabla de estandarización
+  // Paso 5 Tabla de estandarizaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
   tablaEstandarizacion?: TablaEstandarizacionItem[];
   tabla_estandarizacion?: TablaEstandarizacionItem[];
   
@@ -302,25 +322,25 @@ export type Pdca = {
   resultadosFinales?: ResultadosFinalesData;
   resultados_finales?: ResultadosFinalesData;
 
-  // Paso 9 Implementación de soluciones
-  kpiTreeFocoImage?: string;
-  kpi_tree_foco_image?: string;
+  // Paso 9 ImplementaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de soluciones
+  kpiTreeFocoImage?: string | undefined;
+  kpi_tree_foco_image?: string | undefined;
   evidenciasSolucion?: EvidenciaSolucionItem[];
   evidencias_solucion?: EvidenciaSolucionItem[];
 
   // Mapeo de Proceso (Paso Opcional 13)
   hasMapeoProceso?: boolean;
   has_mapeo_proceso?: boolean;
-  mapeoProcesoImage?: string;
-  mapeo_proceso_image?: string;
-  mapeoProcesoDesc?: string;
-  mapeo_proceso_desc?: string;
+  mapeoProcesoImage?: string | undefined;
+  mapeo_proceso_image?: string | undefined;
+  mapeoProcesoDesc?: string | undefined;
+  mapeo_proceso_desc?: string | undefined;
 
-  // Colección de Datos (Tabla previa al Análisis Estadístico)
+  // ColecciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de Datos (Tabla previa al AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis EstadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stico)
   coleccionDatos?: ColeccionDatosItem[];
   coleccion_datos?: ColeccionDatosItem[];
 
-  // Especificación de Procesos (Posterior al Análisis Estadístico)
+  // EspecificaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de Procesos (Posterior al AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis EstadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stico)
   especificacionProcesosText?: string;
   especificacion_procesos_text?: string;
   especificacionProcesosImage?: string;
@@ -342,7 +362,7 @@ export type Pdca = {
   ishikawaConceptos?: Record<string, string>;
   ishikawa_conceptos?: Record<string, string>;
 
-  // Información Adicional GOPs multiples fotos
+  // InformaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n Adicional GOPs multiples fotos
   informacionAdicionalFiles?: string[];
   informacion_adicional_files?: string[];
 
@@ -362,15 +382,52 @@ export type Pdca = {
   analisisRiesgosEstandarizacion?: AnalisisRiesgoItem[];
   analisis_riesgos_estandarizacion?: AnalisisRiesgoItem[];
   conclusionesFinales?: string;
+  conclusionesStoryboardImage?: string;
+  conclusionesKpiData?: ConclusionesKpiData;
+  conclusionesPiItems?: ConclusionesPiItem[];
   conclusiones_finales?: string;
+  conclusiones_storyboard_image?: string;
+  conclusiones_kpi_data?: ConclusionesKpiData;
+  conclusiones_pi_items?: ConclusionesPiItem[];
+
+  // Fase Act: documentos de estandarizaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
+  sops_documentos_image?: string;
+  plan_entrenamiento_image?: string;
+  plan_control_image?: string;
+  lecciones_aprendidas?: string;
+
+  // Otros
+  benchmarkImage?: string;
+  // Paso 13: Rendimiento Actual del Proceso
+  rendimientoActualPis?: RendimientoActualPiItem[];
+  rendimiento_actual_pis?: RendimientoActualPiItem[];
+  rendimientoActualImage?: string;
+  rendimiento_actual_image?: string;
+};
+
+export type RendimientoActualPiItem = {
+  id: string;
+  estacionTrabajo: string;
+  nombreIndicador: string;
+  estadoActual: string;
+  puestoResponsable: string;
+  herramienta: string;
+  ubicacion: string;
 };
 
 export type TablaEstandarizacionItem = {
   id: string;
-  actividad: string;
-  responsable: string;
-  frecuencia: string;
-  estandar: string;
+  actividad?: string;
+  responsable?: string;
+  frecuencia?: string;
+  estandar?: string;
+  accionesMitigar?: string;
+  herramientaVpo?: string;
+  dueno?: string;
+  equipoComunicara?: string;
+  datosEntrenamiento?: string;
+  gopPresentacion?: string;
+  fechaFinalizacion?: string;
 };
 
 export type TablaEstandarizacionVpoItem = {
@@ -401,12 +458,12 @@ export type EvidenciaSolucionItem = {
 
 export type ColeccionDatosItem = {
   id: string;
-  // ¿Qué Medir?
+  // ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿QuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© Medir?
   xs_ys: string;
   variable: string;
   tipo_dato: string;
   definicion_operacional: string;
-  // ¿Cómo Medirlo?
+  // ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³mo Medirlo?
   metodo_medicion: string;
   estratificacion: string;
   metodo_recoleccion: string;
@@ -439,10 +496,11 @@ export type AnalisisRiesgoItem = {
 
 export type ConclusionCausaRaizItem = {
   id: string;
+  problema: string;
   causaRaiz: string;
   validacion: string;
+  valorP: string;
   conclusion: string;
-  esReal: "SI" | "NO" | "";
 };
 
 export type PruebaEjecutadaItem = {

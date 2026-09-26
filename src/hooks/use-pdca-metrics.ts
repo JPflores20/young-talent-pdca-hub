@@ -38,9 +38,9 @@ export function use_pdca_metrics(pdcas: Pdca[]): PdcaMetrics {
             const parts = p.fecha_finalizacion.split("-");
             if (parts.length === 3) {
               const deadline = new Date(
-                parseInt(parts[0]),
-                parseInt(parts[1]) - 1,
-                parseInt(parts[2]),
+                parseInt(parts[0] || "0"),
+                parseInt(parts[1] || "0") - 1,
+                parseInt(parts[2] || "0"),
               );
               if (isValid(deadline)) {
                 if (isBefore(deadline, today)) {

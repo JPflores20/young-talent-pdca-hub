@@ -32,7 +32,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
   currentUser,
 }) => {
   const updateField = (
-    key: keyof ItfR2d2Evaluation,
+    key: Exclude<keyof ItfR2d2Evaluation, "evaluators">,
     field: "check" | "score" | "comment",
     value: any,
   ) => {
@@ -67,7 +67,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
   };
 
   const renderRow = (
-    key: keyof ItfR2d2Evaluation,
+    key: Exclude<keyof ItfR2d2Evaluation, "evaluators">,
     letter: string,
     titleEn: string,
     titleEs: string,
@@ -98,7 +98,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
               <input
                 type="checkbox"
                 checked={data.check}
-                disabled={disabled}
+                disabled={!!disabled}
                 onChange={(e) => updateField(key, "check", e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
@@ -109,7 +109,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
               PUNTUACIÓN
             </Label>
             <Select
-              disabled={disabled}
+              disabled={!!disabled}
               value={data.score.toString()}
               onValueChange={(val) => updateField(key, "score", parseInt(val))}
             >
@@ -130,7 +130,7 @@ export const PdcaItfR2d2: React.FC<PdcaItfR2d2Props> = ({
               ¿CÓMO LO ESTAMOS HACIENDO?
             </Label>
             <Textarea
-              disabled={disabled}
+              disabled={!!disabled}
               value={data.comment}
               onChange={(e) => updateField(key, "comment", e.target.value)}
               className="min-h-[60px] text-xs resize-y"

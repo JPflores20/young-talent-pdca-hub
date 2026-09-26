@@ -64,7 +64,7 @@ export function ParetoSection({
 
   function handle_bar_click(category: string, level: number, parent_path: string) {
     if (!category) return;
-    const is_legacy = drill_downs.length > 0 && !drill_downs[0].includes("level-");
+    const is_legacy = drill_downs.length > 0 && !drill_downs[0]?.includes("level-");
     const current_drills = is_legacy
       ? drill_downs.map((d, i) => `level-${i + 1}-${d}`)
       : [...drill_downs];
@@ -78,7 +78,7 @@ export function ParetoSection({
   }
 
   function handle_close_drill(path_to_remove: string) {
-    const is_legacy = drill_downs.length > 0 && !drill_downs[0].includes("level-");
+    const is_legacy = drill_downs.length > 0 && !drill_downs[0]?.includes("level-");
     const current = is_legacy ? drill_downs.map((d, i) => `level-${i + 1}-${d}`) : [...drill_downs];
     set_drill_downs(
       current.filter((p) => p !== path_to_remove && !p.startsWith(`${path_to_remove}-`)),

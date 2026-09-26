@@ -1,4 +1,5 @@
-ï»¿/**
+import "@testing-library/jest-dom";
+/**
  * pareto_data_table.test.tsx
  * Pruebas unitarias del componente ParetoDataTable.
  */
@@ -31,10 +32,10 @@ describe("ParetoDataTable", () => {
         total_gap={15}
       />,
     );
-    expect(screen.getByText("Ãrea / CategorÃ­a")).toBeInTheDocument();
-    expect(screen.getByText("% Ind.")).toBeInTheDocument();
-    expect(screen.getByText("% Acum.")).toBeInTheDocument();
-    expect(screen.getByText("TOTAL")).toBeInTheDocument();
+    expect(screen.getByText("Área / Categoría")).toBeDefined();
+    expect(screen.getByText("% Ind.")).toBeDefined();
+    expect(screen.getByText("% Acum.")).toBeDefined();
+    expect(screen.getByText("TOTAL")).toBeDefined();
   });
 
   it("renderiza todos los items de datos", () => {
@@ -48,11 +49,11 @@ describe("ParetoDataTable", () => {
         total_gap={15}
       />,
     );
-    expect(screen.getByDisplayValue("Esters")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Sweet")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Esters")).toBeDefined();
+    expect(screen.getByDisplayValue("Sweet")).toBeDefined();
   });
 
-  it("llama a on_row_update al cambiar el Ã¡rea", () => {
+  it("llama a on_row_update al cambiar el área", () => {
     const mock_update = vi.fn();
     render(
       <ParetoDataTable
@@ -69,7 +70,7 @@ describe("ParetoDataTable", () => {
     expect(mock_update).toHaveBeenCalledWith(1, "area", "Estery");
   });
 
-  it("muestra botones de eliminar cuando hay mÃ¡s de un item", () => {
+  it("muestra botones de eliminar cuando hay más de un item", () => {
     render(
       <ParetoDataTable
         pareto_data={SAMPLE_CHART_ITEMS}
@@ -96,6 +97,6 @@ describe("ParetoDataTable", () => {
         total_gap={15}
       />,
     );
-    expect(screen.getByText("15")).toBeInTheDocument();
+    expect(screen.getByText("15")).toBeDefined();
   });
 });

@@ -132,10 +132,10 @@ export function TimeSeriesYTD({
   onTitleChange,
   customBadge,
 }: {
-  value?: { mes: string; target: number; actual: number | null }[];
-  onChange?: (newSeries: { mes: string; target: number; actual: number | null }[]) => void;
-  unit?: string;
-  onUnitChange?: (newUnit: string) => void;
+  value?: { mes: string; target: number; actual: number | null }[] | undefined;
+  onChange?: ((newSeries: { mes: string; target: number; actual: number | null }[]) => void) | undefined;
+  unit?: string | undefined;
+  onUnitChange?: ((newUnit: string) => void) | undefined;
   isStepCompleted?: boolean | undefined;
   isNa?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
@@ -143,7 +143,7 @@ export function TimeSeriesYTD({
   title?: string | undefined;
   chartTitle?: string | undefined;
   onTitleChange?: ((newTitle: string) => void) | undefined;
-  customBadge?: React.ReactNode;
+  customBadge?: React.ReactNode | undefined;
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
 

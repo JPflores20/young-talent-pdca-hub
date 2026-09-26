@@ -1,8 +1,8 @@
-﻿/**
+/**
  * Pruebas unitarias para `pdca-firestore.ts`.
  *
  * Firebase se mockea completamente para ejecutar estas pruebas
- * sin red, sin configuraciÃ³n de proyecto y sin costo.
+ * sin red, sin configuración de proyecto y sin costo.
  *
  * Se usa `vi.mock` de Vitest para interceptar todas las llamadas
  * a `firebase/firestore` y `@/lib/firebase`.
@@ -16,7 +16,7 @@ import {
 } from "../pdca-firestore";
 import type { Pdca } from "@/data/pdca-types";
 
-// â”€â”€ Mocks de Firebase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Mocks de Firebase ──────────────────────────────────────────────────────
 
 vi.mock("@/lib/firebase", () => ({
   db: {},
@@ -56,7 +56,7 @@ vi.mock("firebase/firestore", () => ({
   limit: mock_limit,
 }));
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function create_mock_pdca(partial: Partial<Pdca> = {}): Pdca {
   return {
@@ -93,14 +93,14 @@ function create_seeded_snapshot(pdcas: Pdca[]) {
   };
 }
 
-// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Tests ──────────────────────────────────────────────────────────────────
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe("fetch_pdcas_from_firestore", () => {
-  it("retorna los PDCAs cuando la colecciÃ³n ya estÃ¡ sembrada", async () => {
+  it("retorna los PDCAs cuando la colección ya está sembrada", async () => {
     const test_pdca = create_mock_pdca();
     mock_get_docs.mockResolvedValueOnce(create_seeded_snapshot([test_pdca]));
 
@@ -110,7 +110,7 @@ describe("fetch_pdcas_from_firestore", () => {
     expect(result[0].id).toBe("PDCA-TEST-001");
   });
 
-  it("retorna arreglo vacÃ­o si Firestore lanza un error", async () => {
+  it("retorna arreglo vacío si Firestore lanza un error", async () => {
     mock_get_docs.mockRejectedValueOnce(new Error("Firestore error simulado"));
 
     const result = await fetch_pdcas_from_firestore();
@@ -120,7 +120,7 @@ describe("fetch_pdcas_from_firestore", () => {
 });
 
 describe("save_pdca_to_firestore", () => {
-  it("llama a setDoc si no hay snapshot previo en cachÃ©", async () => {
+  it("llama a setDoc si no hay snapshot previo en caché", async () => {
     const test_pdca = create_mock_pdca({ id: "PDCA-SIN-CACHE" });
 
     await save_pdca_to_firestore(test_pdca);
@@ -129,7 +129,7 @@ describe("save_pdca_to_firestore", () => {
     expect(mock_update_doc).not.toHaveBeenCalled();
   });
 
-  it("no llama a Firestore si no hubo cambios (diff vacÃ­o)", async () => {
+  it("no llama a Firestore si no hubo cambios (diff vacío)", async () => {
     const { set_pdca_snapshot } = await import("../pdca-cache");
     const test_pdca = create_mock_pdca({ id: "PDCA-CON-CACHE" });
     set_pdca_snapshot(test_pdca.id, test_pdca);
@@ -164,7 +164,7 @@ describe("update_pdca_deadline", () => {
     });
   });
 
-  it("usa string vacÃ­o cuando la fecha es null", async () => {
+  it("usa string vacío cuando la fecha es null", async () => {
     await update_pdca_deadline("PDCA-001", null);
 
     expect(mock_update_doc).toHaveBeenCalledWith(expect.anything(), { fechaFinalizacion: "" });

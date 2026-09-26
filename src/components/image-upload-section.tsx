@@ -569,9 +569,8 @@ export function MultiImageUploadSection({
     if (!items) return;
 
     const files: File[] = [];
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf("image") !== -1) {
-        const file = items[i].getAsFile();
+    for (let i = 0; i < items.length; i++) { const item = items[i]; if (item && item.type.indexOf("image") !== -1) {
+        const file = item.getAsFile();
         if (file) files.push(file);
       }
     }

@@ -83,7 +83,7 @@ export function usePdcaDialogState(data: Pdca, currentUser: any) {
     data.hasFlavorCorrelation || false,
   );
   const [flavorCorrelationTitle, setFlavorCorrelationTitle] = useState<string>(
-    data.flavorCorrelationData?.title || "Correlación de Flavors",
+    data.flavorCorrelationData?.[0]?.title || "Correlación de Flavors",
   );
   const [flavorCorrelationData, setFlavorCorrelationData] = useState<any>(
     data.flavorCorrelationData || null,
@@ -91,7 +91,7 @@ export function usePdcaDialogState(data: Pdca, currentUser: any) {
   const [hasGopThemes, setHasGopThemes] = useState<boolean>(data.hasGopThemes || false);
   const [gopThemesData, setGopThemesData] = useState<any[]>(data.gopThemesData || []);
   const [gopThemesColumns, setGopThemesColumns] = useState<{ id: string; name: string }[]>(
-    data.gopThemesColumns || [],
+    (data.gopThemesColumns as any) || [],
   );
   const [processMappingImages, setProcessMappingImages] = useState<string[]>(
     data.processMappingImage ? [data.processMappingImage] : [],
@@ -125,7 +125,7 @@ export function usePdcaDialogState(data: Pdca, currentUser: any) {
       },
     ];
   });
-  const [fiveWhysImages, setFiveWhysImages] = useState<string[]>(data.fiveWhysImages || []);
+  const [fiveWhysImages, setFiveWhysImages] = useState<string[]>((data as any).fiveWhysImages || []);
 
   const [impactMatrix, setImpactMatrix] = useState<ImpactMatrixRow[]>(
     () => data.impactMatrix || [],
@@ -137,7 +137,7 @@ export function usePdcaDialogState(data: Pdca, currentUser: any) {
       {
         id: "ishikawa-1",
         title: "Análisis de Causa",
-        categories: {
+        causes: {
           manoDeObra: [],
           medioAmbiente: [],
           maquina: [],

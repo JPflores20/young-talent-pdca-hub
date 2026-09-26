@@ -113,7 +113,9 @@ export const PdcaDialog: React.FC<{
       evidenciasSolucion: state.evidencias_solucion,
       hasMapeoProceso: state.has_mapeo_proceso,
       mapeoProcesoImage: state.mapeo_proceso_image,
-      mapeoProcesoDesc: state.mapeo_proceso_desc,
+      mapeoProcesoDesc: state.mapeo_proceso_desc || undefined,
+        rendimiento_actual_pis: state.rendimiento_actual_pis,
+        rendimiento_actual_image: state.rendimiento_actual_image,
       coleccionDatos: state.coleccion_datos,
       especificacionProcesosText: state.especificacion_procesos_text,
       especificacionProcesosImage: state.especificacion_procesos_image,
@@ -144,8 +146,8 @@ export const PdcaDialog: React.FC<{
       progreso: computed_progress,
       fechaFinalizacion: state.deadline_date
         ? format_date_to_string(state.deadline_date)
-        : current_pdca.fechaFinalizacion === "Sin límite"
-          ? "Sin límite"
+        : current_pdca.fechaFinalizacion === "Sin lÃƒÆ’Ã‚Â­mite"
+          ? "Sin lÃƒÆ’Ã‚Â­mite"
           : current_pdca.fechaFinalizacion && !parse_date_string(current_pdca.fechaFinalizacion)
             ? current_pdca.fechaFinalizacion
             : "",
@@ -224,7 +226,7 @@ export const PdcaDialog: React.FC<{
     
     if ((state.active_tab === "Act" && !is_admin) || state.active_tab === "Evaluacion") {
       await autosave.handle_save_to_firestore();
-      toast.success("¡PDCA finalizado!");
+      toast.success("Ãƒâ€šÃ‚Â¡PDCA finalizado!");
       onOpenChange(false);
     } else if (current_idx >= 0 && current_idx < phase_order.length - 1) {
       const next_phase = phase_order[current_idx + 1]!;
@@ -426,6 +428,16 @@ export const PdcaDialog: React.FC<{
             state.set_has_flavor_correlation(val);
             autosave.mark_as_modified();
           }}
+          rendimiento_actual_pis={state.rendimiento_actual_pis}
+          on_rendimiento_actual_pis_change={(val) => {
+            state.set_rendimiento_actual_pis(val);
+            autosave.mark_as_modified();
+          }}
+          rendimiento_actual_image={state.rendimiento_actual_image}
+          on_rendimiento_actual_image_change={(val) => {
+            state.set_rendimiento_actual_image(val);
+            autosave.mark_as_modified();
+          }}
           gop_themes_data={state.gop_themes_data}
           on_gop_themes_data_change={(data) => {
             state.set_gop_themes_data(data);
@@ -506,6 +518,11 @@ export const PdcaDialog: React.FC<{
         <div className={state.active_tab !== "Act" ? "hidden" : "block"}>
           <div className="space-y-6">
             <PdcaPhaseAct
+            analisis_riesgos_estandarizacion={state.analisis_riesgos_estandarizacion}
+            on_analisis_riesgos_estandarizacion_change={(data) => {
+              state.set_analisis_riesgos_estandarizacion(data);
+              autosave.mark_as_modified();
+            }}
             tabla_estandarizacion={state.tabla_estandarizacion}
             on_tabla_estandarizacion_change={(data) => {
               state.set_tabla_estandarizacion(data);
@@ -537,8 +554,23 @@ export const PdcaDialog: React.FC<{
               autosave.mark_as_modified();
             }}
             conclusiones_finales={state.conclusiones_finales}
+            conclusiones_storyboard_image={state.conclusiones_storyboard_image}
+            on_conclusiones_storyboard_image_change={(img) => {
+              state.set_conclusiones_storyboard_image(img);
+              autosave.mark_as_modified();
+            }}
             on_conclusiones_finales_change={(c) => {
               state.set_conclusiones_finales(c);
+              autosave.mark_as_modified();
+            }}
+            conclusiones_kpi_data={state.conclusiones_kpi_data}
+            on_conclusiones_kpi_data_change={(data) => {
+              state.set_conclusiones_kpi_data(data);
+              autosave.mark_as_modified();
+            }}
+            conclusiones_pi_items={state.conclusiones_pi_items}
+            on_conclusiones_pi_items_change={(items) => {
+              state.set_conclusiones_pi_items(items);
               autosave.mark_as_modified();
             }}
           />

@@ -67,8 +67,8 @@ describe("use_pareto_data › add_row", () => {
     const called_with: ParetoItem[] = mock_change.mock.calls[0][0];
     expect(called_with).toHaveLength(SAMPLE_ITEMS.length + 1);
     const new_row = called_with[called_with.length - 1];
-    expect(new_row.area).toBe("");
-    expect(new_row.gap).toBe(0);
+    expect(new_row!.area).toBe("");
+    expect(new_row!.gap).toBe(0);
   });
 
   it("no lanza error cuando on_items_change no está definido", () => {

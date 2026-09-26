@@ -15,6 +15,7 @@ import { GopThemesSection } from "../GopThemesSection";
 import { ColeccionDatosTable } from "./coleccion-datos-table";
 import { VozConsumidorTable } from "./voz-consumidor-table";
 import { AnalisisRiesgosTable } from "./analisis-riesgos-table";
+import { RendimientoActualStep } from "./rendimiento-actual-step";
 import { ConclusionesCausaRaizTable } from "./conclusiones-causa-raiz-table";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -36,7 +37,8 @@ import type {
   ParetoItem,
   IshikawaItem,
   FiveWhysTableData,
-  GopThemeItem
+  GopThemeItem,
+  RendimientoActualPiItem
 } from "@/data/pdca";
 
 // ─── Áreas disponibles ────────────────────────────────────────────────────────
@@ -193,44 +195,48 @@ interface PhasePlanProps {
   is_editable: boolean;
   
   // Nuevos props migrados
-  process_mapping_files?: string[];
-  on_process_mapping_files_change?: (files: string[]) => void;
-  baseline_image?: string;
-  on_baseline_image_change?: (img: string | undefined) => void;
-  coleccion_datos?: any[];
-  on_coleccion_datos_change?: (data: any[]) => void;
-  pareto_drill_downs?: string[];
-  on_pareto_drill_downs_change?: (drills: string[]) => void;
-  pareto_data_map?: Record<string, ParetoItem[]>;
-  on_pareto_data_map_change?: (map: Record<string, ParetoItem[]>) => void;
-  pareto_unit?: string;
-  on_pareto_unit_change?: (unit: string) => void;
-  pareto_titles?: Record<string, string>;
-  on_pareto_titles_change?: (titles: Record<string, string>) => void;
-  target_vs_actual?: { mes: string; target: number; actual: number | null }[];
-  on_target_vs_actual_change?: (val: any) => void;
-  target_vs_actual_unit?: string;
-  on_target_vs_actual_unit_change?: (unit: string) => void;
-  target_vs_actual_title?: string;
-  on_target_vs_actual_title_change?: (title: string) => void;
-  ishikawas?: IshikawaItem[];
-  on_ishikawas_change?: (items: IshikawaItem[]) => void;
-  five_whys_tables?: FiveWhysTableData[];
-  on_five_whys_tables_change?: (tables: FiveWhysTableData[]) => void;
-  voz_consumidor?: any[];
-  on_voz_consumidor_change?: (items: any[]) => void;
-  analisis_riesgos_proyecto?: any[];
-  on_analisis_riesgos_proyecto_change?: (items: any[]) => void;
-  especificacion_procesos_image?: string;
-  on_especificacion_procesos_image_change?: (img?: string) => void;
-  benchmark_image?: string;
-  on_benchmark_image_change?: (img?: string) => void;
-  conclusiones_causa_raiz?: any[];
-  on_conclusiones_causa_raiz_change?: (items: any[]) => void;
-  has_flavor_correlation?: boolean;
-  set_has_flavor_correlation?: (val: boolean) => void;
-  gop_themes_data?: GopThemeItem[];
-  on_gop_themes_data_change?: (data: GopThemeItem[]) => void;
+  process_mapping_files?: string[] | undefined;
+  on_process_mapping_files_change?: ((files: string[]) => void) | undefined;
+  baseline_image?: string | undefined;
+  on_baseline_image_change?: ((img: string | undefined) => void) | undefined;
+  coleccion_datos?: any[] | undefined;
+  on_coleccion_datos_change?: ((data: any[]) => void) | undefined;
+  pareto_drill_downs?: string[] | undefined;
+  on_pareto_drill_downs_change?: ((drills: string[]) => void) | undefined;
+  pareto_data_map?: Record<string, ParetoItem[]> | undefined;
+  on_pareto_data_map_change?: ((map: Record<string, ParetoItem[]>) => void) | undefined;
+  pareto_unit?: string | undefined;
+  on_pareto_unit_change?: ((unit: string) => void) | undefined;
+  pareto_titles?: Record<string, string> | undefined;
+  on_pareto_titles_change?: ((titles: Record<string, string>) => void) | undefined;
+  target_vs_actual?: { mes: string; target: number; actual: number | null }[] | undefined;
+  on_target_vs_actual_change?: ((val: any) => void) | undefined;
+  target_vs_actual_unit?: string | undefined;
+  on_target_vs_actual_unit_change?: ((unit: string) => void) | undefined;
+  target_vs_actual_title?: string | undefined;
+  on_target_vs_actual_title_change?: ((title: string) => void) | undefined;
+  ishikawas?: IshikawaItem[] | undefined;
+  on_ishikawas_change?: ((items: IshikawaItem[]) => void) | undefined;
+  five_whys_tables?: FiveWhysTableData[] | undefined;
+  on_five_whys_tables_change?: ((tables: FiveWhysTableData[]) => void) | undefined;
+  voz_consumidor?: any[] | undefined;
+  on_voz_consumidor_change?: ((items: any[]) => void) | undefined;
+  analisis_riesgos_proyecto?: any[] | undefined;
+  on_analisis_riesgos_proyecto_change?: ((items: any[]) => void) | undefined;
+  especificacion_procesos_image?: string | undefined;
+  on_especificacion_procesos_image_change?: ((img?: string) => void) | undefined;
+  benchmark_image?: string | undefined;
+  on_benchmark_image_change?: ((img?: string) => void) | undefined;
+  conclusiones_causa_raiz?: any[] | undefined;
+  on_conclusiones_causa_raiz_change?: ((items: any[]) => void) | undefined;
+  has_flavor_correlation?: boolean | undefined;
+  set_has_flavor_correlation?: ((val: boolean) => void) | undefined;
+  gop_themes_data?: GopThemeItem[] | undefined;
+  on_gop_themes_data_change?: ((data: GopThemeItem[]) => void) | undefined;
+  rendimiento_actual_pis?: RendimientoActualPiItem[] | undefined;
+  on_rendimiento_actual_pis_change?: ((items: RendimientoActualPiItem[]) => void) | undefined;
+  rendimiento_actual_image?: string | undefined;
+  on_rendimiento_actual_image_change?: ((image: string | undefined) => void) | undefined;
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -298,6 +304,10 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
   set_has_flavor_correlation,
   gop_themes_data,
   on_gop_themes_data_change,
+  rendimiento_actual_pis,
+  on_rendimiento_actual_pis_change,
+  rendimiento_actual_image,
+  on_rendimiento_actual_image_change,
 }) => {
   return (
     <div className="space-y-6">
@@ -642,18 +652,16 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         isNa={na_steps?.has("step-11")} onToggleNa={() => on_toggle_na?.("step-11")}
       />
 
-      {/* ── PASO 13: Performance Actual del Proceso ────────────── */}
-      <StepCard
-        title="PASO 13: PERFORMANCE ACTUAL DEL PROCESO (ANÁLISIS DE PI'S)"
+      {/* ── PASO 13: Rendimiento Actual del Proceso ────────────── */}
+      <RendimientoActualStep
+        items={rendimiento_actual_pis || []}
+        onChange={on_rendimiento_actual_pis_change!}
+        image={rendimiento_actual_image}
+        onImageChange={on_rendimiento_actual_image_change!}
         isStepCompleted={completed_steps.has("step-13")}
         onToggleStep={() => on_toggle_step("step-13")}
         isNa={na_steps?.has("step-13")} onToggleNa={() => on_toggle_na?.("step-13")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Revisión de PI's identificados</p>
-          <p className="text-xs text-muted-foreground mt-1">Sube la matriz de correlación o información pertinente aquí.</p>
-        </div>
-      </StepCard>
+      />
 
       {/* ── PASO 14: GOP Themes ───────────────────────────────────────── */}
       <GopThemesSection

@@ -16,22 +16,22 @@ export interface ParetoChartItem extends ParetoItem {
 }
 
 export interface ParetoInteractiveProps {
-  title?: string;
-  subtitle?: string;
-  level?: number;
-  pareto_items?: ParetoItem[];
-  on_items_change?: (items: ParetoItem[]) => void;
-  on_bar_click?: (category: string) => void;
-  on_close?: () => void;
-  unit?: string;
-  on_unit_change?: (new_unit: string) => void;
-  is_step_completed?: boolean;
-  on_toggle_step?: () => void;
-  on_add_root?: () => void;
+  title?: string | undefined;
+  subtitle?: string | undefined;
+  level?: number | undefined;
+  pareto_items?: ParetoItem[] | undefined;
+  on_items_change?: ((items: ParetoItem[]) => void) | undefined;
+  on_bar_click?: ((category: string) => void) | undefined;
+  on_close?: (() => void) | undefined;
+  unit?: string | undefined;
+  on_unit_change?: ((new_unit: string) => void) | undefined;
+  is_step_completed?: boolean | undefined;
+  on_toggle_step?: (() => void) | undefined;
+  on_add_root?: (() => void) | undefined;
   /** Título del gráfico (controlado desde el padre vía title_map). */
-  chart_title?: string;
+  chart_title?: string | undefined;
   /** Callback para notificar cambios en el título al padre. */
-  on_chart_title_change?: (title: string) => void;
+  on_chart_title_change?: ((title: string) => void) | undefined;
 }
 
 export interface ParetoSectionProps {
@@ -39,10 +39,10 @@ export interface ParetoSectionProps {
   set_drill_downs: (drills: string[]) => void;
   data_map: Record<string, ParetoItem[]>;
   set_data_map: (map: Record<string, ParetoItem[]>) => void;
-  unit?: string;
-  on_unit_change?: (new_unit: string) => void;
-  is_step_completed?: boolean;
-  on_toggle_step?: () => void;
+  unit?: string | undefined;
+  on_unit_change?: ((new_unit: string) => void) | undefined;
+  is_step_completed?: boolean | undefined;
+  on_toggle_step?: (() => void) | undefined;
 }
 
 export interface ParetoChartProps {
@@ -53,11 +53,11 @@ export interface ParetoChartProps {
   y_axis_max: number | "auto";
   on_y_axis_min_change: (val: number) => void;
   on_y_axis_max_change: (val: number | "auto") => void;
-  on_bar_click?: (category: string) => void;
+  on_bar_click?: ((category: string) => void) | undefined;
   unit: string;
   format_value: (val: unknown) => string;
-  is_fullscreen?: boolean;
-  on_expand?: () => void;
+  is_fullscreen?: boolean | undefined;
+  on_expand?: (() => void) | undefined;
 }
 
 export interface ParetoDataTableProps {

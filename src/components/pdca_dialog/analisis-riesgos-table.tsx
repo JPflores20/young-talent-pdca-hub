@@ -96,35 +96,35 @@ export const AnalisisRiesgosTable: React.FC<AnalisisRiesgosTableProps> = ({ item
         <div className="border rounded-md overflow-x-auto shadow-sm">
           <Table className="min-w-[1000px] text-[11px]">
             <TableHeader>
-              <TableRow className="bg-[#EFA900] hover:bg-[#EFA900]">
-                <TableHead rowSpan={2} className="font-bold text-black text-center w-10 border-r border-white/40">NO. DE RIESGO</TableHead>
-                <TableHead rowSpan={2} className="font-bold text-black text-center min-w-[200px] border-r border-white/40">DESCRIPCIÓN DEL RIESGO</TableHead>
-                <TableHead className="font-bold text-black text-center w-28 border-r border-white/40 border-b border-white/40">TIPO DE IMPACTO</TableHead>
-                <TableHead className="font-bold text-black text-center w-32 border-r border-white/40 border-b border-white/40">PROBABILIDAD</TableHead>
-                <TableHead className="font-bold text-black text-center w-32 border-r border-white/40 border-b border-white/40">IMPACTO</TableHead>
-                <TableHead className="font-bold text-black text-center w-32 border-r border-white/40 border-b border-white/40">PRIORIDAD</TableHead>
-                <TableHead rowSpan={2} className="font-bold text-black text-center w-24 border-r border-white/40">RPN <br/><span className="text-[9px] font-normal">(Probabilidad x Impacto x Prioridad)</span></TableHead>
-                <TableHead colSpan={3} className="font-bold text-black text-center border-b border-white/40">RESPUESTA AL RIESGO</TableHead>
+              <TableRow className="bg-[#0078D7] hover:bg-[#0078D7]">
+                <TableHead rowSpan={2} className="font-bold text-white text-center w-10 border-r border-white/40">NO. DE RIESGO</TableHead>
+                <TableHead rowSpan={2} className="font-bold text-white text-center min-w-[200px] border-r border-white/40">DESCRIPCIÓN DEL RIESGO</TableHead>
+                <TableHead className="font-bold text-white text-center w-28 border-r border-white/40 border-b border-white/40">TIPO DE IMPACTO</TableHead>
+                <TableHead className="font-bold text-white text-center w-32 border-r border-white/40 border-b border-white/40">PROBABILIDAD</TableHead>
+                <TableHead className="font-bold text-white text-center w-32 border-r border-white/40 border-b border-white/40">IMPACTO</TableHead>
+                <TableHead className="font-bold text-white text-center w-32 border-r border-white/40 border-b border-white/40">PRIORIDAD</TableHead>
+                <TableHead rowSpan={2} className="font-bold text-white text-center w-24 border-r border-white/40">RPN <br/><span className="text-[9px] font-normal">(Probabilidad x Impacto x Prioridad)</span></TableHead>
+                <TableHead colSpan={3} className="font-bold text-white text-center border-b border-white/40">RESPUESTA AL RIESGO</TableHead>
                 <TableHead rowSpan={2} className="w-10 border-l border-white/40"></TableHead>
               </TableRow>
-              <TableRow className="bg-[#EFA900] hover:bg-[#EFA900]">
-                <TableHead className="font-bold text-black text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
+              <TableRow className="bg-[#0078D7] hover:bg-[#0078D7]">
+                <TableHead className="font-bold text-white text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
                   Alcance{"\n"}Costo{"\n"}Tiempo
                 </TableHead>
-                <TableHead className="font-bold text-black text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
+                <TableHead className="font-bold text-white text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
                   1 Nada{"\n"}2 Bajo{"\n"}3 Medio{"\n"}4 Alto
                 </TableHead>
-                <TableHead className="font-bold text-black text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
+                <TableHead className="font-bold text-white text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
                   1 Nada{"\n"}2 Bajo{"\n"}3 Moderado{"\n"}4 Alto
                 </TableHead>
-                <TableHead className="font-bold text-black text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
+                <TableHead className="font-bold text-white text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
                   1 Nada{"\n"}2 Bajo{"\n"}3 Medio{"\n"}4 Alto
                 </TableHead>
-                <TableHead className="font-bold text-black text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
+                <TableHead className="font-bold text-white text-center text-[10px] leading-tight border-r border-white/40 whitespace-pre-line">
                   Aceptar{"\n"}Evitar{"\n"}Mitigar
                 </TableHead>
-                <TableHead className="font-bold text-black text-center border-r border-white/40">RESPONSABLE</TableHead>
-                <TableHead className="font-bold text-black text-center">FECHA LÍMITE</TableHead>
+                <TableHead className="font-bold text-white text-center border-r border-white/40">RESPONSABLE</TableHead>
+                <TableHead className="font-bold text-white text-center">FECHA LÍMITE</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

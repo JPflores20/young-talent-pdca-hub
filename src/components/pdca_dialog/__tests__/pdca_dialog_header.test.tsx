@@ -9,6 +9,7 @@ const BASE_PROPS = {
   pdca_title: "Test PDCA Title",
   last_updated: "10 sept 2026",
   completed_steps: new Set<string>(),
+  na_steps: new Set<string>(),
   is_saving_in_progress: false,
   has_pending_modifications: false,
   is_user_permitted_to_edit: true,

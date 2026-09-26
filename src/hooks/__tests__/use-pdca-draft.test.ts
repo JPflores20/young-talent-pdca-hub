@@ -15,7 +15,7 @@ describe("get_empty_draft", () => {
     expect(draft.autor).toBe("Test User");
     expect(draft.autor_email).toBe("test@gmodelo.com");
     expect(draft.acciones).toEqual([]);
-    expect(draft.vpo_checkpoints.length).toBe(DEFAULT_VPO_CHECKPOINTS.length);
+    expect(draft.vpo_checkpoints?.length).toBe(DEFAULT_VPO_CHECKPOINTS.length);
   });
 
   it("asigna un autor genérico si no se provee usuario", () => {

@@ -1,9 +1,9 @@
 /**
- * Barrel de compatibilidad — `src/data/pdca.ts`
+ * Barrel de compatibilidad Ã¢â‚¬â€ `src/data/pdca.ts`
  *
- * Re-exporta todo desde los módulos refactorizados para que los
+ * Re-exporta todo desde los mÃƒÂ³dulos refactorizados para que los
  * imports existentes (`from "@/data/pdca"`) sigan funcionando
- * sin cambios durante la migración progresiva.
+ * sin cambios durante la migraciÃƒÂ³n progresiva.
  *
  * Una vez que todos los archivos hayan sido migrados para importar
  * directamente desde `pdca-types`, `pdca-defaults` o `pdca-seed`,
@@ -30,9 +30,17 @@ export type {
   VozDelConsumidorItem,
   AnalisisRiesgoItem,
   ConclusionCausaRaizItem,
+  RendimientoActualPiItem,
   PruebaEjecutadaItem,
   NuevoPerformanceItem,
   ColeccionDatosItem,
+  TablaEstandarizacionItem,
+  TablaEstandarizacionVpoItem,
+  ResultadosFinalesData,
+  EvidenciaSolucionItem,
+  ItfR2d2Evaluation,
+  ConclusionesKpiData,
+  ConclusionesPiItem,
 } from "./pdca-types";
 
 // Constantes y valores por defecto
@@ -47,5 +55,5 @@ export {
   DEFAULT_VPO_CHECKPOINTS,
 } from "./pdca-defaults";
 
-// Datos de seed (sólo usar en servicios, no en componentes)
+// Datos de seed (sÃƒÂ³lo usar en servicios, no en componentes)
 export { SEED_PDCAS as pdcas } from "./pdca-seed";

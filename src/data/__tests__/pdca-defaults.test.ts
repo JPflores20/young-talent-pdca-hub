@@ -65,8 +65,8 @@ describe("DEFAULT_TARGET_VS_ACTUAL", () => {
   });
 
   it("el primer mes es Ene y el último es Dic", () => {
-    expect(DEFAULT_TARGET_VS_ACTUAL[0].mes).toBe("Ene");
-    expect(DEFAULT_TARGET_VS_ACTUAL[11].mes).toBe("Dic");
+    expect(DEFAULT_TARGET_VS_ACTUAL[0]!.mes).toBe("Ene");
+    expect(DEFAULT_TARGET_VS_ACTUAL[11]!.mes).toBe("Dic");
   });
 
   it("los meses del 6 al 12 tienen `actual` nulo (pendientes)", () => {
@@ -81,7 +81,7 @@ describe("DEFAULT_PARETO_DATA_MAP", () => {
   });
 
   it("cada elemento en `root` tiene id, area y gap", () => {
-    for (const item of DEFAULT_PARETO_DATA_MAP.root) {
+    for (const item of DEFAULT_PARETO_DATA_MAP['root']!) {
       expect(item).toHaveProperty("id");
       expect(item).toHaveProperty("area");
       expect(typeof item.gap).toBe("number");

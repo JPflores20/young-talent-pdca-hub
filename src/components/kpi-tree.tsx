@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+﻿import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
   Controls,
@@ -211,7 +211,7 @@ export function KpiTreeInteractive({
     [setEdges],
   );
 
-  // Click on an edge to cycle: solid → dashed → animated dashed → solid
+  // Click on an edge to cycle: solid â†’ dashed â†’ animated dashed â†’ solid
   const onEdgeClick = useCallback(
     (_event: React.MouseEvent, edge: Edge) => {
       setEdges((eds) =>

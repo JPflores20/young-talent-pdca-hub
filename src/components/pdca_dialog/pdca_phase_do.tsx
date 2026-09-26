@@ -9,10 +9,10 @@ interface PhaseDoProps {
   on_action_items_change: (items: ActionItem[]) => void;
   evidencias_solucion: any[];
   on_evidencias_solucion_change: (evs: any[]) => void;
-  kpi_tree_foco_image?: string;
+  kpi_tree_foco_image?: string | undefined;
   on_kpi_tree_foco_image_change: (img: string | undefined) => void;
   completed_steps: Set<string>;
-  na_steps?: Set<string>;
+  na_steps?: Set<string> | undefined;
   on_toggle_step: (step_id: string) => void;
   on_toggle_na?: (step_id: string) => void;
 }

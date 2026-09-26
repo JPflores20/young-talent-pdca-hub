@@ -30,7 +30,7 @@ export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
       if (index >= 0) {
         newEvidencias[index].image = image;
       } else {
-        newEvidencias.push({ id: crypto.randomUUID(), actionId, image });
+        newEvidencias.push({ actionId, image });
       }
     } else {
       if (index >= 0) {
@@ -86,7 +86,7 @@ export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
                         <>
                           <img src={existing} alt={`Evidencia ${i + 1}`} className="w-full h-full object-contain" />
                           <button
-                            onClick={() => handleActionImageChange(action.id, undefined)}
+                            onClick={() => handleImageChange(action.id, undefined)}
                             className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-0 group-hover:opacity-100 transition text-red-500 hover:text-red-700 hover:bg-white"
                           >
                             <X className="size-4" />

@@ -199,7 +199,7 @@ export const TablaEstandarizacionVpo: React.FC<TablaEstandarizacionVpoProps> = (
                           type="file"
                           accept="image/*,video/*"
                           className="hidden"
-                          ref={(el) => (fileInputRefs.current[item.id] = el)}
+                          ref={(el) => { fileInputRefs.current[item.id] = el; }}
                           onChange={(e) => handleFileChange(item.id, e)}
                         />
                         <Button

@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
-import type {
+import type { RendimientoActualPiItem,
   Phase,
   ActionItem,
   Pdca,
+  ConclusionesKpiData,
+  ConclusionesPiItem,
   ParetoItem,
   VpoCheckpointItem,
   DefinicionMeta,
@@ -13,8 +15,7 @@ import type {
   PdcaComment,
   PdcaHistoryEvent,
 } from "@/data/pdca";
-import {
-  DEFAULT_VPO_CHECKPOINTS,
+import {  DEFAULT_VPO_CHECKPOINTS,
   DEFAULT_TARGET_VS_ACTUAL,
   DEFAULT_PARETO_DATA_MAP,
   DEFAULT_PARTICIPANTES,
@@ -75,7 +76,7 @@ export const use_pdca_dialog_state = (
     initial_pdca.targetVsActualUnit || "",
   );
   const [target_vs_actual_title, set_target_vs_actual_title] = useState<string>(
-    initial_pdca.targetVsActualTitle || "SITUACIÓN ACTUAL",
+    initial_pdca.targetVsActualTitle || "SITUACIÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“N ACTUAL",
   );
 
   const [kpi_final_result_data, set_kpi_final_result_data] = useState<
@@ -149,6 +150,9 @@ export const use_pdca_dialog_state = (
     initial_pdca.mapeoProcesoDesc || initial_pdca.mapeo_proceso_desc,
   );
 
+  const [rendimiento_actual_pis, set_rendimiento_actual_pis] = useState<any[]>(initial_pdca.rendimientoActualPis || initial_pdca.rendimiento_actual_pis || []);
+  const [rendimiento_actual_image, set_rendimiento_actual_image] = useState<string | undefined>(initial_pdca.rendimientoActualImage || initial_pdca.rendimiento_actual_image);
+
   const [coleccion_datos, set_coleccion_datos] = useState<any[]>(
     initial_pdca.coleccionDatos || initial_pdca.coleccion_datos || [],
   );
@@ -174,7 +178,7 @@ export const use_pdca_dialog_state = (
   );
 
   const [current_times_title, set_current_times_title] = useState<string>(
-    initial_pdca.currentTimesTitle || initial_pdca.current_times_title || "SITUACIÓN ACTUAL",
+    initial_pdca.currentTimesTitle || initial_pdca.current_times_title || "SITUACIÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“N ACTUAL",
   );
 
   const [ishikawa_conceptos, set_ishikawa_conceptos] = useState<Record<string, string>>(
@@ -214,6 +218,15 @@ export const use_pdca_dialog_state = (
 
   const [conclusiones_finales, set_conclusiones_finales] = useState<string>(
     initial_pdca.conclusionesFinales || initial_pdca.conclusiones_finales || "",
+  );
+  const [conclusiones_storyboard_image, set_conclusiones_storyboard_image] = useState<string | undefined>(
+    initial_pdca.conclusionesStoryboardImage || initial_pdca.conclusiones_storyboard_image
+  );
+  const [conclusiones_kpi_data, set_conclusiones_kpi_data] = useState<ConclusionesKpiData | undefined>(
+    initial_pdca.conclusionesKpiData || initial_pdca.conclusiones_kpi_data
+  );
+  const [conclusiones_pi_items, set_conclusiones_pi_items] = useState<ConclusionesPiItem[]>(
+    initial_pdca.conclusionesPiItems || initial_pdca.conclusiones_pi_items || []
   );
 
   const [sops_documentos_image, set_sops_documentos_image] = useState<string | undefined>(
@@ -263,7 +276,7 @@ export const use_pdca_dialog_state = (
     return [
       {
         id: "fivewhys-1",
-        title: "MÉTODO",
+        title: "MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â°TODO",
         rows: [
           {
             id: Date.now(),
@@ -450,6 +463,10 @@ export const use_pdca_dialog_state = (
     mapeo_proceso_desc,
     set_mapeo_proceso_desc,
     coleccion_datos,
+    rendimiento_actual_pis,
+    set_rendimiento_actual_pis,
+    rendimiento_actual_image,
+    set_rendimiento_actual_image,
     set_coleccion_datos,
     especificacion_procesos_text,
     set_especificacion_procesos_text,
@@ -483,6 +500,12 @@ export const use_pdca_dialog_state = (
     set_analisis_riesgos_estandarizacion,
     conclusiones_finales,
     set_conclusiones_finales,
+    conclusiones_storyboard_image,
+    set_conclusiones_storyboard_image,
+    conclusiones_kpi_data,
+    set_conclusiones_kpi_data,
+    conclusiones_pi_items,
+    set_conclusiones_pi_items,
     sops_documentos_image,
     set_sops_documentos_image,
     plan_entrenamiento_image,
