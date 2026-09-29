@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [mockCredentials, setMockCredentials] = useState(INITIAL_MOCK_USERS);
 
   useEffect(() => {
+    let isMounted = true;
     const unsub = onAuthStateChanged(primaryAuth, async (user) => {
       if (user) {
         const threshold = new Date("2026-09-01T21:00:00Z").getTime();
@@ -73,9 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isLegacyUser = creationTime < threshold;
 
         if (!user.emailVerified && !isLegacyUser) {
-          setCurrentUser(null);
-          localStorage.removeItem("pdca_auth_user");
-          setLoading(false);
+          if (isMounted) {
+            setCurrentUser(null);
+            localStorage.removeItem("pdca_auth_user");
+            setLoading(false);
+          }
           return;
         }
         try {
@@ -84,13 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (userDoc.exists()) {
             const data = userDoc.data() as Omit<UserProfile, "uid">;
             const role: UserRole = isAutoAdmin ? "admin" : data.role || "user";
-            persistSession({
-              uid: user.uid,
-              name: data.name || user.displayName || "Usuario",
-              email: user.email || "",
-              role,
-              area: data.area || "Usuario",
-            });
+            if (isMounted) {
+              persistSession({
+                uid: user.uid,
+                name: data.name || user.displayName || "Usuario",
+                email: user.email || "",
+                role,
+                area: data.area || "Usuario",
+              });
+            }
           } else {
             const autoProfile: UserProfile = {
               uid: user.uid,
@@ -101,7 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               role: isAutoAdmin ? "admin" : "user",
               area: "Usuario",
             };
-            persistSession(autoProfile);
+            if (isMounted) {
+              persistSession(autoProfile);
+            }
           }
         } catch (e) {
           console.error("Error al sincronizar usuario de Firebase Auth:", e);
@@ -114,28 +121,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (parsed && isAdminEmail(parsed.email)) {
               parsed.role = "admin";
             }
-            setCurrentUser(parsed);
+            if (isMounted) setCurrentUser(parsed);
           } catch (e) {
             console.error("Error parsing stored auth user:", e);
           }
         } else {
-          setCurrentUser(null);
+          if (isMounted) setCurrentUser(null);
         }
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     });
 
-    return () => unsub();
+    return () => {
+      isMounted = false;
+      unsub();
+    };
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     let unsub: (() => void) | undefined;
 
     if (currentUser?.role === "admin") {
       import("firebase/firestore").then(({ collection, onSnapshot }) => {
+        if (!isMounted) return;
         unsub = onSnapshot(
           collection(db, "users"),
           (snapshot) => {
+            if (!isMounted) return;
             const list: { name: string; email: string }[] = [];
             snapshot.forEach((docSnap) => {
               const d = docSnap.data();
@@ -148,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
           (error) => {
             console.error("Error fetching users snapshot:", error);
-            setUsersList([]);
+            if (isMounted) setUsersList([]);
           },
         );
       });
@@ -157,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return () => {
+      isMounted = false;
       if (unsub) {
         unsub();
       }

@@ -87,9 +87,9 @@ export type ImpactMatrixRow = {
 export type IshikawaItem = {
   id: string;
   title?: string;
-  effect: string;
+  effect?: string;
   causes: Record<string, string[]>;
-  prioritization: unknown[];
+  prioritization?: unknown[];
   prioritization_custom_criterion?: string;
   prioritizationCustomCriterion?: string;
   custom_labels?: Record<string, string>;

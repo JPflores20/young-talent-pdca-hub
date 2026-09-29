@@ -48,7 +48,7 @@ import { deletePdcaFromFirestore, updatePdcaDeadline } from "@/services/pdca-ser
 import { phases, type Phase, type Pdca } from "@/data/pdca";
 import { useAuth } from "@/context/auth-context";
 import { usePdcas } from "@/context/pdca-context";
-import { ALL_STEP_IDS, TOTAL_STEPS } from "@/components/pdca_dialog/pdca_dialog_header";
+import { ALL_STEP_IDS, TOTAL_STEPS } from "@/components/pdca_dialog/common/pdca_dialog_header";
 
 function getComputedProgress(p: Pdca): number {
   if (!p.completedSteps) return p.progreso || 0;
@@ -261,15 +261,16 @@ function MisPdcas() {
       </header>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {phases.map((phase) => {
-          const borderColor: Record<string, string> = {
-            Plan: "border-t-phase-plan",
-            Do: "border-t-phase-do",
-            Check: "border-t-phase-check",
-            Act: "border-t-phase-act",
-            Evaluacion: "border-t-gray-500",
-          };
-          const color = borderColor[phase] || "border-t-gray-500";
+        {phases
+          .filter((phase) => phase !== "Resumen" && phase !== "Evaluacion")
+          .map((phase) => {
+            const borderColor: Record<string, string> = {
+              Plan: "border-t-phase-plan",
+              Do: "border-t-phase-do",
+              Check: "border-t-phase-check",
+              Act: "border-t-phase-act",
+            };
+            const color = borderColor[phase] || "border-t-gray-500";
 
           return (
             <button

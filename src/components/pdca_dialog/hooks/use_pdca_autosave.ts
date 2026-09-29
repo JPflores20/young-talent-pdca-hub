@@ -16,12 +16,20 @@ export const use_pdca_autosave = (
   const last_saved_json_ref = useRef<string>("");
   const is_first_mount_ref = useRef<boolean>(true);
 
+  const is_mounted_ref = useRef(true);
+  useEffect(() => {
+    is_mounted_ref.current = true;
+    return () => {
+      is_mounted_ref.current = false;
+    };
+  }, []);
+
   // Inicialización de la referencia guardada
   useEffect(() => {
     is_first_mount_ref.current = true;
     const initial_payload = current_payload_getter();
     last_saved_json_ref.current = JSON.stringify(initial_payload);
-    set_has_unsaved_changes(false);
+    if (is_mounted_ref.current) set_has_unsaved_changes(false);
   }, [pdca_identifier]);
 
   // Manejo de guardado explícito en base de datos
@@ -31,7 +39,7 @@ export const use_pdca_autosave = (
         return false;
       }
 
-      set_is_saving(true);
+      if (is_mounted_ref.current) set_is_saving(true);
       const payload_to_save = current_payload_getter();
 
       if (next_phase_target) {
@@ -41,9 +49,8 @@ export const use_pdca_autosave = (
       try {
         await savePdcaToFirestore(payload_to_save);
         last_saved_json_ref.current = JSON.stringify(payload_to_save);
-        set_has_unsaved_changes(false);
+        if (is_mounted_ref.current) set_has_unsaved_changes(false);
         try {
-          // If refresh function is provided via closure or hook, it should be called here
           if (on_save_success) {
             await on_save_success();
           }
@@ -55,10 +62,10 @@ export const use_pdca_autosave = (
         toast.error("Error al intentar guardar en la base de datos.");
         return false;
       } finally {
-        set_is_saving(false);
+        if (is_mounted_ref.current) set_is_saving(false);
       }
     },
-    [is_editable, is_saving, current_payload_getter],
+    [is_editable, is_saving, current_payload_getter, on_save_success],
   );
 
   // Autosave y detección de modificaciones

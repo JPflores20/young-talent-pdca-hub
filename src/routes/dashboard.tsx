@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { PhaseBadge } from "@/components/pdca-badge";
 import { usePdcas } from "@/context/pdca-context";
 import { useAuth } from "@/context/auth-context";
-import { ALL_STEP_IDS, TOTAL_STEPS } from "@/components/pdca_dialog/pdca_dialog_header";
+import { ALL_STEP_IDS, TOTAL_STEPS } from "@/components/pdca_dialog/common/pdca_dialog_header";
 import { type Pdca } from "@/data/pdca";
 
 function getComputedProgress(p: Pdca): number {

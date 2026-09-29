@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
   Controls,
@@ -171,7 +171,9 @@ interface KpiTreeProps {
   initialEdges?: any[];
   onChange?: (nodes: any[], edges: any[]) => void;
   isStepCompleted?: boolean | undefined;
+  isNa?: boolean | undefined;
   onToggleStep?: (() => void) | undefined;
+  onToggleNa?: (() => void) | undefined;
 }
 
 export function KpiTreeInteractive({

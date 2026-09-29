@@ -47,6 +47,7 @@ export function PdcaProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let isMounted = true;
     if (!currentUser) {
       setRawPdcas([]);
       setLoading(false);
@@ -54,8 +55,24 @@ export function PdcaProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const load = async () => {
+      try {
+        const pdcas = await fetchPdcasFromFirestore();
+        if (isMounted) setRawPdcas(pdcas);
+      } catch (error) {
+        console.error("Error fetching pdcas:", error);
+      } finally {
+        if (isMounted && !initialLoadDone.current) {
+          initialLoadDone.current = true;
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, [currentUser?.uid]);
 
   const pdcaList: Pdca[] = (() => {

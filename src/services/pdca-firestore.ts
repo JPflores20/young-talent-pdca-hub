@@ -146,17 +146,6 @@ export function prepare_pdca_for_firestore(pdca: Pdca): Record<string, unknown> 
   const clean = JSON.parse(JSON.stringify(pdca)) as Record<string, any>;
   const sanitized = firestore_safe(clean, false);
 
-  // WORKAROUND: Firestore arroja "Property array contains an invalid nested entity"
-  // en evidenciasSolucion aunque no haya arreglos anidados. Esto suele ser un bug
-  // del SDK de Firestore con base64 strings muy largos dentro de arreglos de objetos.
-  // Lo forzamos a string para evitar la validación de arreglos de Firestore.
-  if (Array.isArray(sanitized.evidenciasSolucion)) {
-    sanitized.evidenciasSolucion = JSON.stringify(sanitized.evidenciasSolucion);
-  }
-  if (Array.isArray(sanitized.evidencias_solucion)) {
-    sanitized.evidencias_solucion = JSON.stringify(sanitized.evidencias_solucion);
-  }
-
   // Siempre verificar violations para diagnosticar el error en producción
   find_firestore_violations(sanitized);
 
@@ -190,14 +179,6 @@ export function parse_pdca_from_firestore(data: Record<string, any>): Pdca {
       prioritization: typeof ish.prioritization === "string" ? JSON.parse(ish.prioritization) : ish.prioritization || [],
       images: typeof ish.images === "string" ? JSON.parse(ish.images) : ish.images || [],
     }));
-  }
-
-  // Restore evidenciasSolucion (workaround)
-  if (typeof restored.evidenciasSolucion === "string") {
-    try { restored.evidenciasSolucion = JSON.parse(restored.evidenciasSolucion); } catch (e) { restored.evidenciasSolucion = []; }
-  }
-  if (typeof restored.evidencias_solucion === "string") {
-    try { restored.evidencias_solucion = JSON.parse(restored.evidencias_solucion); } catch (e) { restored.evidencias_solucion = []; }
   }
 
   return restored as Pdca;

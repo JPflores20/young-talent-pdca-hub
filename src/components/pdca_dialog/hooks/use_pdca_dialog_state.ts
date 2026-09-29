@@ -20,7 +20,7 @@ import {  DEFAULT_VPO_CHECKPOINTS,
   DEFAULT_PARETO_DATA_MAP,
   DEFAULT_PARTICIPANTES,
 } from "@/data/pdca";
-import { DEFAULT_DEFINICION_META } from "@/components/pdca-goal-definition";
+import { DEFAULT_DEFINICION_META } from "@/components/pdca_dialog/01-plan/step-01-meta/pdca-goal-definition";
 
 import { parse_date_string } from "../utils/date_helpers";
 
@@ -28,7 +28,7 @@ export const use_pdca_dialog_state = (
   initial_pdca: Pdca,
   current_user: { name?: string; email?: string } | null,
 ) => {
-  const [active_tab, set_active_tab] = useState<Phase>("Resumen");
+  const [active_tab, set_active_tab] = useState<Phase>(initial_pdca.fase || "Resumen");
   const [title_value, set_title_value] = useState<string>(initial_pdca.titulo || "");
   const [area_value, set_area_value] = useState<string>(initial_pdca.area || "cocimientos");
   const [problem_value, set_problem_value] = useState<string>(initial_pdca.problema || "");

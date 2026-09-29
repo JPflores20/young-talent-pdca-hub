@@ -12,6 +12,8 @@ import { db } from "@/lib/firebase";
 import { SEED_PDCAS } from "@/data/pdca-seed";
 import { set_pdca_snapshot } from "./pdca-cache";
 
+import { prepare_pdca_for_firestore } from "./pdca-firestore";
+
 export const PDCA_COLLECTION = "pdcas";
 export const CONFIG_DOC_ID = "_config";
 
@@ -21,7 +23,8 @@ export const CONFIG_DOC_ID = "_config";
  */
 export async function seed_initial_pdcas(): Promise<void> {
   for (const pdca of SEED_PDCAS) {
-    await setDoc(doc(db, PDCA_COLLECTION, pdca.id), pdca);
+    const clean_pdca = prepare_pdca_for_firestore(pdca);
+    await setDoc(doc(db, PDCA_COLLECTION, pdca.id), clean_pdca);
     set_pdca_snapshot(pdca.id, pdca);
   }
 

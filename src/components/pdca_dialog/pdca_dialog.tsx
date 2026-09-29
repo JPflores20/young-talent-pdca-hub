@@ -6,18 +6,17 @@ import { use_pdca_dialog_state } from "./hooks/use_pdca_dialog_state";
 import { use_pdca_deadline } from "./hooks/use_pdca_deadline";
 import { use_pdca_autosave } from "./hooks/use_pdca_autosave";
 import { format_date_to_string, parse_date_string } from "./utils/date_helpers";
-import { PdcaDialogHeader, ALL_STEP_IDS, TOTAL_STEPS } from "./pdca_dialog_header";
-import { PdcaDialogFooter } from "./pdca_dialog_footer";
-import { PdcaPhasePlan } from "./pdca_phase_plan";
-import { PdcaPhaseDo } from "./pdca_phase_do";
-import { PdcaPhaseCheck } from "./pdca_phase_check";
-import { PdcaPhaseAct } from "./pdca_phase_act";
-import { PdcaPhaseResumen } from "./pdca_phase_resumen";
-import { PdcaItfR2d2 } from "./pdca_itf_r2d2";
-
-import { CustomStepper } from "../pdca-dialog/pdca-dialog-stepper";
-import { PdcaComments } from "../pdca-comments";
-import { PdcaHistory } from "../pdca-history";
+import { PdcaDialogHeader, ALL_STEP_IDS, TOTAL_STEPS } from "./common/pdca_dialog_header";
+import { PdcaDialogFooter } from "./common/pdca_dialog_footer";
+import { PdcaPhasePlan } from "./01-plan/pdca_phase_plan";
+import { PdcaPhaseDo } from "./02-do/pdca_phase_do";
+import { PdcaPhaseCheck } from "./03-check/pdca_phase_check";
+import { PdcaPhaseAct } from "./04-act/pdca_phase_act";
+import { PdcaPhaseResumen } from "./00-resumen/pdca_phase_resumen";
+import { PdcaItfR2d2 } from "./04-act/step-itf-r2d2/pdca_itf_r2d2";
+import { CustomStepper } from "./common/pdca-dialog-stepper";
+import { PdcaComments } from "@/components/pdca-comments";
+import { PdcaHistory } from "@/components/pdca-history";
 import { DEFAULT_VPO_CHECKPOINTS, type Pdca, type Phase } from "@/data/pdca";
 
 const create_empty_pdca_draft = (): Pdca => ({

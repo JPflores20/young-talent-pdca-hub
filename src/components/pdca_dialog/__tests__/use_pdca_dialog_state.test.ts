@@ -1,16 +1,16 @@
-import { renderHook, act } from "@testing-library/react";
+﻿import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { use_pdca_dialog_state } from "../hooks/use_pdca_dialog_state";
 import type { Pdca } from "@/data/pdca";
 
 const mock_pdca: Pdca = {
   id: "PDCA-TEST-001",
-  titulo: "Optimización de Envasado",
+  titulo: "Optimizacion de Envasado",
   area: "envasado",
   fase: "Plan",
   actualizado: "01/01/2026",
   progreso: 20,
-  problema: "Fuga en válvula",
+  problema: "Fuga en valvula",
   causaRaiz: "",
   acciones: [],
   verificacion: "",
@@ -18,7 +18,7 @@ const mock_pdca: Pdca = {
   estandarizacion: "",
   indicador: { etiqueta: "Mermas", antes: 10, despues: 2, unidad: "%" },
   serie: [],
-  equipo: ["Operador 1", "Mecánico 1"],
+  equipo: ["Operador 1", "Mecanico 1"],
 };
 
 describe("use_pdca_dialog_state", () => {
@@ -27,23 +27,23 @@ describe("use_pdca_dialog_state", () => {
       use_pdca_dialog_state(mock_pdca, { name: "Admin", email: "admin@test.com" }),
     );
 
-    expect(result.current.title_value).toBe("Optimización de Envasado");
+    expect(result.current.title_value).toBe("Optimizacion de Envasado");
     expect(result.current.area_value).toBe("envasado");
     expect(result.current.active_tab).toBe("Plan");
-    expect(result.current.team_members).toEqual(["Operador 1", "Mecánico 1"]);
+    expect(result.current.team_members).toEqual(["Operador 1", "Mecanico 1"]);
   });
 
-  it("debe permitir cambiar de fase activa y modificar el título", () => {
+  it("debe permitir cambiar de fase activa y modificar el titulo", () => {
     const { result } = renderHook(() =>
       use_pdca_dialog_state(mock_pdca, { name: "Admin", email: "admin@test.com" }),
     );
 
     act(() => {
       result.current.set_active_tab("Do");
-      result.current.set_title_value("Nuevo Título de Prueba");
+      result.current.set_title_value("Nuevo Titulo de Prueba");
     });
 
     expect(result.current.active_tab).toBe("Do");
-    expect(result.current.title_value).toBe("Nuevo Título de Prueba");
+    expect(result.current.title_value).toBe("Nuevo Titulo de Prueba");
   });
 });

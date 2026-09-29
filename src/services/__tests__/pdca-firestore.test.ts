@@ -155,6 +155,32 @@ describe("delete_pdca_from_firestore", () => {
   });
 });
 
+describe("prepare_pdca_for_firestore & parse_pdca_from_firestore", () => {
+  it("serializa arreglos anidados dentro de arreglos para compatibilidad con Firestore", async () => {
+    const { prepare_pdca_for_firestore, parse_pdca_from_firestore } = await import("../pdca-firestore");
+    const test_pdca = create_mock_pdca({
+      gopThemesData: [
+        { id: 1, tema: "Test GOP", meses: [true, false, true], status: "In Progress" },
+      ],
+      ishikawas: [
+        { id: "ish-1", causes: { machine: ["causa 1"] }, prioritization: ["item"] },
+      ],
+    });
+
+    const prepared = prepare_pdca_for_firestore(test_pdca) as any;
+
+    expect(typeof prepared.gopThemesData[0].meses).toBe("string");
+    expect(typeof prepared.ishikawas[0].causes).toBe("string");
+    expect(typeof prepared.ishikawas[0].prioritization).toBe("string");
+
+    const parsed = parse_pdca_from_firestore(prepared);
+
+    expect(Array.isArray(parsed.gopThemesData[0].meses)).toBe(true);
+    expect(parsed.gopThemesData[0].meses).toEqual([true, false, true]);
+    expect(parsed.ishikawas[0].causes).toEqual({ machine: ["causa 1"] });
+  });
+});
+
 describe("update_pdca_deadline", () => {
   it("llama a updateDoc con fechaFinalizacion cuando se provee fecha", async () => {
     await update_pdca_deadline("PDCA-001", "2026-12-31");
