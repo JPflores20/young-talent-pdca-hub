@@ -146,10 +146,8 @@ export function prepare_pdca_for_firestore(pdca: Pdca): Record<string, unknown> 
   const clean = JSON.parse(JSON.stringify(pdca)) as Record<string, any>;
   const sanitized = firestore_safe(clean, false);
 
-  // Verificar que no queden violations (solo en dev)
-  if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
-    find_firestore_violations(sanitized);
-  }
+  // Siempre verificar violations para diagnosticar el error en producción
+  find_firestore_violations(sanitized);
 
   return sanitized;
 }
@@ -295,8 +293,10 @@ export async function save_pdca_to_firestore(pdca: Pdca): Promise<void> {
         return;
       }
 
+      console.log("[pdca-firestore] updateDoc changed_fields keys:", Object.keys(changed_fields));
       await updateDoc(doc_ref, changed_fields);
     } else {
+      console.log("[pdca-firestore] setDoc full payload keys:", Object.keys(clean_pdca));
       await setDoc(doc_ref, clean_pdca, { merge: true });
     }
 
@@ -307,6 +307,21 @@ export async function save_pdca_to_firestore(pdca: Pdca): Promise<void> {
     try {
       const doc_ref = doc(db, PDCA_COLLECTION, pdca.id);
       const clean_pdca = prepare_pdca_for_firestore(pdca);
+      // Log each field value for debugging the nested-array violation
+      for (const [key, val] of Object.entries(clean_pdca)) {
+        if (Array.isArray(val)) {
+          console.log(`[pdca-firestore] FIELD ${key} is top-level array, length=${val.length}`);
+          val.forEach((item: any, idx: number) => {
+            if (item && typeof item === "object") {
+              for (const [k2, v2] of Object.entries(item)) {
+                if (Array.isArray(v2)) {
+                  console.error(`[pdca-firestore] ❌ NESTED ARRAY FOUND: ${key}[${idx}].${k2} = array(${(v2 as any[]).length})`);
+                }
+              }
+            }
+          });
+        }
+      }
       await setDoc(doc_ref, clean_pdca, { merge: true });
       set_pdca_snapshot(pdca.id, parse_pdca_from_firestore(clean_pdca));
     } catch (fallback_error) {
