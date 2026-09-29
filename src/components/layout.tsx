@@ -119,7 +119,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           {desktopSidebarOpen && (
             <>
               <span className="font-display text-2xl font-extrabold tracking-wider text-white uppercase leading-none mt-1">
-                PDCA Hub
+                MAZ HUB
               </span>
               <span className="text-[11px] text-blue-300 font-bold tracking-[0.25em] uppercase mt-1">
                 Zacatecas
@@ -255,7 +255,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               />
               {!desktopSidebarOpen && (
                 <span className="font-display font-bold uppercase tracking-wider hidden md:block">
-                  PDCA Hub
+                  MAZ HUB
                 </span>
               )}
             </div>
@@ -417,7 +417,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     className="h-8 w-auto object-contain rounded"
                   />
                   <span className="font-display text-lg font-bold uppercase tracking-wide">
-                    PDCA Hub
+                    MAZ HUB
                   </span>
                 </div>
                 <Button

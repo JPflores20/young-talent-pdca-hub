@@ -12,6 +12,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AREAS } from "@/data/pdca";
 
 interface MetaFieldsProps {
   title_value: string;
@@ -65,13 +66,11 @@ export const PdcaMetaFields: React.FC<MetaFieldsProps> = ({
             <SelectValue placeholder="Seleccionar área" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="cocimientos">Cocimientos</SelectItem>
-            <SelectItem value="fermentacion">Fermentación</SelectItem>
-            <SelectItem value="filtracion">Filtración</SelectItem>
-            <SelectItem value="envasado">Envasado</SelectItem>
-            <SelectItem value="mantenimiento">Mantenimiento</SelectItem>
-            <SelectItem value="logistica">Logística</SelectItem>
-            <SelectItem value="calidad">Calidad</SelectItem>
+            {AREAS.map((a) => (
+              <SelectItem key={a.value} value={a.value}>
+                {a.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

@@ -1,10 +1,10 @@
-﻿/**
+/**
  * Tipos e interfaces del dominio PDCA.
  * Este mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo contiene EXCLUSIVAMENTE definiciones de tipos TypeScript.
  * Soporta tanto camelCase como snake_case para mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡xima retrocompatibilidad.
  */
 
-export type Phase = "Plan" | "Do" | "Check" | "Act" | "Evaluacion";
+export type Phase = "Resumen" | "Plan" | "Do" | "Check" | "Act" | "Evaluacion";
 
 export type ActionItem = {
   id: string;
@@ -239,6 +239,10 @@ export type Pdca = {
   targetVsActualUnit?: string;
   target_vs_actual_title?: string;
   targetVsActualTitle?: string;
+  target_vs_actual_ymin?: number;
+  targetVsActualYmin?: number;
+  target_vs_actual_ymax?: string;
+  targetVsActualYmax?: string;
   // Pareto
   pareto_data_map?: Record<string, ParetoItem[]>;
   paretoDataMap?: Record<string, ParetoItem[]>;
@@ -336,73 +340,90 @@ export type Pdca = {
   mapeoProcesoDesc?: string | undefined;
   mapeo_proceso_desc?: string | undefined;
 
+  // SIPOC Map
+  sipocMapFiles?: string[];
+  sipoc_map_files?: string[];
+
   // ColecciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de Datos (Tabla previa al AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis EstadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stico)
   coleccionDatos?: ColeccionDatosItem[];
   coleccion_datos?: ColeccionDatosItem[];
 
   // EspecificaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de Procesos (Posterior al AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis EstadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stico)
-  especificacionProcesosText?: string;
-  especificacion_procesos_text?: string;
-  especificacionProcesosImage?: string;
-  especificacion_procesos_image?: string;
+  especificacionProcesosText?: string | undefined;
+  especificacion_procesos_text?: string | undefined;
+  especificacionProcesosImage?: string | undefined;
+  especificacion_procesos_image?: string | undefined;
 
   // Final Time Series (Current Times final)
-  finalTimeSeriesTitle?: string;
-  final_time_series_title?: string;
-  finalTimeSeriesData?: { mes: string; target: number; actual: number | null }[];
-  final_time_series_data?: { mes: string; target: number; actual: number | null }[];
-  finalTimeSeriesUnit?: string;
-  final_time_series_unit?: string;
+  finalTimeSeriesTitle?: string | undefined;
+  final_time_series_title?: string | undefined;
+  finalTimeSeriesData?: { mes: string; target: number; actual: number | null }[] | undefined;
+  final_time_series_data?: { mes: string; target: number; actual: number | null }[] | undefined;
+  finalTimeSeriesUnit?: string | undefined;
+  final_time_series_unit?: string | undefined;
+  finalTimeSeriesYmin?: number | undefined;
+  final_time_series_ymin?: number | undefined;
+  finalTimeSeriesYmax?: string | undefined;
+  final_time_series_ymax?: string | undefined;
 
   // Current Times General (Para step-3 u otros)
-  currentTimesTitle?: string;
-  current_times_title?: string;
+  currentTimesTitle?: string | undefined;
+  current_times_title?: string | undefined;
 
   // Concepto de para Ishikawa
-  ishikawaConceptos?: Record<string, string>;
-  ishikawa_conceptos?: Record<string, string>;
+  ishikawaConceptos?: Record<string, string> | undefined;
+  ishikawa_conceptos?: Record<string, string> | undefined;
 
-  // InformaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n Adicional GOPs multiples fotos
-  informacionAdicionalFiles?: string[];
-  informacion_adicional_files?: string[];
+  // Información Adicional GOPs multiples fotos
+  informacionAdicionalFiles?: string[] | undefined;
+  informacion_adicional_files?: string[] | undefined;
 
   // Nuevas tablas
-  vozConsumidor?: VozDelConsumidorItem[];
-  voz_consumidor?: VozDelConsumidorItem[];
-  analisisRiesgosProyecto?: AnalisisRiesgoItem[];
-  analisis_riesgos_proyecto?: AnalisisRiesgoItem[];
-  conclusionesCausaRaiz?: ConclusionCausaRaizItem[];
-  conclusiones_causa_raiz?: ConclusionCausaRaizItem[];
-  pruebasEjecutadas?: PruebaEjecutadaItem[];
-  pruebas_ejecutadas?: PruebaEjecutadaItem[];
-  nuevoPerformance?: NuevoPerformanceItem[];
-  nuevo_performance?: NuevoPerformanceItem[];
-  nuevo_performance_image?: string;
+  vozConsumidor?: VozDelConsumidorItem[] | undefined;
+  voz_consumidor?: VozDelConsumidorItem[] | undefined;
+  analisisRiesgosProyecto?: AnalisisRiesgoItem[] | undefined;
+  analisis_riesgos_proyecto?: AnalisisRiesgoItem[] | undefined;
+  conclusionesCausaRaiz?: ConclusionCausaRaizItem[] | undefined;
+  conclusiones_causa_raiz?: ConclusionCausaRaizItem[] | undefined;
+  pruebasEjecutadas?: PruebaEjecutadaItem[] | undefined;
+  pruebas_ejecutadas?: PruebaEjecutadaItem[] | undefined;
+  nuevoPerformance?: NuevoPerformanceItem[] | undefined;
+  nuevo_performance?: NuevoPerformanceItem[] | undefined;
+  nuevo_performance_image?: string | undefined;
+  nuevo_pareto_image?: string | undefined;
+  nuevo_pareto_data_map?: Record<string, ParetoItem[]> | undefined;
+  nuevo_pareto_drill_downs?: string[] | undefined;
+  nuevo_pareto_unit?: string | undefined;
+  nuevo_pareto_titles?: Record<string, string> | undefined;
+  nueva_correlacion_image?: string | undefined;
+  has_nueva_correlacion?: boolean | undefined;
+  nueva_correlacion_data?: FlavorCorrelationChart[] | undefined;
 
-  analisisRiesgosEstandarizacion?: AnalisisRiesgoItem[];
-  analisis_riesgos_estandarizacion?: AnalisisRiesgoItem[];
-  conclusionesFinales?: string;
-  conclusionesStoryboardImage?: string;
-  conclusionesKpiData?: ConclusionesKpiData;
-  conclusionesPiItems?: ConclusionesPiItem[];
-  conclusiones_finales?: string;
-  conclusiones_storyboard_image?: string;
-  conclusiones_kpi_data?: ConclusionesKpiData;
-  conclusiones_pi_items?: ConclusionesPiItem[];
+  analisisRiesgosEstandarizacion?: AnalisisRiesgoItem[] | undefined;
+  analisis_riesgos_estandarizacion?: AnalisisRiesgoItem[] | undefined;
+  conclusionesFinales?: string | undefined;
+  conclusionesStoryboardImage?: string | undefined;
+  conclusionesKpiData?: ConclusionesKpiData | undefined;
+  conclusionesPiItems?: ConclusionesPiItem[] | undefined;
+  conclusiones_finales?: string | undefined;
+  conclusiones_storyboard_image?: string | undefined;
+  conclusiones_kpi_data?: ConclusionesKpiData | undefined;
+  conclusiones_pi_items?: ConclusionesPiItem[] | undefined;
 
-  // Fase Act: documentos de estandarizaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
-  sops_documentos_image?: string;
-  plan_entrenamiento_image?: string;
-  plan_control_image?: string;
-  lecciones_aprendidas?: string;
+  // Fase Act: documentos de estandarización
+  sops_documentos_image?: string | undefined;
+  plan_entrenamiento_image?: string | undefined;
+  plan_control_image?: string | undefined;
+  lecciones_aprendidas?: string | undefined;
 
   // Otros
-  benchmarkImage?: string;
+  benchmarkImage?: string | undefined;
+  benchmark_image?: string | undefined;
   // Paso 13: Rendimiento Actual del Proceso
-  rendimientoActualPis?: RendimientoActualPiItem[];
-  rendimiento_actual_pis?: RendimientoActualPiItem[];
-  rendimientoActualImage?: string;
-  rendimiento_actual_image?: string;
+  rendimientoActualPis?: RendimientoActualPiItem[] | undefined;
+  rendimiento_actual_pis?: RendimientoActualPiItem[] | undefined;
+  rendimientoActualImage?: string | undefined;
+  rendimiento_actual_image?: string | undefined;
 };
 
 export type RendimientoActualPiItem = {
@@ -413,6 +434,7 @@ export type RendimientoActualPiItem = {
   puestoResponsable: string;
   herramienta: string;
   ubicacion: string;
+  evidencia?: string;
 };
 
 export type TablaEstandarizacionItem = {
@@ -509,6 +531,7 @@ export type PruebaEjecutadaItem = {
   fecha: string;
   resultado: string;
   estado: "Exitoso" | "Fallido" | "Pendiente" | "";
+  evidencia?: string;
 };
 
 export type NuevoPerformanceItem = {

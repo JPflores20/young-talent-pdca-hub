@@ -47,18 +47,16 @@ export const PdcaPhaseDo: React.FC<PhaseDoProps> = ({
         isNa={na_steps?.has("step-19")} onToggleNa={() => on_toggle_na?.("step-19")}
       />
 
-      {/* ── PASO 20: Arbol de KPII's con PIS foco ─────────────────────── */}
-      <div className="border border-border rounded-xl p-4 bg-secondary/10">
-        <ImageUploadSection
-          image={kpi_tree_foco_image || null}
-          onChange={(img) => on_kpi_tree_foco_image_change(img || undefined)}
-          title="PASO 20: ÁRBOL DE KPII'S CON PIS FOCO"
-          subtitle="Sube la imagen del KPI Tree objetivo"
-          isStepCompleted={completed_steps.has("step-20")}
-          onToggleStep={() => on_toggle_step("step-20")}
-          isNa={na_steps?.has("step-20")} onToggleNa={() => on_toggle_na?.("step-20")}
-        />
-      </div>
+      {/* ── PASO 20: Árbol del KPI con PIS foco ─────────────────────── */}
+      <ImageUploadSection
+        image={kpi_tree_foco_image || null}
+        onChange={(img) => on_kpi_tree_foco_image_change(img || undefined)}
+        title="PASO 20: ÁRBOL DEL KPI CON PIS FOCO"
+        subtitle="Sube la imagen del KPI Tree objetivo"
+        isStepCompleted={completed_steps.has("step-20")}
+        onToggleStep={() => on_toggle_step("step-20")}
+        isNa={na_steps?.has("step-20")} onToggleNa={() => on_toggle_na?.("step-20")}
+      />
     </div>
   );
 };

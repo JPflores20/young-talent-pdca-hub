@@ -25,6 +25,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { LinkIcon } from "lucide-react";
 import { StepCard } from "@/components/ui/step-card";
 
 interface ImageUploadSectionProps {
@@ -295,15 +298,57 @@ export function ImageUploadSection({
             <p className="text-sm max-w-sm mx-auto mt-1 text-muted-foreground mb-4">
               {isDragging ? "Se subirá y comprimirá automáticamente." : description}
             </p>
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              className="gap-2 pointer-events-auto"
-              disabled={isUploading}
-            >
-              <UploadCloud className="size-4" />
-              Seleccionar archivo
-            </Button>
+            <div className="flex justify-center gap-2 mt-4 pointer-events-auto">
+              <Button
+                variant="outline"
+                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                className="gap-2"
+                disabled={isUploading}
+              >
+                <UploadCloud className="size-4" />
+                Seleccionar archivo
+              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2" disabled={isUploading} onClick={(e) => e.stopPropagation()}>
+                    <LinkIcon className="size-4" />
+                    Subir enlace
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex flex-col gap-2">
+                    <h4 className="font-medium text-sm">Pegar enlace</h4>
+                    <p className="text-xs text-muted-foreground">Pega la URL de la imagen o archivo que quieres adjuntar</p>
+                    <div className="flex gap-2">
+                      <Input
+                        id="image-url-input"
+                        placeholder="https://ejemplo.com/imagen.jpg"
+                        className="h-8 text-sm"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const input = e.currentTarget;
+                            if (input && input.value) {
+                              onChange(input.value);
+                            }
+                          }
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          const input = e.currentTarget.parentElement?.querySelector('input');
+                          if (input && input.value) {
+                            onChange(input.value);
+                          }
+                        }}
+                      >
+                        Aceptar
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         )}
 
@@ -646,11 +691,57 @@ export function MultiImageUploadSection({
               <h4 className="font-semibold text-foreground">
                 {isDragging ? "Suelta las imágenes aquí" : "No hay evidencias"}
               </h4>
-              <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm mb-4">
                 {isDragging
                   ? "Se subirán y comprimirán automáticamente."
                   : `Haz clic aquí o arrastra para adjuntar tus fotos o capturas (hasta ${maxImages}).`}
               </p>
+              
+              {!isDragging && (
+                <div className="flex justify-center gap-2 mt-4 pointer-events-auto">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2 bg-background shadow-sm" disabled={isUploading} onClick={(e) => e.stopPropagation()}>
+                        <LinkIcon className="size-3.5" />
+                        Subir enlace
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex flex-col gap-2">
+                        <h4 className="font-medium text-sm">Pegar enlace</h4>
+                        <p className="text-xs text-muted-foreground">Pega la URL de la imagen o archivo que quieres adjuntar</p>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="https://ejemplo.com/imagen.jpg"
+                            className="h-8 text-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const input = e.currentTarget;
+                                if (input && input.value) {
+                                  onChange([...images, input.value]);
+                                  input.value = '';
+                                }
+                              }
+                            }}
+                          />
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              const input = e.currentTarget.parentElement?.querySelector('input');
+                              if (input && input.value) {
+                                onChange([...images, input.value]);
+                                input.value = '';
+                              }
+                            }}
+                          >
+                            Aceptar
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -795,6 +886,51 @@ export function MultiImageUploadSection({
                   <p className="text-xs font-medium text-foreground">
                     {isDragging ? "Soltar aquí" : "Añadir más"}
                   </p>
+                  
+                  {!isDragging && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="mt-2 h-6 text-[10px] pointer-events-auto bg-background/50 hover:bg-background" disabled={isUploading} onClick={(e) => e.stopPropagation()}>
+                          <LinkIcon className="size-3 mr-1" />
+                          URL
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-col gap-2 pointer-events-auto text-left">
+                          <h4 className="font-medium text-sm text-foreground">Pegar enlace</h4>
+                          <p className="text-xs text-muted-foreground whitespace-normal">Pega la URL de la imagen o archivo que quieres adjuntar</p>
+                          <div className="flex gap-2 mt-1">
+                            <Input
+                              placeholder="https://ejemplo.com/imagen.jpg"
+                              className="h-8 text-sm flex-1"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const input = e.currentTarget;
+                                  if (input && input.value) {
+                                    onChange([...images, input.value]);
+                                    input.value = '';
+                                  }
+                                }
+                              }}
+                            />
+                            <Button
+                              size="sm"
+                              className="h-8 shrink-0"
+                              onClick={(e) => {
+                                const input = e.currentTarget.parentElement?.querySelector('input');
+                                if (input && input.value) {
+                                  onChange([...images, input.value]);
+                                  input.value = '';
+                                }
+                              }}
+                            >
+                              Aceptar
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 </div>
               )}
             </div>

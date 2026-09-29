@@ -48,8 +48,8 @@ describe("PdcaDialogHeader", () => {
     const steps = new Set(["step-1", "step-3", "step-4"]);
     render(<PdcaDialogHeader {...BASE_PROPS} completed_steps={steps} />);
 
-    expect(screen.getByText(/3\/12 pasos/)).toBeDefined();
-    expect(screen.getByText("25%")).toBeDefined();
+    expect(screen.getByText(/3\/34 pasos/)).toBeDefined();
+    expect(screen.getByText("9%")).toBeDefined();
   });
 
   it("debe ejecutar on_go_back al clic en volver", () => {

@@ -100,31 +100,6 @@ function format_value(val: number | undefined | null, unit?: string): string {
   return s + (unit ? (unit === "%" ? "%" : " " + unit) : "");
 }
 
-// ─── Custom bar label ─────────────────────────────────────────────────────────
-
-function CustomBarLabel(props: {
-  x?: number;
-  y?: number;
-  width?: number;
-  value?: number;
-  unit?: string;
-}) {
-  const { x = 0, y = 0, width = 0, value, unit = "" } = props;
-  if (value === null || value === undefined) return null;
-  return (
-    <text
-      x={x + width / 2}
-      y={y - 5}
-      fill="currentColor"
-      fontSize={9}
-      textAnchor="start"
-      fontWeight="bold"
-      transform={`rotate(-45 ${x + width / 2} ${y - 5})`}
-    >
-      {format_value(value, unit)}
-    </text>
-  );
-}
 
 // ─── Pareto Chart ─────────────────────────────────────────────────────────────
 
@@ -153,7 +128,7 @@ function ParetoChart({
       {chart_title && (
         <h3 className="text-center text-sm font-semibold mb-2 text-foreground">{chart_title}</h3>
       )}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <ComposedChart
           data={pareto_rows}
           margin={{ top: 20, right: 30, bottom: bottom_margin, left: -10 }}
@@ -204,7 +179,6 @@ function ParetoChart({
               }
             }}
             className={on_bar_click ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
-            label={<CustomBarLabel unit={unit} />}
           />
           <Line
             yAxisId="right"
@@ -213,7 +187,8 @@ function ParetoChart({
             name="Acumulado"
             stroke="#ff4d4f"
             strokeWidth={2}
-            dot={{ r: 4, fill: "white", stroke: "#ff4d4f", strokeWidth: 2 }}
+            dot={false}
+            activeDot={{ r: 4, fill: "white", stroke: "#ff4d4f", strokeWidth: 2 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
@@ -636,6 +611,8 @@ export function ParetoSection({
   paretoTitles,
   onParetoTitlesChange,
   isStepCompleted, isNa, onToggleStep, onToggleNa,
+  mainTitle = "PASO 10: ESTRATIFICACIÓN DEL PROBLEMA (PARETO)",
+  secondaryTitlePrefix = "PASO 10: PARETO INDEPENDIENTE",
 }: {
   drillDowns: string[];
   setDrillDowns: (d: string[]) => void;
@@ -649,6 +626,8 @@ export function ParetoSection({
   isNa?: boolean | undefined;
   onToggleStep?: () => void;
   onToggleNa?: (() => void) | undefined;
+  mainTitle?: string;
+  secondaryTitlePrefix?: string;
 }) {
   const [internal_title_map, set_internal_title_map] = useState<Record<string, string>>({});
   const title_map = paretoTitles ?? internal_title_map;
@@ -726,7 +705,7 @@ export function ParetoSection({
       {root_keys.map((key, idx) => (
         <ParetoInteractive
           key={key}
-          title={idx === 0 ? "PASO 10: ESTRATIFICACIÓN DEL PROBLEMA (PARETO)" : `PASO 10: PARETO INDEPENDIENTE ${idx + 1}`}
+          title={idx === 0 ? mainTitle : `${secondaryTitlePrefix} ${idx + 1}`}
           level={0}
           data={dataMap[key] ?? []}
           onDataChange={(d) => update_data(key, d)}

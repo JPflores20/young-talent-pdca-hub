@@ -36,17 +36,17 @@ import { Info } from "lucide-react";
 export interface ConclusionesStepProps {
   isStepCompleted: boolean;
   onToggleStep: () => void;
-  isNa?: boolean;
-  onToggleNa?: () => void;
+  isNa?: boolean | undefined;
+  onToggleNa?: (() => void) | undefined;
   isEditable: boolean;
   kpiData: ConclusionesKpiData | undefined;
   onKpiDataChange: (data: ConclusionesKpiData) => void;
   piItems: ConclusionesPiItem[];
   onPiItemsChange: (items: ConclusionesPiItem[]) => void;
-  storyboardHtml?: string;
-  onStoryboardHtmlChange?: (html: string) => void;
-  storyboardImage?: string;
-  onStoryboardImageChange?: (img?: string) => void;
+  storyboardHtml?: string | undefined;
+  onStoryboardHtmlChange?: ((html: string) => void) | undefined;
+  storyboardImage?: string | undefined;
+  onStoryboardImageChange?: ((img?: string) => void) | undefined;
 }
 
 export const ConclusionesStep: React.FC<ConclusionesStepProps> = ({
@@ -103,7 +103,7 @@ export const ConclusionesStep: React.FC<ConclusionesStepProps> = ({
 
   return (
     <StepCard
-      title="PASO 30: CONCLUSIONES"
+      title="PASO 33: CONCLUSIONES"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       isNa={isNa}
@@ -335,7 +335,6 @@ export const ConclusionesStep: React.FC<ConclusionesStepProps> = ({
             onChange={onStoryboardHtmlChange || (() => {})}
             disabled={!isEditable}
             placeholder="Pega el texto del Storyboard de PDCA aquí..."
-            minHeight="200px"
           />
           <div className="mt-4">
             <p className="text-xs font-bold mb-2">Subir imagen del Storyboard (opcional)</p>

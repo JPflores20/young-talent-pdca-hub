@@ -12,6 +12,7 @@ import { PdcaPhasePlan } from "./pdca_phase_plan";
 import { PdcaPhaseDo } from "./pdca_phase_do";
 import { PdcaPhaseCheck } from "./pdca_phase_check";
 import { PdcaPhaseAct } from "./pdca_phase_act";
+import { PdcaPhaseResumen } from "./pdca_phase_resumen";
 import { PdcaItfR2d2 } from "./pdca_itf_r2d2";
 
 import { CustomStepper } from "../pdca-dialog/pdca-dialog-stepper";
@@ -61,11 +62,11 @@ export const PdcaDialog: React.FC<{
 
   const state = use_pdca_dialog_state(current_pdca, auth_user);
 
-  const get_current_pdca_payload = useCallback((): Pdca => {
-    const completed_count = ALL_STEP_IDS.filter((id) => state.completed_steps.has(id)).length;
-    const computed_progress =
-      TOTAL_STEPS > 0 ? Math.round((completed_count / TOTAL_STEPS) * 100) : 0;
+  const valid_steps = ALL_STEP_IDS.filter((id) => !state.na_steps.has(id));
+  const completed_count = valid_steps.filter((id) => state.completed_steps.has(id)).length;
+  const computed_progress = valid_steps.length > 0 ? Math.round((completed_count / valid_steps.length) * 100) : 0;
 
+  const get_current_pdca_payload = useCallback((): Pdca => {
     return {
       ...current_pdca,
       titulo: state.title_value,
@@ -77,6 +78,8 @@ export const PdcaDialog: React.FC<{
       targetVsActual: state.target_vs_actual,
       targetVsActualUnit: state.target_vs_actual_unit,
       targetVsActualTitle: state.target_vs_actual_title,
+      targetVsActualYmin: state.target_vs_actual_ymin,
+      targetVsActualYmax: state.target_vs_actual_ymax,
       kpiFinalResultData: state.kpi_final_result_data,
       kpiFinalResultUnit: state.kpi_final_result_unit,
       gembaFinalImage: state.gemba_final_image,
@@ -101,6 +104,7 @@ export const PdcaDialog: React.FC<{
       gopThemesData: state.gop_themes_data,
       processMappingImage: state.process_mapping_files?.[0] || null,
       processMappingFiles: state.process_mapping_files,
+      sipocMapFiles: state.sipoc_map_files,
       problemTimelineOption: state.problem_timeline_option,
       problemTimelineFilter: state.problem_timeline_filter,
       problemTimelineEvents: state.problem_timeline_events,
@@ -117,11 +121,13 @@ export const PdcaDialog: React.FC<{
         rendimiento_actual_pis: state.rendimiento_actual_pis,
         rendimiento_actual_image: state.rendimiento_actual_image,
       coleccionDatos: state.coleccion_datos,
-      especificacionProcesosText: state.especificacion_procesos_text,
+      especificacionProcesosText: state.especificacion_procesos_text ?? undefined,
       especificacionProcesosImage: state.especificacion_procesos_image,
       finalTimeSeriesTitle: state.final_time_series_title,
       finalTimeSeriesData: state.final_time_series_data,
       finalTimeSeriesUnit: state.final_time_series_unit,
+      finalTimeSeriesYmin: state.final_time_series_ymin,
+      finalTimeSeriesYmax: state.final_time_series_ymax,
       currentTimesTitle: state.current_times_title,
       ishikawaConceptos: state.ishikawa_conceptos,
       informacionAdicionalFiles: state.informacion_adicional_files,
@@ -131,8 +137,19 @@ export const PdcaDialog: React.FC<{
       pruebasEjecutadas: state.pruebas_ejecutadas,
       nuevoPerformance: state.nuevo_performance,
       nuevo_performance_image: state.nuevo_performance_image,
+      nuevo_pareto_image: state.nuevo_pareto_image,
+      nuevo_pareto_drill_downs: state.nuevo_pareto_drill_downs,
+      nuevo_pareto_data_map: state.nuevo_pareto_data_map,
+      nuevo_pareto_unit: state.nuevo_pareto_unit,
+      nuevo_pareto_titles: state.nuevo_pareto_titles,
+      nueva_correlacion_image: state.nueva_correlacion_image,
+      has_nueva_correlacion: state.has_nueva_correlacion,
+      nueva_correlacion_data: state.nueva_correlacion_data,
       analisisRiesgosEstandarizacion: state.analisis_riesgos_estandarizacion,
       conclusionesFinales: state.conclusiones_finales,
+      conclusionesStoryboardImage: state.conclusiones_storyboard_image,
+      conclusionesKpiData: state.conclusiones_kpi_data ?? undefined,
+      conclusionesPiItems: state.conclusiones_pi_items ?? undefined,
       sops_documentos_image: state.sops_documentos_image,
       plan_entrenamiento_image: state.plan_entrenamiento_image,
       plan_control_image: state.plan_control_image,
@@ -219,8 +236,8 @@ export const PdcaDialog: React.FC<{
   const handle_proceed_next_phase = async () => {
     if (!is_editable) return;
     const phase_order: Phase[] = is_admin 
-      ? ["Plan", "Do", "Check", "Act", "Evaluacion"]
-      : ["Plan", "Do", "Check", "Act"];
+      ? ["Resumen", "Plan", "Do", "Check", "Act", "Evaluacion"]
+      : ["Resumen", "Plan", "Do", "Check", "Act"];
       
     const current_idx = phase_order.indexOf(state.active_tab);
     
@@ -271,6 +288,21 @@ export const PdcaDialog: React.FC<{
         naSteps={state.na_steps}
         isAdmin={is_admin}
       />
+
+      {mounted_tabs.has("Resumen") && (
+        <div className={state.active_tab !== "Resumen" ? "hidden" : "block"}>
+          <PdcaPhaseResumen
+            goal_definition={state.definition_goal}
+            vpo_checkpoints={state.vpo_checkpoints}
+            pareto_data_map={state.pareto_data_map}
+            nuevo_pareto_data_map={state.nuevo_pareto_data_map}
+            impact_matrix={state.impact_matrix}
+            final_time_series_data={state.final_time_series_data}
+            progreso={computed_progress}
+            action_items={state.action_items}
+          />
+        </div>
+      )}
 
       {mounted_tabs.has("Plan") && (
         <div className={state.active_tab !== "Plan" ? "hidden" : "block"}>
@@ -343,6 +375,11 @@ export const PdcaDialog: React.FC<{
             state.set_process_mapping_files(f);
             autosave.mark_as_modified();
           }}
+          sipoc_map_files={state.sipoc_map_files}
+          on_sipoc_map_files_change={(f) => {
+            state.set_sipoc_map_files(f);
+            autosave.mark_as_modified();
+          }}
           baseline_image={state.baseline_image}
           on_baseline_image_change={(img) => {
             state.set_baseline_image(img);
@@ -386,6 +423,16 @@ export const PdcaDialog: React.FC<{
           target_vs_actual_title={state.target_vs_actual_title}
           on_target_vs_actual_title_change={(t) => {
             state.set_target_vs_actual_title(t);
+            autosave.mark_as_modified();
+          }}
+          target_vs_actual_ymin={state.target_vs_actual_ymin}
+          on_target_vs_actual_ymin_change={(y) => {
+            state.set_target_vs_actual_ymin(y);
+            autosave.mark_as_modified();
+          }}
+          target_vs_actual_ymax={state.target_vs_actual_ymax}
+          on_target_vs_actual_ymax_change={(y) => {
+            state.set_target_vs_actual_ymax(y);
             autosave.mark_as_modified();
           }}
           ishikawas={state.ishikawas}
@@ -491,6 +538,16 @@ export const PdcaDialog: React.FC<{
               state.set_final_time_series_title(t);
               autosave.mark_as_modified();
             }}
+            final_time_series_ymin={state.final_time_series_ymin}
+            on_final_time_series_ymin_change={(y) => {
+              state.set_final_time_series_ymin(y);
+              autosave.mark_as_modified();
+            }}
+            final_time_series_ymax={state.final_time_series_ymax}
+            on_final_time_series_ymax_change={(y) => {
+              state.set_final_time_series_ymax(y);
+              autosave.mark_as_modified();
+            }}
             completed_steps={state.completed_steps}
             na_steps={state.na_steps}
             on_toggle_step={handle_toggle_step}
@@ -503,6 +560,41 @@ export const PdcaDialog: React.FC<{
             pruebas_ejecutadas={state.pruebas_ejecutadas}
             on_pruebas_ejecutadas_change={(p) => {
               state.set_pruebas_ejecutadas(p);
+              autosave.mark_as_modified();
+            }}
+            nuevo_performance_image={state.nuevo_performance_image}
+            on_nuevo_performance_image_change={(img) => {
+              state.set_nuevo_performance_image(img);
+              autosave.mark_as_modified();
+            }}
+            nuevo_pareto_drill_downs={state.nuevo_pareto_drill_downs}
+            on_nuevo_pareto_drill_downs_change={(d) => {
+              state.set_nuevo_pareto_drill_downs(d);
+              autosave.mark_as_modified();
+            }}
+            nuevo_pareto_data_map={state.nuevo_pareto_data_map}
+            on_nuevo_pareto_data_map_change={(m) => {
+              state.set_nuevo_pareto_data_map(m);
+              autosave.mark_as_modified();
+            }}
+            nuevo_pareto_unit={state.nuevo_pareto_unit}
+            on_nuevo_pareto_unit_change={(u) => {
+              state.set_nuevo_pareto_unit(u);
+              autosave.mark_as_modified();
+            }}
+            nuevo_pareto_titles={state.nuevo_pareto_titles}
+            on_nuevo_pareto_titles_change={(t) => {
+              state.set_nuevo_pareto_titles(t);
+              autosave.mark_as_modified();
+            }}
+            has_nueva_correlacion={state.has_nueva_correlacion}
+            on_has_nueva_correlacion_change={(val) => {
+              state.set_has_nueva_correlacion(val);
+              autosave.mark_as_modified();
+            }}
+            nueva_correlacion_data={state.nueva_correlacion_data}
+            on_nueva_correlacion_data_change={(d) => {
+              state.set_nueva_correlacion_data(d);
               autosave.mark_as_modified();
             }}
             nuevo_performance={state.nuevo_performance}

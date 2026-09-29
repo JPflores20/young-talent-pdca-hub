@@ -262,19 +262,21 @@ function MisPdcas() {
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {phases.map((phase) => {
-          const borderColor = {
+          const borderColor: Record<string, string> = {
             Plan: "border-t-phase-plan",
             Do: "border-t-phase-do",
             Check: "border-t-phase-check",
             Act: "border-t-phase-act",
-          }[phase];
+            Evaluacion: "border-t-gray-500",
+          };
+          const color = borderColor[phase] || "border-t-gray-500";
 
           return (
             <button
               key={phase}
               type="button"
               onClick={() => setFilter(phase)}
-              className={`rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] text-left transition-all hover:scale-[1.01] border-t-4 ${borderColor} ${
+              className={`rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] text-left transition-all hover:scale-[1.01] border-t-4 ${color} ${
                 filter === phase ? "ring-2 ring-primary" : ""
               }`}
             >

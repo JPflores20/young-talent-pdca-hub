@@ -144,7 +144,7 @@ export function ActionPlanTable({
 
   return (
     <StepCard
-      title="PASO 8: MATRIZ DE IMPACTO Y PLAN DE ACCIÓN"
+      title="PASO 18: MATRIZ DE IMPACTO Y PLAN DE ACCIÓN"
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       isNa={isNa}

@@ -5,12 +5,30 @@
  */
 import type { Phase, ParticipantesData, VpoCheckpointItem, ParetoItem } from "./pdca-types";
 
-export const PHASES: Phase[] = ["Plan", "Do", "Check", "Act", "Evaluacion"];
+export const PHASES: Phase[] = ["Resumen", "Plan", "Do", "Check", "Act", "Evaluacion"];
 
 /** @deprecated Usar PHASES. Mantenido por compatibilidad durante la migración. */
 export const phases = PHASES;
 
+export interface AreaOption {
+  value: string;
+  label: string;
+}
+
+export const AREAS: AreaOption[] = [
+  { value: "cocimientos", label: "Cocimientos" },
+  { value: "fermentacion", label: "Fermentación" },
+  { value: "filtracion", label: "Filtración" },
+  { value: "bloque_frio", label: "Bloque Frío" },
+  { value: "elaboracion", label: "Elaboración" },
+  { value: "envasado", label: "Envasado" },
+  { value: "mantenimiento", label: "Mantenimiento" },
+  { value: "logistica", label: "Logística" },
+  { value: "calidad", label: "Calidad" },
+];
+
 export const PHASE_STYLES: Record<Phase, string> = {
+  Resumen: "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
   Plan: "bg-phase-plan/12 text-phase-plan border-phase-plan/30",
   Do: "bg-phase-do/25 text-brand-yellow-foreground border-phase-do/50",
   Check: "bg-phase-check/15 text-phase-check border-phase-check/35",

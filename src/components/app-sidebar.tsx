@@ -33,7 +33,7 @@ export function AppSidebar() {
             <p className="truncate font-display text-base font-semibold uppercase tracking-wide">
               Grupo Modelo
             </p>
-            <p className="truncate text-xs text-sidebar-foreground/70">Plataforma PDCA Hub</p>
+            <p className="truncate text-xs text-sidebar-foreground/70">Plataforma MAZ HUB</p>
           </div>
         </div>
       </SidebarHeader>

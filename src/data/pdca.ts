@@ -47,6 +47,8 @@ export type {
 export {
   PHASES,
   phases,
+  AREAS,
+  type AreaOption,
   PHASE_STYLES,
   phaseStyles,
   DEFAULT_PARTICIPANTES,

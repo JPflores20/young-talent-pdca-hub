@@ -28,7 +28,7 @@ export const use_pdca_dialog_state = (
   initial_pdca: Pdca,
   current_user: { name?: string; email?: string } | null,
 ) => {
-  const [active_tab, set_active_tab] = useState<Phase>("Plan");
+  const [active_tab, set_active_tab] = useState<Phase>("Resumen");
   const [title_value, set_title_value] = useState<string>(initial_pdca.titulo || "");
   const [area_value, set_area_value] = useState<string>(initial_pdca.area || "cocimientos");
   const [problem_value, set_problem_value] = useState<string>(initial_pdca.problema || "");
@@ -64,37 +64,39 @@ export const use_pdca_dialog_state = (
   const [pareto_data_map, set_pareto_data_map] = useState<Record<string, ParetoItem[]>>(
     initial_pdca.paretoDataMap || DEFAULT_PARETO_DATA_MAP,
   );
-  const [pareto_unit, set_pareto_unit] = useState<string>(initial_pdca.paretoUnit || "");
+  const [pareto_unit, set_pareto_unit] = useState<string>(initial_pdca.paretoUnit || initial_pdca.pareto_unit || "");
   const [pareto_titles, set_pareto_titles] = useState<Record<string, string>>(
-    initial_pdca.paretoTitles || {},
+    initial_pdca.paretoTitles || initial_pdca.pareto_titles || {},
   );
 
   const [target_vs_actual, set_target_vs_actual] = useState<
     { mes: string; target: number; actual: number | null }[]
-  >(initial_pdca.targetVsActual || DEFAULT_TARGET_VS_ACTUAL);
+  >(initial_pdca.targetVsActual || initial_pdca.target_vs_actual || DEFAULT_TARGET_VS_ACTUAL);
   const [target_vs_actual_unit, set_target_vs_actual_unit] = useState<string>(
-    initial_pdca.targetVsActualUnit || "",
+    initial_pdca.targetVsActualUnit || initial_pdca.target_vs_actual_unit || "",
   );
   const [target_vs_actual_title, set_target_vs_actual_title] = useState<string>(
-    initial_pdca.targetVsActualTitle || "SITUACIÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“N ACTUAL",
+    initial_pdca.targetVsActualTitle || initial_pdca.target_vs_actual_title || "SITUACIÓN ACTUAL",
   );
+  const [target_vs_actual_ymin, set_target_vs_actual_ymin] = useState<number>(initial_pdca.targetVsActualYmin ?? initial_pdca.target_vs_actual_ymin ?? 0);
+  const [target_vs_actual_ymax, set_target_vs_actual_ymax] = useState<string>(initial_pdca.targetVsActualYmax || initial_pdca.target_vs_actual_ymax || "auto");
 
   const [kpi_final_result_data, set_kpi_final_result_data] = useState<
     { mes: string; target: number; actual: number | null }[]
-  >(initial_pdca.kpiFinalResultData || DEFAULT_TARGET_VS_ACTUAL);
+  >(initial_pdca.kpiFinalResultData || initial_pdca.kpi_final_result_data || DEFAULT_TARGET_VS_ACTUAL);
   const [kpi_final_result_unit, set_kpi_final_result_unit] = useState<string>(
-    initial_pdca.kpiFinalResultUnit || "",
+    initial_pdca.kpiFinalResultUnit || initial_pdca.kpi_final_result_unit || "",
   );
   const [gemba_final_image, set_gemba_final_image] = useState<string | null>(
-    initial_pdca.gembaFinalImage || null,
+    initial_pdca.gembaFinalImage || initial_pdca.gemba_final_image || null,
   );
   const [gemba_final_images, set_gemba_final_images] = useState<string[]>(
-    initial_pdca.gembaFinalImages ||
+    initial_pdca.gembaFinalImages || initial_pdca.gemba_final_images ||
       (initial_pdca.gembaFinalImage ? [initial_pdca.gembaFinalImage] : []),
   );
   const [evidence_files, set_evidence_files] = useState<string[]>(initial_pdca.evidencias || []);
   const [kpi_document_files, set_kpi_document_files] = useState<string[]>(
-    initial_pdca.kpiDocuments || [],
+    initial_pdca.kpiDocuments || initial_pdca.kpi_documents || [],
   );
 
   const [has_flavor_correlation, set_has_flavor_correlation] = useState<boolean>(
@@ -111,6 +113,9 @@ export const use_pdca_dialog_state = (
   const [process_mapping_files, set_process_mapping_files] = useState<string[]>(
     initial_pdca.processMappingFiles ||
       (initial_pdca.processMappingImage ? [initial_pdca.processMappingImage] : []),
+  );
+  const [sipoc_map_files, set_sipoc_map_files] = useState<string[]>(
+    initial_pdca.sipocMapFiles || initial_pdca.sipoc_map_files || [],
   );
 
   // --- NUEVOS ESTADOS ---
@@ -176,6 +181,8 @@ export const use_pdca_dialog_state = (
   const [final_time_series_unit, set_final_time_series_unit] = useState<string>(
     initial_pdca.finalTimeSeriesUnit || initial_pdca.final_time_series_unit || "",
   );
+  const [final_time_series_ymin, set_final_time_series_ymin] = useState<number>(initial_pdca.finalTimeSeriesYmin ?? initial_pdca.final_time_series_ymin ?? 0);
+  const [final_time_series_ymax, set_final_time_series_ymax] = useState<string>(initial_pdca.finalTimeSeriesYmax || initial_pdca.final_time_series_ymax || "auto");
 
   const [current_times_title, set_current_times_title] = useState<string>(
     initial_pdca.currentTimesTitle || initial_pdca.current_times_title || "SITUACIÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“N ACTUAL",
@@ -210,6 +217,31 @@ export const use_pdca_dialog_state = (
   );
   const [nuevo_performance_image, set_nuevo_performance_image] = useState<string | undefined>(
     initial_pdca.nuevo_performance_image,
+  );
+  const [nuevo_pareto_image, set_nuevo_pareto_image] = useState<string | undefined>(
+    initial_pdca.nuevo_pareto_image,
+  );
+  const [nuevo_pareto_drill_downs, set_nuevo_pareto_drill_downs] = useState<string[]>(
+    initial_pdca.nuevo_pareto_drill_downs || [],
+  );
+  const [nuevo_pareto_data_map, set_nuevo_pareto_data_map] = useState<Record<string, any[]>>(
+    initial_pdca.nuevo_pareto_data_map || {},
+  );
+  const [nuevo_pareto_unit, set_nuevo_pareto_unit] = useState<string>(
+    initial_pdca.nuevo_pareto_unit || "",
+  );
+  const [nuevo_pareto_titles, set_nuevo_pareto_titles] = useState<Record<string, string>>(
+    initial_pdca.nuevo_pareto_titles || {},
+  );
+
+  const [nueva_correlacion_image, set_nueva_correlacion_image] = useState<string | undefined>(
+    initial_pdca.nueva_correlacion_image,
+  );
+  const [has_nueva_correlacion, set_has_nueva_correlacion] = useState<boolean>(
+    initial_pdca.has_nueva_correlacion || false,
+  );
+  const [nueva_correlacion_data, set_nueva_correlacion_data] = useState<any[]>(
+    initial_pdca.nueva_correlacion_data || [],
   );
 
   const [analisis_riesgos_estandarizacion, set_analisis_riesgos_estandarizacion] = useState<any[]>(
@@ -390,6 +422,10 @@ export const use_pdca_dialog_state = (
     set_target_vs_actual_unit,
     target_vs_actual_title,
     set_target_vs_actual_title,
+    target_vs_actual_ymin,
+    set_target_vs_actual_ymin,
+    target_vs_actual_ymax,
+    set_target_vs_actual_ymax,
     kpi_final_result_data,
     set_kpi_final_result_data,
     kpi_final_result_unit,
@@ -412,6 +448,8 @@ export const use_pdca_dialog_state = (
     set_gop_themes_data,
     process_mapping_files,
     set_process_mapping_files,
+    sipoc_map_files,
+    set_sipoc_map_files,
     problem_timeline_option,
     set_problem_timeline_option,
     problem_timeline_filter,
@@ -478,6 +516,10 @@ export const use_pdca_dialog_state = (
     set_final_time_series_data,
     final_time_series_unit,
     set_final_time_series_unit,
+    final_time_series_ymin,
+    set_final_time_series_ymin,
+    final_time_series_ymax,
+    set_final_time_series_ymax,
     current_times_title,
     set_current_times_title,
     ishikawa_conceptos,
@@ -496,6 +538,22 @@ export const use_pdca_dialog_state = (
     set_nuevo_performance,
     nuevo_performance_image,
     set_nuevo_performance_image,
+    nuevo_pareto_image,
+    set_nuevo_pareto_image,
+    nuevo_pareto_drill_downs,
+    set_nuevo_pareto_drill_downs,
+    nuevo_pareto_data_map,
+    set_nuevo_pareto_data_map,
+    nuevo_pareto_unit,
+    set_nuevo_pareto_unit,
+    nuevo_pareto_titles,
+    set_nuevo_pareto_titles,
+    nueva_correlacion_image,
+    set_nueva_correlacion_image,
+    has_nueva_correlacion,
+    set_has_nueva_correlacion,
+    nueva_correlacion_data,
+    set_nueva_correlacion_data,
     analisis_riesgos_estandarizacion,
     set_analisis_riesgos_estandarizacion,
     conclusiones_finales,

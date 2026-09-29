@@ -131,6 +131,10 @@ export function TimeSeriesYTD({
   chartTitle = "SITUACIÓN ACTUAL",
   onTitleChange,
   customBadge,
+  yMin = 0,
+  onYMinChange,
+  yMax = "auto",
+  onYMaxChange,
 }: {
   value?: { mes: string; target: number; actual: number | null }[] | undefined;
   onChange?: ((newSeries: { mes: string; target: number; actual: number | null }[]) => void) | undefined;
@@ -144,15 +148,17 @@ export function TimeSeriesYTD({
   chartTitle?: string | undefined;
   onTitleChange?: ((newTitle: string) => void) | undefined;
   customBadge?: React.ReactNode | undefined;
+  yMin?: number | undefined;
+  onYMinChange?: ((newYMin: number) => void) | undefined;
+  yMax?: string | undefined;
+  onYMaxChange?: ((newYMax: string) => void) | undefined;
 }) {
   const series = value && value.length > 0 ? value : DEFAULT_TARGET_VS_ACTUAL;
 
-  const [y_axis_min, set_y_axis_min] = useState<number>(0);
-  const [y_axis_max_str, set_y_axis_max_str] = useState<string>("auto");
   const chart_y_max =
-    y_axis_max_str.trim() === "auto" || y_axis_max_str.trim() === ""
+    String(yMax).trim() === "auto" || String(yMax).trim() === ""
       ? "auto"
-      : Number(y_axis_max_str);
+      : Number(yMax);
 
   const updateMes = (index: number, val: string) => {
     const updated = series.map((s, i) => {
@@ -236,34 +242,6 @@ export function TimeSeriesYTD({
     }
     return numStr + (unit ? (unit === "%" ? "%" : " " + unit) : "");
   };
-
-  const CustomActualLabel = (props: any) => {
-    const { x, y, value } = props;
-    if (value === null || value === undefined) return null;
-    return (
-      <text
-        x={x}
-        y={y - 10}
-        fill="var(--color-foreground)"
-        fontSize={9}
-        textAnchor="middle"
-        fontWeight="bold"
-      >
-        {formatValue(value)}
-      </text>
-    );
-  };
-
-  const CustomMetaLabel = (props: any) => {
-    const { x, y, value } = props;
-    if (value === null || value === undefined) return null;
-    return (
-      <text x={x} y={y + 16} fill="#4DB8FF" fontSize={9} textAnchor="middle" fontWeight="bold">
-        {formatValue(value)}
-      </text>
-    );
-  };
-
   const CustomBarLabel = (props: any) => {
     const { x, y, width, value } = props;
     if (value === null || value === undefined) return null;
@@ -272,7 +250,7 @@ export function TimeSeriesYTD({
         x={x + width / 2}
         y={y - 5}
         fill="var(--color-foreground)"
-        fontSize={9}
+        fontSize={10}
         textAnchor="start"
         fontWeight="bold"
         transform={`rotate(-45 ${x + width / 2} ${y - 5})`}
@@ -323,15 +301,15 @@ export function TimeSeriesYTD({
             <span className="text-xs text-muted-foreground">Min:</span>
             <Input
               type="number"
-              value={y_axis_min}
-              onChange={(e) => set_y_axis_min(Number(e.target.value))}
+              value={yMin}
+              onChange={(e) => onYMinChange?.(Number(e.target.value))}
               className="w-20 h-7 text-xs"
             />
             <span className="text-xs text-muted-foreground">Max:</span>
             <Input
               type="text"
-              value={y_axis_max_str}
-              onChange={(e) => set_y_axis_max_str(e.target.value)}
+              value={yMax}
+              onChange={(e) => onYMaxChange?.(e.target.value)}
               placeholder="auto"
               className="w-20 h-7 text-xs"
             />
@@ -500,7 +478,7 @@ export function TimeSeriesYTD({
               {chartTitle}
             </h4>
           )}
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 40, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
               <XAxis
@@ -517,7 +495,7 @@ export function TimeSeriesYTD({
                 stroke="var(--color-muted-foreground)"
                 tickFormatter={(val) => formatValue(val)}
                 width={80}
-                domain={[y_axis_min, chart_y_max]}
+                domain={[yMin, chart_y_max]}
                 allowDataOverflow={true}
               />
               <RTooltip
@@ -549,8 +527,8 @@ export function TimeSeriesYTD({
                 name="Meta"
                 stroke="#4DB8FF"
                 strokeWidth={2}
-                dot={{ r: 4, fill: "#4DB8FF" }}
-                label={<CustomMetaLabel />}
+                dot={false}
+                activeDot={{ r: 4, fill: "#4DB8FF" }}
                 isAnimationActive={false}
               />
               <Line
@@ -559,8 +537,8 @@ export function TimeSeriesYTD({
                 name="Actual"
                 stroke="#0078D7"
                 strokeWidth={2}
-                dot={{ r: 4, fill: "#0078D7" }}
-                label={<CustomActualLabel />}
+                dot={false}
+                activeDot={{ r: 4, fill: "#0078D7" }}
                 isAnimationActive={false}
               />
             </ComposedChart>

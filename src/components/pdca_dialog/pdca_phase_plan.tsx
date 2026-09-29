@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   Select,
   SelectContent,
@@ -30,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AREAS } from "@/data/pdca";
 import type { 
   DefinicionMeta, 
   ParticipantesData, 
@@ -38,19 +40,8 @@ import type {
   IshikawaItem,
   FiveWhysTableData,
   GopThemeItem,
-  RendimientoActualPiItem
+  RendimientoActualPiItem,
 } from "@/data/pdca";
-
-// ─── Áreas disponibles ────────────────────────────────────────────────────────
-const AREAS = [
-  { value: "cocimientos", label: "Cocimientos" },
-  { value: "fermentacion", label: "Fermentación" },
-  { value: "filtracion", label: "Filtración" },
-  { value: "envasado", label: "Envasado" },
-  { value: "mantenimiento", label: "Mantenimiento" },
-  { value: "logistica", label: "Logística" },
-  { value: "calidad", label: "Calidad" },
-];
 
 // ─── Editor de texto enriquecido mínimo ──────────────────────────────────────
 function RichTextEditor({
@@ -196,6 +187,8 @@ interface PhasePlanProps {
   
   // Nuevos props migrados
   process_mapping_files?: string[] | undefined;
+  sipoc_map_files?: string[] | undefined;
+  on_sipoc_map_files_change?: ((files: string[]) => void) | undefined;
   on_process_mapping_files_change?: ((files: string[]) => void) | undefined;
   baseline_image?: string | undefined;
   on_baseline_image_change?: ((img: string | undefined) => void) | undefined;
@@ -215,6 +208,10 @@ interface PhasePlanProps {
   on_target_vs_actual_unit_change?: ((unit: string) => void) | undefined;
   target_vs_actual_title?: string | undefined;
   on_target_vs_actual_title_change?: ((title: string) => void) | undefined;
+  target_vs_actual_ymin?: number | undefined;
+  on_target_vs_actual_ymin_change?: ((val: number) => void) | undefined;
+  target_vs_actual_ymax?: string | undefined;
+  on_target_vs_actual_ymax_change?: ((val: string) => void) | undefined;
   ishikawas?: IshikawaItem[] | undefined;
   on_ishikawas_change?: ((items: IshikawaItem[]) => void) | undefined;
   five_whys_tables?: FiveWhysTableData[] | undefined;
@@ -267,6 +264,8 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
   completed_steps, na_steps, on_toggle_step, on_toggle_na,
   is_editable,
   process_mapping_files,
+  sipoc_map_files,
+  on_sipoc_map_files_change,
   on_process_mapping_files_change,
   baseline_image,
   on_baseline_image_change,
@@ -286,6 +285,10 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
   on_target_vs_actual_unit_change,
   target_vs_actual_title,
   on_target_vs_actual_title_change,
+  target_vs_actual_ymin,
+  on_target_vs_actual_ymin_change,
+  target_vs_actual_ymax,
+  on_target_vs_actual_ymax_change,
   ishikawas,
   on_ishikawas_change,
   five_whys_tables,
@@ -311,6 +314,12 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
 }) => {
   return (
     <div className="space-y-6">
+      <Accordion type="multiple" className="w-full space-y-4">
+        <AccordionItem value="subfase-1" className="border rounded-md bg-white shadow-sm overflow-hidden">
+          <AccordionTrigger className="px-4 py-3 bg-[#0078D7] text-white hover:bg-[#005ea6] hover:no-underline font-bold text-lg">
+            Subfase 1: Identificación del Problema (Pasos 1-7)
+          </AccordionTrigger>
+          <AccordionContent className="p-4 space-y-6 bg-slate-50">
       {/* ── PASO 1: PROYECT STATEMENT ─────────────────────────────────── */}
       <StepCard
         title="PASO 1: PROYECT STATEMENT"
@@ -483,17 +492,18 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
       />
 
       {/* ── PASO 3: SIPOC MAP (Placeholder) ─────────────────────────── */}
-      <StepCard
+      <MultiImageUploadSection
+        images={sipoc_map_files || []}
+        onChange={(f) => on_sipoc_map_files_change?.(f)}
         title="PASO 3: SIPOC MAP"
+        subtitle="Sube tus imágenes o PDFs"
+        description="Adjunta fotos o documentos del SIPOC MAP (máximo 6 archivos). Se aceptan imágenes, PDF, Excel y PowerPoint."
+        maxImages={6}
+        acceptTypes={ALL_ACCEPT_STRING}
         isStepCompleted={completed_steps.has("step-3")}
         onToggleStep={() => on_toggle_step("step-3")}
         isNa={na_steps?.has("step-3")} onToggleNa={() => on_toggle_na?.("step-3")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Sección en construcción</p>
-          <p className="text-xs text-muted-foreground mt-1">Aquí irá el componente para el SIPOC MAP.</p>
-        </div>
-      </StepCard>
+      />
 
       {/* ── PASO 4: Mapeo de procesos ───────────────────────────────── */}
       <MultiImageUploadSection
@@ -537,10 +547,21 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         title="PASO 7: SITUACIÓN ACTUAL"
         chartTitle={target_vs_actual_title}
         onTitleChange={on_target_vs_actual_title_change}
+        yMin={target_vs_actual_ymin}
+        onYMinChange={on_target_vs_actual_ymin_change}
+        yMax={target_vs_actual_ymax}
+        onYMaxChange={on_target_vs_actual_ymax_change}
         isStepCompleted={completed_steps.has("step-12")}
         onToggleStep={() => on_toggle_step("step-12")}
         isNa={na_steps?.has("step-12")} onToggleNa={() => on_toggle_na?.("step-12")}
       />
+      </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="subfase-2" className="border rounded-md bg-white shadow-sm overflow-hidden">
+          <AccordionTrigger className="px-4 py-3 bg-[#0078D7] text-white hover:bg-[#005ea6] hover:no-underline font-bold text-lg">
+            Subfase 2: Análisis (Pasos 8-17)
+          </AccordionTrigger>
+          <AccordionContent className="p-4 space-y-6 bg-slate-50">
 
       {/* ── PASO 8: Línea base ──────────────────────────────────────── */}
       <ImageUploadSection
@@ -689,28 +710,18 @@ export const PdcaPhasePlan: React.FC<PhasePlanProps> = ({
         onToggleStep={() => on_toggle_step("step-15")}
         isNa={na_steps?.has("step-15")} onToggleNa={() => on_toggle_na?.("step-15")}
       />
-      {/* ── PASO 17: Acciones de validacion ─────────────── */}
-      <StepCard
-        title="PASO 17: ACCIONES DE VALIDACIÓN"
-        isStepCompleted={completed_steps.has("step-16")}
-        onToggleStep={() => on_toggle_step("step-16")}
-        isNa={na_steps?.has("step-16")} onToggleNa={() => on_toggle_na?.("step-16")}
-      >
-        <div className="flex flex-col items-center justify-center p-8 text-center bg-secondary/10 border border-dashed rounded-lg">
-          <p className="text-muted-foreground font-medium">Validación en progreso</p>
-          <p className="text-xs text-muted-foreground mt-1">Registra aquí las acciones de validación correspondientes.</p>
-        </div>
-      </StepCard>
-
-      {/* ── PASO 18: Causas Raíz Definidas ──────────── */}
+      {/* ── PASO 17: Causas Raíz Definidas ──────────── */}
       <ConclusionesCausaRaizTable
-        title="PASO 18: CAUSAS RAÍZ DEFINIDAS"
+        title="PASO 17: CAUSAS RAÍZ DEFINIDAS"
         items={conclusiones_causa_raiz || []}
         onChange={on_conclusiones_causa_raiz_change!}
         isStepCompleted={completed_steps.has("step-17")}
         onToggleStep={() => on_toggle_step("step-17")}
         isNa={na_steps?.has("step-17")} onToggleNa={() => on_toggle_na?.("step-17")}
       />
+        </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };

@@ -133,6 +133,7 @@ const PHASE_STEPS_MAP: Record<string, string[]> = {
 };
 export const getCustomPhases = (isAdmin: boolean) => {
   const base = [
+    { id: "Resumen", label: "Resumen", sub: "" },
     { id: "Plan", label: "1. PLAN", sub: "" },
     { id: "Do", label: "2. DO", sub: "" },
     { id: "Check", label: "3. CHECK", sub: "" },
@@ -155,6 +156,7 @@ export const isPhaseStepsCompleted = (phaseId: string, completedSteps: Set<strin
 const getPhaseTabColors = (id: string, isCurrent: boolean) => {
   if (isCurrent) {
     switch (id) {
+      case "Resumen": return "bg-blue-600 text-white shadow-sm";
       case "Plan": return "bg-red-600 text-white shadow-sm";
       case "Do": return "bg-yellow-400 text-black shadow-sm";
       case "Check": return "bg-emerald-500 text-white shadow-sm";
@@ -164,6 +166,7 @@ const getPhaseTabColors = (id: string, isCurrent: boolean) => {
     }
   }
   switch (id) {
+    case "Resumen": return "bg-blue-500/10 text-blue-700 hover:bg-blue-500/20";
     case "Plan": return "bg-red-500/10 text-red-700 hover:bg-red-500/20";
     case "Do": return "bg-yellow-500/20 text-yellow-800 hover:bg-yellow-500/30";
     case "Check": return "bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20";
@@ -179,6 +182,7 @@ const getPhaseCircleColors = (id: string, isCurrent: boolean, isCompleted: boole
     return id === "Do" ? "border-black/20 bg-black/10 text-black" : "border-white/20 bg-white/20 text-white";
   }
   switch (id) {
+    case "Resumen": return "border-blue-200 bg-blue-100 text-blue-700";
     case "Plan": return "border-red-200 bg-red-100 text-red-700";
     case "Do": return "border-yellow-400/40 bg-yellow-200/50 text-yellow-800";
     case "Check": return "border-emerald-200 bg-emerald-100 text-emerald-700";
@@ -191,6 +195,7 @@ const getPhaseCircleColors = (id: string, isCurrent: boolean, isCompleted: boole
 const getPhaseSubText = (id: string, isCurrent: boolean) => {
   if (isCurrent) return id === "Do" ? "text-black/70" : "text-white/80";
   switch (id) {
+    case "Resumen": return "text-blue-700/70";
     case "Plan": return "text-red-700/70";
     case "Do": return "text-yellow-800/70";
     case "Check": return "text-emerald-700/70";
@@ -244,16 +249,13 @@ export function CustomStepper({
         return (
           <div
             key={phase.id}
+            onClick={() => onSelect(phase.id)}
             className={cn(
-              "flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors relative group",
+              "flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors relative group cursor-pointer select-none",
               getPhaseTabColors(phase.id, isCurrent)
             )}
           >
-            <button
-              type="button"
-              onClick={() => onSelect(phase.id)}
-              className="flex flex-1 items-center gap-2.5 min-w-0"
-            >
+            <div className="flex flex-1 items-center gap-2.5 min-w-0">
               <span
                 className={cn(
                   "grid size-6 shrink-0 place-items-center rounded-full border text-xs font-bold",
@@ -277,7 +279,7 @@ export function CustomStepper({
                   </span>
                 )}
               </span>
-            </button>
+            </div>
             {/* Toggle complete button */}
             <button
               type="button"

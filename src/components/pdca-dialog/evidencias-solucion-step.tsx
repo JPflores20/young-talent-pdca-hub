@@ -70,7 +70,7 @@ export const EvidenciasSolucionStep: React.FC<EvidenciasSolucionStepProps> = ({
         <div className="space-y-4">
           <h4 className="text-sm font-bold text-slate-700 uppercase">EVIDENCIAS POR ACCIÓN</h4>
           {actions.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">No hay acciones definidas en el Paso 8.</p>
+            <p className="text-xs text-muted-foreground italic">No hay acciones definidas en el Paso 18.</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {actions.map((action, i) => {

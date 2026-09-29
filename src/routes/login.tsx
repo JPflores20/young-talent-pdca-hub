@@ -11,7 +11,7 @@ import { primaryAuth, db } from "@/lib/firebase";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
-    meta: [{ title: "Iniciar Sesión · PDCA Hub" }],
+    meta: [{ title: "Iniciar Sesión · MAZ HUB" }],
   }),
   component: AuthPage,
 });
@@ -179,7 +179,7 @@ function AuthPage() {
                 className="mb-6 h-36 w-auto object-contain rounded-2xl shadow-2xl transition-transform duration-700 hover:scale-105"
               />
               <h1 className="font-display text-3xl font-bold uppercase tracking-tight text-foreground">
-                PDCA Hub
+                MAZ HUB
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">Módulo PDCA de Mejora Continua</p>
             </div>
@@ -282,7 +282,7 @@ function AuthPage() {
                 Registro de Colaborador
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Ingresa tus datos oficiales para solicitar acceso a PDCA Hub.
+                Ingresa tus datos oficiales para solicitar acceso a MAZ HUB.
               </p>
             </div>
 

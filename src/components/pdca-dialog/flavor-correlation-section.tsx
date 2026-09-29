@@ -62,12 +62,13 @@ const SERIES_COLORS = [
 ];
 
 export function FlavorCorrelationSection({
-  isStepCompleted, isNa, onToggleStep, onToggleNa,
+  isStepCompleted, isNa, onToggleStep, onToggleNa, title = "Correlación"
 }: {
   isStepCompleted?: boolean;
   isNa?: boolean | undefined;
   onToggleStep?: () => void;
   onToggleNa?: (() => void) | undefined;
+  title?: string;
 }) {
   const [positiveTitle, setPositiveTitle] = useState(
     "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE POSITIVE ATTRIBUTES",
@@ -311,7 +312,7 @@ export function FlavorCorrelationSection({
 
   return (
     <StepCard
-      title="Correlación"
+      title={title}
       isStepCompleted={isStepCompleted}
       onToggleStep={onToggleStep}
       isNa={isNa}
@@ -381,7 +382,7 @@ export function FlavorCorrelationSection({
             className="w-full text-sm font-semibold text-center bg-transparent border border-transparent hover:border-border focus:border-border focus:bg-background outline-none transition-colors px-2 py-0.5 rounded"
           />
           <div className="h-64 border bg-white relative">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
                 <CartesianGrid />
                 <XAxis type="number" dataKey="x" domain={[0, 180]} tickCount={10} />
@@ -456,7 +457,7 @@ export function FlavorCorrelationSection({
             className="w-full text-sm font-semibold text-center bg-transparent border border-transparent hover:border-border focus:border-border focus:bg-background outline-none transition-colors px-2 py-0.5 rounded"
           />
           <div className="h-64 border bg-white relative">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
                 <CartesianGrid />
                 <XAxis type="number" dataKey="x" domain={[0, 180]} tickCount={10} />

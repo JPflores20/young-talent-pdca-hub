@@ -1,4 +1,4 @@
-﻿/**
+/**
  * pareto_chart.tsx
  * Gráfica interactiva de Pareto con Recharts.
  * Features: nombre editable, límites Y ajustables, todos los X-labels visibles.
@@ -20,29 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ParetoChartProps } from "./pareto_types";
 
-function CustomBarLabel(props: {
-  x?: number;
-  y?: number;
-  width?: number;
-  value?: number;
-  format_value: (v: unknown) => string;
-}) {
-  const { x = 0, y = 0, width = 0, value, format_value } = props;
-  if (value === null || value === undefined) return null;
-  return (
-    <text
-      x={x + width / 2}
-      y={y - 5}
-      fill="var(--color-foreground)"
-      fontSize={9}
-      textAnchor="start"
-      fontWeight="bold"
-      transform={`rotate(-45 ${x + width / 2} ${y - 5})`}
-    >
-      {format_value(value)}
-    </text>
-  );
-}
+
 
 export function ParetoChart({
   chart_data,
@@ -114,7 +92,7 @@ export function ParetoChart({
         {chart_title && (
           <h3 className="text-center text-sm font-semibold mb-2 text-foreground">{chart_title}</h3>
         )}
-        <ResponsiveContainer width="100%" height={bar_height}>
+        <ResponsiveContainer width="100%" height={bar_height} minWidth={1} minHeight={1}>
           <ComposedChart
             data={chart_data}
             margin={{ top: 25, right: 15, bottom: x_bottom_margin, left: -10 }}
@@ -174,7 +152,6 @@ export function ParetoChart({
                 if (on_bar_click && payload?.area) on_bar_click(payload.area);
               }}
               className={on_bar_click ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
-              label={<CustomBarLabel format_value={format_value} />}
             />
             <Line
               yAxisId="right"
@@ -183,7 +160,8 @@ export function ParetoChart({
               name="Acumulado"
               stroke="#ff4d4f"
               strokeWidth={2}
-              dot={{ r: 4, fill: "var(--color-card)", stroke: "#ff4d4f", strokeWidth: 2 }}
+              dot={false}
+              activeDot={{ r: 4, fill: "var(--color-card)", stroke: "#ff4d4f", strokeWidth: 2 }}
             />
           </ComposedChart>
         </ResponsiveContainer>
