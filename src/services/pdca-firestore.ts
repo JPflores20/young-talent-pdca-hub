@@ -301,27 +301,49 @@ export async function save_pdca_to_firestore(pdca: Pdca): Promise<void> {
     }
 
     set_pdca_snapshot(pdca.id, parse_pdca_from_firestore(clean_pdca));
-  } catch (primary_error) {
+  } catch (primary_error: any) {
     console.error("[pdca-firestore] Error al guardar PDCA:", primary_error);
+    console.error("[pdca-firestore] Error details:", {
+      message: primary_error?.message,
+      code: primary_error?.code,
+      details: primary_error?.details,
+      serverResponse: primary_error?.serverResponse,
+    });
 
     try {
       const doc_ref = doc(db, PDCA_COLLECTION, pdca.id);
       const clean_pdca = prepare_pdca_for_firestore(pdca);
-      // Log each field value for debugging the nested-array violation
+
+      // Log the full JSON of top-level arrays to identify the violating field
       for (const [key, val] of Object.entries(clean_pdca)) {
         if (Array.isArray(val)) {
-          console.log(`[pdca-firestore] FIELD ${key} is top-level array, length=${val.length}`);
-          val.forEach((item: any, idx: number) => {
-            if (item && typeof item === "object") {
-              for (const [k2, v2] of Object.entries(item)) {
-                if (Array.isArray(v2)) {
-                  console.error(`[pdca-firestore] ❌ NESTED ARRAY FOUND: ${key}[${idx}].${k2} = array(${(v2 as any[]).length})`);
+          try {
+            // Deep-scan for nested arrays at all depths
+            const scan = (arr: any[], path: string) => {
+              arr.forEach((item: any, idx: number) => {
+                if (Array.isArray(item)) {
+                  console.error(`[pdca-firestore] ❌ VIOLATION: ${path}[${idx}] is an array inside an array`);
+                } else if (item && typeof item === "object") {
+                  Object.entries(item).forEach(([k, v]) => {
+                    if (Array.isArray(v)) {
+                      console.error(`[pdca-firestore] ❌ VIOLATION: ${path}[${idx}].${k} is an array inside an array element`);
+                    } else if (v && typeof v === "object") {
+                      Object.entries(v as object).forEach(([k2, v2]) => {
+                        if (Array.isArray(v2)) {
+                          console.error(`[pdca-firestore] ❌ VIOLATION: ${path}[${idx}].${k}.${k2} is an array (3 levels deep)`);
+                        }
+                      });
+                    }
+                  });
                 }
-              }
-            }
-          });
+              });
+            };
+            scan(val as any[], key);
+          } catch (_) {}
         }
       }
+
+      console.log("[pdca-firestore] Attempting fallback setDoc with clean_pdca JSON snippet...");
       await setDoc(doc_ref, clean_pdca, { merge: true });
       set_pdca_snapshot(pdca.id, parse_pdca_from_firestore(clean_pdca));
     } catch (fallback_error) {
