@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ResponsiveContainer, ResponsiveContainerProps } from "recharts";
 
-interface SafeResponsiveContainerProps extends ResponsiveContainerProps {
-  children: React.ReactNode;
+interface SafeResponsiveContainerProps extends Omit<ResponsiveContainerProps, "children"> {
+  children: any;
 }
 
 /**
@@ -30,7 +30,7 @@ export function SafeResponsiveContainer({
 
   useEffect(() => {
     setMounted(true);
-    if (!containerRef.current) return;
+    if (!containerRef.current) return undefined;
 
     const measure = () => {
       if (containerRef.current) {
@@ -53,9 +53,10 @@ export function SafeResponsiveContainer({
         resizeObserver.disconnect();
       };
     }
+    return undefined;
   }, []);
 
-  const isTest = typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+  const isTest = typeof process !== "undefined" && process.env?.["NODE_ENV"] === "test";
 
   // In browser: only render ResponsiveContainer when container has non-zero dimensions.
   // In tests (JSDOM): render with initialDimension fallback (800x400).
@@ -66,8 +67,8 @@ export function SafeResponsiveContainer({
       ref={containerRef}
       className={className}
       style={{
-        width: typeof width === "number" ? `${width}px` : width,
-        height: typeof height === "number" ? `${height}px` : height,
+        width: typeof width === "number" ? `${width}px` : (width as string),
+        height: typeof height === "number" ? `${height}px` : (height as string),
         minWidth,
         minHeight,
         ...style,

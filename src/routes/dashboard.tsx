@@ -69,7 +69,7 @@ function Dashboard() {
   const pendientes = useMemo(() => tareas.filter((t) => !t.done).length, [tareas]);
 
   const kpis = [
-    { label: "PDCAs activos", value: activos, icon: ClipboardList, hint: "En Plan, Do o Check" },
+    { label: "Proyectos activos", value: activos, icon: ClipboardList, hint: "En Plan, Do o Check" },
     {
       label: "En cierre / Act",
       value: cerrados,
@@ -90,7 +90,7 @@ function Dashboard() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Módulo PDCA
+            Módulo PDCA / RDA
           </p>
           <h1 className="mt-1 text-3xl font-bold uppercase">Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -112,7 +112,7 @@ function Dashboard() {
           </Button>
           <Button asChild variant="outline">
             <Link to="/">
-              Ir a Mis PDCAs <ArrowRight className="ml-1 size-4" />
+              Ir a Mis Proyectos <ArrowRight className="ml-1 size-4" />
             </Link>
           </Button>
         </div>
@@ -168,7 +168,7 @@ function Dashboard() {
             ))}
             {userPdcas.length === 0 && (
               <li className="py-6 text-center text-xs text-muted-foreground">
-                No hay PDCAs registrados para mostrar.
+                No hay proyectos registrados para mostrar.
               </li>
             )}
           </ul>

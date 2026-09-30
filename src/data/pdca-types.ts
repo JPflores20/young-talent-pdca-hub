@@ -187,6 +187,7 @@ export type ConclusionesPiItem = {
 
 export type Pdca = {
   id: string;
+  tipo?: "PDCA" | "RDA";
   titulo: string;
   area: string;
   fase: Phase;

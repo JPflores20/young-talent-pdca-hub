@@ -75,6 +75,8 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
     deadline_info = <span className="text-muted-foreground ml-2">Sin límite de tiempo</span>;
   }
 
+  const document_type = document_identifier?.startsWith("RDA-") ? "RDA" : "PDCA";
+
   return (
     <div className="space-y-4">
       {/* Row 1: Back link */}
@@ -84,14 +86,14 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
-        Volver a Mis PDCAs
+        Volver a Mis Proyectos
       </button>
 
       {/* Row 2: Meta + Save */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="font-mono text-xs font-semibold text-muted-foreground bg-secondary/60 px-2 py-0.5 rounded">
-            {document_identifier || "Nuevo PDCA"}
+            {document_identifier || `Nuevo ${document_type}`}
           </span>
           <PhaseBadge phase={current_phase} />
           {creation_date && (
@@ -136,7 +138,7 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
             )}
           >
             <UploadCloud className="size-3.5" />
-            {is_saving_in_progress ? "Guardando..." : "Guardar PDCA"}
+            {is_saving_in_progress ? "Guardando..." : `Guardar ${document_type}`}
           </Button>
         </div>
       </div>
@@ -144,12 +146,12 @@ export const PdcaDialogHeader: React.FC<HeaderProps> = ({
       {/* Row 3: Title + Progress */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight max-w-3xl">
-          {pdca_title || "Nuevo PDCA"}
+          {pdca_title || `Nuevo ${document_type}`}
         </h1>
 
         <div className="flex-shrink-0 text-right">
           <div className="text-sm font-semibold text-foreground whitespace-nowrap">
-            Progreso del PDCA: <span className="text-primary">{progress_pct}%</span>
+            Progreso del {document_type}: <span className="text-primary">{progress_pct}%</span>
             <span className="text-xs text-muted-foreground ml-1 font-normal">
               ({completed_count}/{TOTAL_STEPS} pasos)
             </span>

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { PdcaPhasePlan } from "../01-plan/pdca_phase_plan";
@@ -18,8 +18,11 @@ describe("PdcaPhasePlan", () => {
         completed_steps={new Set()} na_steps={new Set()}
         on_toggle_step={vi.fn()}
         is_editable={true}
-      /> as any
+        author_name="Test" author_email="test@test.com" on_author_change={vi.fn()}
+        assigned_users={[]} on_toggle_assigned_user={vi.fn()}
+        available_users={[]} is_admin_user={false}
+      />
     );
-    expect(screen.getByText(/PASO 1: PROYECT STATEMENT/i)).toBeDefined();
+    expect(screen.getByText(/PASO 1: METADATOS DEL PDCA/i)).toBeDefined();
   });
 });

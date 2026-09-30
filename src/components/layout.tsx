@@ -13,6 +13,7 @@ import {
   Calendar,
   Clock,
   ShieldAlert,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
@@ -85,6 +86,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/", label: "Mis PDCAs", icon: ClipboardList },
+    { href: "/rdas", label: "Mis RDAs", icon: FileSpreadsheet },
   ];
 
   if (currentUser.role === "admin") {

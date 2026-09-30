@@ -123,13 +123,16 @@ import { StepCard } from "@/components/ui/step-card";
 export function TeamMembersInput({
   members = [],
   onChange,
+  disabled = false,
 }: {
   members?: string[];
   onChange: (m: string[]) => void;
+  disabled?: boolean;
 }) {
   const [inputValue, setInputValue] = useState("");
 
   const addMember = () => {
+    if (disabled) return;
     const val = inputValue.trim();
     if (val && !members.includes(val)) {
       onChange([...members, val]);
@@ -145,6 +148,7 @@ export function TeamMembersInput({
   };
 
   const removeMember = (indexToRemove: number) => {
+    if (disabled) return;
     onChange(members.filter((_, index) => index !== indexToRemove));
   };
 
@@ -160,7 +164,8 @@ export function TeamMembersInput({
             <button
               type="button"
               onClick={() => removeMember(index)}
-              className="ml-1 rounded-full p-0.5 hover:bg-primary/20 hover:text-destructive transition-colors"
+              disabled={disabled}
+              className="ml-1 rounded-full p-0.5 hover:bg-primary/20 hover:text-destructive transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
               <X className="size-3" />
             </button>
@@ -175,8 +180,9 @@ export function TeamMembersInput({
           onKeyDown={handleKeyDown}
           placeholder="Ej. Ana López (Líder)"
           className="flex-1"
+          disabled={disabled}
         />
-        <Button type="button" variant="secondary" onClick={addMember}>
+        <Button type="button" variant="secondary" onClick={addMember} disabled={disabled || !inputValue.trim()}>
           Agregar
         </Button>
       </div>

@@ -576,3 +576,6 @@ export const use_pdca_dialog_state = (
     set_benchmark_image,
   };
 };
+
+export type PdcaDialogState = ReturnType<typeof use_pdca_dialog_state>;
+

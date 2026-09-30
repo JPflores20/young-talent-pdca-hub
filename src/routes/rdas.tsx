@@ -10,11 +10,8 @@ import {
   X,
   Target,
   CheckCircle2,
-  Building,
-  LayoutDashboard,
-  Snowflake,
-  Flame,
   RefreshCw,
+  FileSpreadsheet,
 } from "lucide-react";
 import { format, isValid, isBefore, startOfDay, parse } from "date-fns";
 import { es } from "date-fns/locale";
@@ -57,31 +54,21 @@ function getComputedProgress(p: Pdca): number {
   return TOTAL_STEPS > 0 ? Math.round((completed_count / TOTAL_STEPS) * 100) : 0;
 }
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/rdas")({
   head: () => ({
     meta: [
-      { title: "Mis PDCAs · VPO Grupo Modelo" },
+      { title: "Mis RDAs · VPO Grupo Modelo" },
       {
         name: "description",
-        content: "Crea, da seguimiento y cierra tus reportes PDCA de mejora continua.",
+        content: "Crea, da seguimiento y cierra tus Reportes de Acción (RDA) de mejora continua.",
       },
-      { property: "og:title", content: "Mis PDCAs · VPO Grupo Modelo" },
-      {
-        property: "og:description",
-        content: "Gestiona tus ciclos Plan-Do-Check-Act de mejora continua en un solo lugar.",
-      },
-      { property: "og:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.webp" },
-      { property: "og:image:secure_url", content: "https://maz-pdca-hub.web.app/logos/MAZ.webp" },
-      { property: "og:image:type", content: "image/jpeg" },
-      { name: "twitter:image", content: "https://maz-pdca-hub.web.app/logos/MAZ.webp" },
     ],
   }),
-  component: MisPdcas,
+  component: MisRdas,
 });
 
-function MisPdcas() {
+function MisRdas() {
   const { currentUser } = useAuth();
-  // ← Single shared listener from PdcaProvider, no duplicate subscription
   const { pdcaList, allPdcas, refresh } = usePdcas();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Phase | "Todas">("Todas");
@@ -98,27 +85,24 @@ function MisPdcas() {
   };
 
   const isAdmin = currentUser?.role === "admin";
-  // Admin sees all PDCAs; regular user sees only their own (already filtered by context)
-  // Only show PDCA-type items (not RDAs) on this page
+  // Only show RDA-type items on this page
   const allUserItems = isAdmin ? allPdcas : pdcaList;
-  const userPdcas = allUserItems.filter((p) => p.tipo !== "RDA");
+  const userRdas = allUserItems.filter((p) => p.tipo === "RDA");
 
   const selected = useMemo(() => {
     if (!selectedId) return null;
-    return userPdcas.find((p) => p.id === selectedId) || null;
-  }, [selectedId, userPdcas]);
+    return userRdas.find((p) => p.id === selectedId) || null;
+  }, [selectedId, userRdas]);
 
   const metrics = useMemo(() => {
     let activos = 0;
     let cerrados = 0;
-    let bloqueFrio = 0;
-    let cocimientos = 0;
     let vencidos = 0;
     let aTiempo = 0;
 
     const today = startOfDay(new Date());
 
-    userPdcas.forEach((p) => {
+    userRdas.forEach((p) => {
       const isClosed = p.fase === "Act" && p.progreso === 100;
       if (isClosed) {
         cerrados++;
@@ -137,21 +121,14 @@ function MisPdcas() {
           } catch (e) {}
         }
       }
-
-      const areaStr = p.area.toLowerCase();
-      if (areaStr.includes("frio") || areaStr.includes("frío")) {
-        bloqueFrio++;
-      } else if (areaStr.includes("cocimiento")) {
-        cocimientos++;
-      }
     });
 
-    return { activos, cerrados, bloqueFrio, cocimientos, vencidos, aTiempo };
-  }, [userPdcas]);
+    return { activos, cerrados, vencidos, aTiempo };
+  }, [userRdas]);
 
   const rows = useMemo(
     () =>
-      userPdcas.filter((p) => {
+      userRdas.filter((p) => {
         const matchPhase = filter === "Todas" || p.fase === filter;
         const q = query.toLowerCase();
         const matchQuery =
@@ -163,7 +140,7 @@ function MisPdcas() {
 
         return matchPhase && matchQuery;
       }),
-    [query, filter, userPdcas],
+    [query, filter, userRdas],
   );
 
   const requestDelete = (e: React.MouseEvent, id: string) => {
@@ -200,15 +177,12 @@ function MisPdcas() {
     await refresh();
   };
 
-  const [newPdcaType, setNewPdcaType] = useState<"PDCA" | "RDA">("PDCA");
-
-  const openPdca = (p: Pdca | null, tipo: "PDCA" | "RDA" = "PDCA") => {
+  const openRda = (p: Pdca | null) => {
     if (p) {
       setSelectedId(p.id);
       setIsCreatingNew(false);
     } else {
       setSelectedId(null);
-      setNewPdcaType(tipo);
       setIsCreatingNew(true);
     }
   };
@@ -218,7 +192,7 @@ function MisPdcas() {
       <div className="mx-auto w-full max-w-[1700px] px-6 py-6 sm:px-10 lg:px-12">
         <PdcaDialog
           pdca={selected}
-          newPdcaType={newPdcaType}
+          newPdcaType="RDA"
           open={true}
           onOpenChange={(open) => {
             if (!open) {
@@ -236,11 +210,11 @@ function MisPdcas() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Módulo PDCA
+            Módulo RDA
           </p>
-          <h1 className="mt-1 text-3xl font-bold uppercase">Mis PDCAs</h1>
+          <h1 className="mt-1 text-3xl font-bold uppercase">Mis RDAs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {userPdcas.length} ciclos PDCA{" "}
+            {userRdas.length} Reportes de Acción{" "}
             {currentUser?.role === "admin"
               ? "registrados en la plataforma (Vista Global Admin)."
               : `asignados a ${currentUser?.name || "ti"}.`}
@@ -259,13 +233,14 @@ function MisPdcas() {
           <Button
             size="lg"
             className="bg-primary shadow-sm hover:bg-brand-dark"
-            onClick={() => openPdca(null, "PDCA")}
+            onClick={() => openRda(null)}
           >
-            <Plus className="mr-2 h-4 w-4" /> Nuevo PDCA
+            <Plus className="mr-2 h-4 w-4" /> Nuevo RDA
           </Button>
         </div>
       </header>
 
+      {/* Phase filter cards */}
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {phases
           .filter((phase) => phase !== "Resumen" && phase !== "Evaluacion")
@@ -278,35 +253,36 @@ function MisPdcas() {
             };
             const color = borderColor[phase] || "border-t-gray-500";
 
-          return (
-            <button
-              key={phase}
-              type="button"
-              onClick={() => setFilter(phase)}
-              className={`rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] text-left transition-all hover:scale-[1.01] border-t-4 ${color} ${
-                filter === phase ? "ring-2 ring-primary" : ""
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <PhaseBadge phase={phase} />
-                <span className="text-2xl font-bold">
-                  {userPdcas.filter((p) => p.fase === phase).length}
-                </span>
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">Proyectos en fase {phase}</p>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={phase}
+                type="button"
+                onClick={() => setFilter(phase)}
+                className={`rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] text-left transition-all hover:scale-[1.01] border-t-4 ${color} ${
+                  filter === phase ? "ring-2 ring-primary" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <PhaseBadge phase={phase} />
+                  <span className="text-2xl font-bold">
+                    {userRdas.filter((p) => p.fase === phase).length}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">RDAs en fase {phase}</p>
+              </button>
+            );
+          })}
       </div>
 
-      {userPdcas.length > 0 && (
+      {/* Metrics */}
+      {userRdas.length > 0 && (
         <div className="mt-8 mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
               <Target className="size-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Activos (PDCA/RDA)</p>
+              <p className="text-sm font-medium text-muted-foreground">RDAs Activos</p>
               <h3 className="text-2xl font-bold">{metrics.activos}</h3>
             </div>
           </div>
@@ -316,31 +292,24 @@ function MisPdcas() {
               <CheckCircle2 className="size-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Cerrados (PDCA/RDA)</p>
+              <p className="text-sm font-medium text-muted-foreground">RDAs Cerrados</p>
               <h3 className="text-2xl font-bold">{metrics.cerrados}</h3>
             </div>
           </div>
 
           <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-              <Building className="size-6" />
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+              <CalendarClock className="size-6" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground mb-1">Por Área (Activos)</p>
-              <div className="flex items-center gap-3 text-sm font-semibold">
-                <span className="flex items-center gap-1 text-cyan-600 dark:text-cyan-400">
-                  <Snowflake className="size-3" /> {metrics.bloqueFrio}
-                </span>
-                <span className="text-border">|</span>
-                <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
-                  <Flame className="size-3" /> {metrics.cocimientos}
-                </span>
-              </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Vencidos</p>
+              <h3 className="text-2xl font-bold">{metrics.vencidos}</h3>
             </div>
           </div>
         </div>
       )}
 
+      {/* Table */}
       <div className="mt-8 space-y-4 rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-sm">
@@ -370,7 +339,7 @@ function MisPdcas() {
           <TableHeader>
             <TableRow className="bg-secondary/80 hover:bg-secondary/80">
               <TableHead className="font-semibold text-foreground/80">
-                TÍTULO DEL PROYECTO
+                TÍTULO DEL REPORTE
               </TableHead>
               {currentUser?.role === "admin" && (
                 <TableHead className="hidden sm:table-cell font-semibold text-foreground/80">
@@ -516,7 +485,6 @@ function MisPdcas() {
                       );
                     }
 
-                    // Non-admin: read-only display
                     return isNoLimit ? (
                       <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
                         <CalendarClock className="size-3.5" />
@@ -565,8 +533,24 @@ function MisPdcas() {
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                  No hay proyectos que coincidan con la búsqueda.
+                <TableCell colSpan={5} className="py-16 text-center">
+                  <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                    <FileSpreadsheet className="size-10 opacity-30" />
+                    <p className="text-sm font-medium">
+                      {query || filter !== "Todas"
+                        ? "No hay RDAs que coincidan con la búsqueda."
+                        : "Aún no tienes RDAs registrados."}
+                    </p>
+                    {!query && filter === "Todas" && (
+                      <Button
+                        size="sm"
+                        className="mt-1"
+                        onClick={() => openRda(null)}
+                      >
+                        <Plus className="mr-2 size-4" /> Crear primer RDA
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -577,9 +561,9 @@ function MisPdcas() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar Proyecto?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar RDA?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente este proyecto y todos sus
+              Esta acción no se puede deshacer. Se eliminará permanentemente este RDA y todos sus
               datos asociados.
             </AlertDialogDescription>
           </AlertDialogHeader>

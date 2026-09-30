@@ -1,74 +1,25 @@
 import { useState } from "react";
-import { Plus, X, FileText } from "lucide-react";
-import { SafeResponsiveContainer } from "@/components/ui/safe-responsive-container";
-import {
-  CartesianGrid,
-  Tooltip as RTooltip,
-  XAxis,
-  YAxis,
-  ScatterChart,
-  Scatter,
-  ZAxis,
-  ReferenceArea,
-} from "recharts";
+import { Plus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { StepCard } from "@/components/ui/step-card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-
-// ─── Types & Helper ──────────────────────────────────────────────────────────
-
-type Point = { id: number; x: number; y: number };
-
-type Series = {
-  id: string;
-  name: string;
-  type: "positive" | "negative";
-  fill: string;
-  stroke: string;
-  points: Point[];
-};
-
-// Función para calcular la Correlación de Pearson automáticamente
-function calculatePearson(points: Point[]): string {
-  if (points.length < 2) return "0.000";
-  let sumX = 0,
-    sumY = 0,
-    sumXY = 0,
-    sumX2 = 0,
-    sumY2 = 0;
-  for (const p of points) {
-    sumX += p.x;
-    sumY += p.y;
-    sumXY += p.x * p.y;
-    sumX2 += p.x * p.x;
-    sumY2 += p.y * p.y;
-  }
-  const n = points.length;
-  const num = n * sumXY - sumX * sumY;
-  const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
-  if (den === 0) return "0.000";
-  return (num / den).toFixed(3);
-}
-
-// Paleta de colores predefinida para nuevas series
-const SERIES_COLORS = [
-  { fill: "#000000", stroke: "#f1c40f" },
-  { fill: "#f1c40f", stroke: "#000000" },
-  { fill: "#4a2e00", stroke: "#000000" },
-  { fill: "#654321", stroke: "#f1c40f" },
-  { fill: "#3498db", stroke: "#2980b9" },
-  { fill: "#e74c3c", stroke: "#c0392b" },
-];
+import type { Series } from "./flavor-correlation-utils";
+import { SERIES_COLORS } from "./flavor-correlation-utils";
+import { FlavorCorrelationEditor } from "./flavor-correlation-editor";
+import { FlavorCorrelationChart } from "./flavor-correlation-chart";
 
 export function FlavorCorrelationSection({
-  isStepCompleted, isNa, onToggleStep, onToggleNa, title = "Correlación"
+  isStepCompleted,
+  isNa,
+  onToggleStep,
+  onToggleNa,
+  title = "Correlación",
 }: {
   isStepCompleted?: boolean;
   isNa?: boolean | undefined;
   onToggleStep?: () => void;
   onToggleNa?: (() => void) | undefined;
-  title?: string;
+  title?: string | undefined;
 }) {
   const [positiveTitle, setPositiveTitle] = useState(
     "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE POSITIVE ATTRIBUTES",
@@ -77,9 +28,7 @@ export function FlavorCorrelationSection({
     "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE NEGATIVE ATTRIBUTES",
   );
 
-  // Estado dinámico para todas las series, iniciado con 4 en cada lado
   const [seriesList, setSeriesList] = useState<Series[]>([
-    // POSITIVOS
     {
       id: "1",
       name: "Clean-End-Finish",
@@ -124,7 +73,6 @@ export function FlavorCorrelationSection({
       stroke: "#c0392b",
       points: [],
     },
-    // NEGATIVOS
     {
       id: "3",
       name: "Linger-Bitter",
@@ -174,11 +122,9 @@ export function FlavorCorrelationSection({
     },
   ]);
 
-  // ─── Funciones de actualización ──────────────────────────────────────────────
-
   const addSeries = (type: "positive" | "negative") => {
     const currentCount = seriesList.filter((s) => s.type === type).length;
-    if (currentCount >= 4) return; // Límite de 4 correlaciones
+    if (currentCount >= 4) return;
 
     const colorObj = SERIES_COLORS[seriesList.length % SERIES_COLORS.length] ?? {
       fill: "#000000",
@@ -245,71 +191,6 @@ export function FlavorCorrelationSection({
   const positiveSeries = seriesList.filter((s) => s.type === "positive");
   const negativeSeries = seriesList.filter((s) => s.type === "negative");
 
-  // ─── Componente Editor de Serie ──────────────────────────────────────────────
-
-  const SeriesEditor = ({ series }: { series: Series }) => (
-    <div className="border rounded p-3 space-y-3 bg-card">
-      <div className="flex justify-between items-center gap-2">
-        <Input
-          value={series.name}
-          onChange={(e) => updateSeriesName(series.id, e.target.value)}
-          className="h-7 text-sm font-bold w-full"
-          placeholder="Nombre de la serie"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => addPoint(series.id)}
-          className="h-7 text-xs px-2 shrink-0"
-        >
-          <Plus className="size-3 mr-1" /> Punto
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => removeSeries(series.id)}
-          className="h-7 w-7 text-destructive shrink-0"
-        >
-          <X className="size-4" />
-        </Button>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
-        {series.points.map((p) => (
-          <div key={p.id} className="flex items-center gap-1 bg-secondary/30 p-1 rounded border">
-            <span className="text-[10px] font-bold w-3 text-center">X</span>
-            <Input
-              type="number"
-              value={p.x}
-              onChange={(e) => updatePoint(series.id, p.id, "x", Number(e.target.value))}
-              className="h-6 text-xs px-1"
-            />
-            <span className="text-[10px] font-bold w-3 text-center ml-1">Y</span>
-            <Input
-              type="number"
-              step="0.1"
-              value={p.y}
-              onChange={(e) => updatePoint(series.id, p.id, "y", Number(e.target.value))}
-              className="h-6 text-xs px-1"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => removePoint(series.id, p.id)}
-              className="h-6 w-6 text-destructive shrink-0"
-            >
-              <X className="size-3" />
-            </Button>
-          </div>
-        ))}
-        {series.points.length === 0 && (
-          <p className="text-xs text-muted-foreground col-span-2">
-            No hay puntos. Añade uno para comenzar.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-
   return (
     <StepCard
       title={title}
@@ -327,7 +208,6 @@ export function FlavorCorrelationSection({
           <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
             <h3 className="text-lg font-bold">GESTOR DINÁMICO DE CORRELACIONES</h3>
             <div className="flex-1 overflow-y-auto grid md:grid-cols-2 gap-6 pr-2">
-              {/* Columna Positivos */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b pb-2">
                   <h4 className="font-semibold text-green-700 dark:text-green-400">
@@ -344,11 +224,18 @@ export function FlavorCorrelationSection({
                   </Button>
                 </div>
                 {positiveSeries.map((s) => (
-                  <SeriesEditor key={s.id} series={s} />
+                  <FlavorCorrelationEditor
+                    key={s.id}
+                    series={s}
+                    updateSeriesName={updateSeriesName}
+                    addPoint={addPoint}
+                    removeSeries={removeSeries}
+                    updatePoint={updatePoint}
+                    removePoint={removePoint}
+                  />
                 ))}
               </div>
 
-              {/* Columna Negativos */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b pb-2">
                   <h4 className="font-semibold text-red-700 dark:text-red-400">
@@ -365,7 +252,15 @@ export function FlavorCorrelationSection({
                   </Button>
                 </div>
                 {negativeSeries.map((s) => (
-                  <SeriesEditor key={s.id} series={s} />
+                  <FlavorCorrelationEditor
+                    key={s.id}
+                    series={s}
+                    updateSeriesName={updateSeriesName}
+                    addPoint={addPoint}
+                    removeSeries={removeSeries}
+                    updatePoint={updatePoint}
+                    removePoint={removePoint}
+                  />
                 ))}
               </div>
             </div>
@@ -374,155 +269,18 @@ export function FlavorCorrelationSection({
       }
     >
       <div className="grid xl:grid-cols-2 gap-6">
-        {/* CHART 1: POSITIVE */}
-        <div className="space-y-2">
-          <input
-            value={positiveTitle}
-            onChange={(e) => setPositiveTitle(e.target.value)}
-            className="w-full text-sm font-semibold text-center bg-transparent border border-transparent hover:border-border focus:border-border focus:bg-background outline-none transition-colors px-2 py-0.5 rounded"
-          />
-          <div className="h-64 border bg-white relative">
-            <SafeResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
-                <CartesianGrid />
-                <XAxis type="number" dataKey="x" domain={[0, 180]} tickCount={10} />
-                <YAxis type="number" dataKey="y" domain={[6.0, 8.5]} tickCount={6} />
-                <ZAxis type="number" range={[100, 100]} />
-                <RTooltip cursor={{ strokeDasharray: "3 3" }} />
-
-                <ReferenceArea x1={0} x2={40} y1={6.0} y2={7.5} fill="#f8d7da" fillOpacity={0.5} />
-                <ReferenceArea
-                  x1={40}
-                  x2={180}
-                  y1={6.0}
-                  y2={7.5}
-                  fill="#fff3cd"
-                  fillOpacity={0.5}
-                />
-                <ReferenceArea x1={0} x2={40} y1={7.5} y2={8.5} fill="#e2e3e5" fillOpacity={0.5} />
-                <ReferenceArea
-                  x1={40}
-                  x2={180}
-                  y1={7.5}
-                  y2={8.5}
-                  fill="#d4edda"
-                  fillOpacity={0.5}
-                />
-
-                {positiveSeries.map((s) => (
-                  <Scatter
-                    key={s.id}
-                    name={s.name}
-                    data={s.points}
-                    fill={s.fill}
-                    stroke={s.stroke}
-                    strokeWidth={2}
-                  />
-                ))}
-              </ScatterChart>
-            </SafeResponsiveContainer>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-4 items-end">
-            <span className="font-bold text-sm mb-1 w-full text-center sm:w-auto sm:text-left">
-              Pearson Correlation
-            </span>
-            {positiveSeries.map((s) => (
-              <div key={`legend-${s.id}`} className="flex flex-col items-center">
-                <span className="flex items-center gap-1 text-xs font-semibold">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: s.fill, borderColor: s.stroke, borderWidth: 1 }}
-                  ></div>
-                  {s.name}
-                </span>
-                <span className="bg-amber-400 font-bold px-4 py-0.5 text-black mt-1 rounded-sm">
-                  {calculatePearson(s.points)}
-                </span>
-              </div>
-            ))}
-            {positiveSeries.length === 0 && (
-              <span className="text-muted-foreground text-xs italic mb-1">
-                No hay series creadas
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* CHART 2: NEGATIVE */}
-        <div className="space-y-2">
-          <input
-            value={negativeTitle}
-            onChange={(e) => setNegativeTitle(e.target.value)}
-            className="w-full text-sm font-semibold text-center bg-transparent border border-transparent hover:border-border focus:border-border focus:bg-background outline-none transition-colors px-2 py-0.5 rounded"
-          />
-          <div className="h-64 border bg-white relative">
-            <SafeResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
-                <CartesianGrid />
-                <XAxis type="number" dataKey="x" domain={[0, 180]} tickCount={10} />
-                <YAxis type="number" dataKey="y" domain={[6.0, 8.5]} tickCount={6} />
-                <ZAxis type="number" range={[100, 100]} />
-                <RTooltip cursor={{ strokeDasharray: "3 3" }} />
-
-                <ReferenceArea x1={0} x2={40} y1={6.0} y2={7.5} fill="#fff3cd" fillOpacity={0.5} />
-                <ReferenceArea
-                  x1={40}
-                  x2={180}
-                  y1={6.0}
-                  y2={7.5}
-                  fill="#f8d7da"
-                  fillOpacity={0.5}
-                />
-                <ReferenceArea x1={0} x2={40} y1={7.5} y2={8.5} fill="#d4edda" fillOpacity={0.5} />
-                <ReferenceArea
-                  x1={40}
-                  x2={180}
-                  y1={7.5}
-                  y2={8.5}
-                  fill="#e2e3e5"
-                  fillOpacity={0.5}
-                />
-
-                {negativeSeries.map((s) => (
-                  <Scatter
-                    key={s.id}
-                    name={s.name}
-                    data={s.points}
-                    fill={s.fill}
-                    stroke={s.stroke}
-                    strokeWidth={2}
-                  />
-                ))}
-              </ScatterChart>
-            </SafeResponsiveContainer>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-4 items-end">
-            <span className="font-bold text-sm mb-1 w-full text-center sm:w-auto sm:text-left">
-              Pearson Correlation
-            </span>
-            {negativeSeries.map((s) => (
-              <div key={`legend-${s.id}`} className="flex flex-col items-center">
-                <span className="flex items-center gap-1 text-xs font-semibold">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: s.fill, borderColor: s.stroke, borderWidth: 1 }}
-                  ></div>
-                  {s.name}
-                </span>
-                <span className="bg-amber-400 font-bold px-3 py-0.5 text-black mt-1 rounded-sm">
-                  {calculatePearson(s.points)}
-                </span>
-              </div>
-            ))}
-            {negativeSeries.length === 0 && (
-              <span className="text-muted-foreground text-xs italic mb-1">
-                No hay series creadas
-              </span>
-            )}
-          </div>
-        </div>
+        <FlavorCorrelationChart
+          title={positiveTitle}
+          setTitle={setPositiveTitle}
+          seriesList={positiveSeries}
+          isPositive={true}
+        />
+        <FlavorCorrelationChart
+          title={negativeTitle}
+          setTitle={setNegativeTitle}
+          seriesList={negativeSeries}
+          isPositive={false}
+        />
       </div>
     </StepCard>
   );

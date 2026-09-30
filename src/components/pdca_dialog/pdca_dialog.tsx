@@ -5,54 +5,27 @@ import { usePdcas } from "@/context/pdca-context";
 import { use_pdca_dialog_state } from "./hooks/use_pdca_dialog_state";
 import { use_pdca_deadline } from "./hooks/use_pdca_deadline";
 import { use_pdca_autosave } from "./hooks/use_pdca_autosave";
-import { format_date_to_string, parse_date_string } from "./utils/date_helpers";
-import { PdcaDialogHeader, ALL_STEP_IDS, TOTAL_STEPS } from "./common/pdca_dialog_header";
+import { PdcaDialogHeader, ALL_STEP_IDS } from "./common/pdca_dialog_header";
 import { PdcaDialogFooter } from "./common/pdca_dialog_footer";
-import { PdcaPhasePlan } from "./01-plan/pdca_phase_plan";
-import { PdcaPhaseDo } from "./02-do/pdca_phase_do";
-import { PdcaPhaseCheck } from "./03-check/pdca_phase_check";
-import { PdcaPhaseAct } from "./04-act/pdca_phase_act";
 import { PdcaPhaseResumen } from "./00-resumen/pdca_phase_resumen";
+import { PdcaPlanTabContent } from "./01-plan/pdca_plan_tab_content";
+import { PdcaDoTabContent } from "./02-do/pdca_do_tab_content";
+import { PdcaCheckTabContent } from "./03-check/pdca_check_tab_content";
+import { PdcaActTabContent } from "./04-act/pdca_act_tab_content";
 import { PdcaItfR2d2 } from "./04-act/step-itf-r2d2/pdca_itf_r2d2";
 import { CustomStepper } from "./common/pdca-dialog-stepper";
-import { PdcaComments } from "@/components/pdca-comments";
-import { PdcaHistory } from "@/components/pdca-history";
-import { DEFAULT_VPO_CHECKPOINTS, type Pdca, type Phase } from "@/data/pdca";
-
-const create_empty_pdca_draft = (): Pdca => ({
-  id: `PDCA-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-  titulo: "",
-  area: "cocimientos",
-  fase: "Plan",
-  actualizado: new Date().toLocaleDateString("es-ES", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }),
-  progreso: 0,
-  problema: "",
-  causaRaiz: "",
-  acciones: [],
-  verificacion: "",
-  evidencias: [],
-  estandarizacion: "",
-  indicador: { etiqueta: "Indicador principal", antes: 0, despues: 0, unidad: "%" },
-  serie: [
-    { mes: "May", valor: 0 },
-    { mes: "Jun", valor: 0 },
-    { mes: "Jul", valor: 0 },
-    { mes: "Ago", valor: 0 },
-  ],
-  vpoCheckpoints: DEFAULT_VPO_CHECKPOINTS.map((item) => ({ ...item, status: "", evidencia: "" })),
-  equipo: [],
-});
+import { PdcaBottomSection } from "./common/pdca_bottom_section";
+import { create_empty_pdca_draft } from "./utils/create_empty_pdca_draft";
+import { build_pdca_payload } from "./utils/build_pdca_payload";
+import type { Pdca, Phase } from "@/data/pdca";
 
 export const PdcaDialog: React.FC<{
   pdca: Pdca | null;
+  newPdcaType?: "PDCA" | "RDA";
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}> = ({ pdca, onOpenChange }) => {
-  const current_pdca = useMemo(() => pdca ?? create_empty_pdca_draft(), [pdca]);
+}> = ({ pdca, newPdcaType = "PDCA", onOpenChange }) => {
+  const current_pdca = useMemo(() => pdca ?? create_empty_pdca_draft(newPdcaType), [pdca, newPdcaType]);
   const { currentUser: auth_user, usersList: available_users } = useAuth();
   const is_admin = auth_user?.role === "admin";
 
@@ -66,117 +39,8 @@ export const PdcaDialog: React.FC<{
   const computed_progress = valid_steps.length > 0 ? Math.round((completed_count / valid_steps.length) * 100) : 0;
 
   const get_current_pdca_payload = useCallback((): Pdca => {
-    return {
-      ...current_pdca,
-      titulo: state.title_value,
-      area: state.area_value,
-      fase: state.active_tab,
-      problema: state.problem_value,
-      causaRaiz: state.root_cause_value,
-      acciones: state.action_items,
-      targetVsActual: state.target_vs_actual,
-      targetVsActualUnit: state.target_vs_actual_unit,
-      targetVsActualTitle: state.target_vs_actual_title,
-      targetVsActualYmin: state.target_vs_actual_ymin,
-      targetVsActualYmax: state.target_vs_actual_ymax,
-      kpiFinalResultData: state.kpi_final_result_data,
-      kpiFinalResultUnit: state.kpi_final_result_unit,
-      gembaFinalImage: state.gemba_final_image,
-      gembaFinalImages: state.gemba_final_images,
-      evidencias: state.evidence_files,
-      kpiDocuments: state.kpi_document_files,
-      paretoDataMap: state.pareto_data_map,
-      paretoDrillDowns: state.pareto_drill_downs,
-      paretoUnit: state.pareto_unit,
-      paretoTitles: state.pareto_titles,
-      vpoCheckpoints: state.vpo_checkpoints,
-      definicionMeta: state.definition_goal,
-      participantes: state.participants_data,
-      equipo: state.team_members,
-      ishikawas: state.ishikawas,
-      fiveWhysTables: state.five_whys_tables,
-      impactMatrix: state.impact_matrix,
-      hasFlavorCorrelation: state.has_flavor_correlation,
-      flavorCorrelationData: state.flavor_correlation_data,
-      statisticalAnalysisFiles: state.statistical_analysis_files,
-      hasGopThemes: state.has_gop_themes,
-      gopThemesData: state.gop_themes_data,
-      processMappingImage: state.process_mapping_files?.[0] || null,
-      processMappingFiles: state.process_mapping_files,
-      sipocMapFiles: state.sipoc_map_files,
-      problemTimelineOption: state.problem_timeline_option,
-      problemTimelineFilter: state.problem_timeline_filter,
-      problemTimelineEvents: state.problem_timeline_events,
-      itfR2d2Evaluation: state.itf_r2d2_evaluation,
-      baselineImage: state.baseline_image,
-      tablaEstandarizacion: state.tabla_estandarizacion,
-      tablaEstandarizacionVpo: state.tabla_estandarizacion_vpo,
-      resultadosFinales: state.resultados_finales,
-      kpiTreeFocoImage: state.kpi_tree_foco_image,
-      evidenciasSolucion: state.evidencias_solucion,
-      hasMapeoProceso: state.has_mapeo_proceso,
-      mapeoProcesoImage: state.mapeo_proceso_image,
-      mapeoProcesoDesc: state.mapeo_proceso_desc || undefined,
-        rendimiento_actual_pis: state.rendimiento_actual_pis,
-        rendimiento_actual_image: state.rendimiento_actual_image,
-      coleccionDatos: state.coleccion_datos,
-      especificacionProcesosText: state.especificacion_procesos_text ?? undefined,
-      especificacionProcesosImage: state.especificacion_procesos_image,
-      finalTimeSeriesTitle: state.final_time_series_title,
-      finalTimeSeriesData: state.final_time_series_data,
-      finalTimeSeriesUnit: state.final_time_series_unit,
-      finalTimeSeriesYmin: state.final_time_series_ymin,
-      finalTimeSeriesYmax: state.final_time_series_ymax,
-      currentTimesTitle: state.current_times_title,
-      ishikawaConceptos: state.ishikawa_conceptos,
-      informacionAdicionalFiles: state.informacion_adicional_files,
-      vozConsumidor: state.voz_consumidor,
-      analisisRiesgosProyecto: state.analisis_riesgos_proyecto,
-      conclusionesCausaRaiz: state.conclusiones_causa_raiz,
-      pruebasEjecutadas: state.pruebas_ejecutadas,
-      nuevoPerformance: state.nuevo_performance,
-      nuevo_performance_image: state.nuevo_performance_image,
-      nuevo_pareto_image: state.nuevo_pareto_image,
-      nuevo_pareto_drill_downs: state.nuevo_pareto_drill_downs,
-      nuevo_pareto_data_map: state.nuevo_pareto_data_map,
-      nuevo_pareto_unit: state.nuevo_pareto_unit,
-      nuevo_pareto_titles: state.nuevo_pareto_titles,
-      nueva_correlacion_image: state.nueva_correlacion_image,
-      has_nueva_correlacion: state.has_nueva_correlacion,
-      nueva_correlacion_data: state.nueva_correlacion_data,
-      analisisRiesgosEstandarizacion: state.analisis_riesgos_estandarizacion,
-      conclusionesFinales: state.conclusiones_finales,
-      conclusionesStoryboardImage: state.conclusiones_storyboard_image,
-      conclusionesKpiData: state.conclusiones_kpi_data ?? undefined,
-      conclusionesPiItems: state.conclusiones_pi_items ?? undefined,
-      sops_documentos_image: state.sops_documentos_image,
-      plan_entrenamiento_image: state.plan_entrenamiento_image,
-      plan_control_image: state.plan_control_image,
-      lecciones_aprendidas: state.lecciones_aprendidas,
-      benchmarkImage: state.benchmark_image,
-      comentarios: state.comments_list,
-      historial: state.history_events,
-      completedSteps: Array.from(state.completed_steps),
-      naSteps: Array.from(state.na_steps),
-      completedPhases: Array.from(state.completed_phases),
-      progreso: computed_progress,
-      fechaFinalizacion: state.deadline_date
-        ? format_date_to_string(state.deadline_date)
-        : current_pdca.fechaFinalizacion === "Sin lÃƒÆ’Ã‚Â­mite"
-          ? "Sin lÃƒÆ’Ã‚Â­mite"
-          : current_pdca.fechaFinalizacion && !parse_date_string(current_pdca.fechaFinalizacion)
-            ? current_pdca.fechaFinalizacion
-            : "",
-      autor: state.author_name,
-      autorEmail: state.author_email,
-      asignados: state.assigned_users,
-      actualizado: new Date().toLocaleDateString("es-ES", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
-    };
-  }, [current_pdca, state]);
+    return build_pdca_payload(current_pdca, state, computed_progress);
+  }, [current_pdca, state, computed_progress]);
 
   const { refresh } = usePdcas();
 
@@ -242,7 +106,7 @@ export const PdcaDialog: React.FC<{
     
     if ((state.active_tab === "Act" && !is_admin) || state.active_tab === "Evaluacion") {
       await autosave.handle_save_to_firestore();
-      toast.success("Ãƒâ€šÃ‚Â¡PDCA finalizado!");
+      toast.success("¡PDCA finalizado!");
       onOpenChange(false);
     } else if (current_idx >= 0 && current_idx < phase_order.length - 1) {
       const next_phase = phase_order[current_idx + 1]!;
@@ -305,411 +169,57 @@ export const PdcaDialog: React.FC<{
 
       {mounted_tabs.has("Plan") && (
         <div className={state.active_tab !== "Plan" ? "hidden" : "block"}>
-          <PdcaPhasePlan
-            title_value={state.title_value}
-          on_title_change={(t) => {
-            state.set_title_value(t);
-            autosave.mark_as_modified();
-          }}
-          area_value={state.area_value}
-          on_area_change={(a) => {
-            state.set_area_value(a);
-            autosave.mark_as_modified();
-          }}
-          deadline_date={state.deadline_date || new Date()}
-          on_deadline_change={(d) => {
-            state.set_deadline_date(d);
-            autosave.mark_as_modified();
-          }}
-          author_name={state.author_name}
-          author_email={state.author_email}
-          on_author_change={(email, name) => {
-            state.set_author_email(email);
-            state.set_author_name(name);
-            autosave.mark_as_modified();
-          }}
-          assigned_users={state.assigned_users}
-          on_toggle_assigned_user={(u) => {
-            const exists = state.assigned_users.some((a) => a.email === u.email);
-            const next = exists
-              ? state.assigned_users.filter((a) => a.email !== u.email)
-              : [...state.assigned_users, u];
-            state.set_assigned_users(next);
-            autosave.mark_as_modified();
-          }}
-          available_users={available_users}
-          is_admin_user={is_admin}
-          team_members_list={state.team_members}
-          on_team_members_change={(m) => {
-            state.set_team_members(m);
-            autosave.mark_as_modified();
-          }}
-          problem_description={state.problem_value}
-          on_problem_change={(v) => {
-            state.set_problem_value(v);
-            autosave.mark_as_modified();
-          }}
-          goal_definition={state.definition_goal}
-          on_goal_definition_change={(g) => {
-            state.set_definition_goal(g);
-            autosave.mark_as_modified();
-          }}
-          participants_info={state.participants_data}
-          on_participants_info_change={(p) => {
-            state.set_participants_data(p);
-            autosave.mark_as_modified();
-          }}
-          vpo_checkpoints={state.vpo_checkpoints}
-          on_vpo_checkpoints_change={(c) => {
-            state.set_vpo_checkpoints(c);
-            autosave.mark_as_modified();
-          }}
-          completed_steps={state.completed_steps}
-          na_steps={state.na_steps}
-          on_toggle_step={handle_toggle_step}
-          on_toggle_na={handle_toggle_na}
-          is_editable={is_editable}
-          process_mapping_files={state.process_mapping_files}
-          on_process_mapping_files_change={(f) => {
-            state.set_process_mapping_files(f);
-            autosave.mark_as_modified();
-          }}
-          sipoc_map_files={state.sipoc_map_files}
-          on_sipoc_map_files_change={(f) => {
-            state.set_sipoc_map_files(f);
-            autosave.mark_as_modified();
-          }}
-          baseline_image={state.baseline_image}
-          on_baseline_image_change={(img) => {
-            state.set_baseline_image(img);
-            autosave.mark_as_modified();
-          }}
-          coleccion_datos={state.coleccion_datos}
-          on_coleccion_datos_change={(d) => {
-            state.set_coleccion_datos(d);
-            autosave.mark_as_modified();
-          }}
-          pareto_drill_downs={state.pareto_drill_downs}
-          on_pareto_drill_downs_change={(d) => {
-            state.set_pareto_drill_downs(d);
-            autosave.mark_as_modified();
-          }}
-          pareto_data_map={state.pareto_data_map}
-          on_pareto_data_map_change={(m) => {
-            state.set_pareto_data_map(m);
-            autosave.mark_as_modified();
-          }}
-          pareto_unit={state.pareto_unit}
-          on_pareto_unit_change={(u) => {
-            state.set_pareto_unit(u);
-            autosave.mark_as_modified();
-          }}
-          pareto_titles={state.pareto_titles}
-          on_pareto_titles_change={(t) => {
-            state.set_pareto_titles(t);
-            autosave.mark_as_modified();
-          }}
-          target_vs_actual={state.target_vs_actual}
-          on_target_vs_actual_change={(t) => {
-            state.set_target_vs_actual(t);
-            autosave.mark_as_modified();
-          }}
-          target_vs_actual_unit={state.target_vs_actual_unit}
-          on_target_vs_actual_unit_change={(u) => {
-            state.set_target_vs_actual_unit(u);
-            autosave.mark_as_modified();
-          }}
-          target_vs_actual_title={state.target_vs_actual_title}
-          on_target_vs_actual_title_change={(t) => {
-            state.set_target_vs_actual_title(t);
-            autosave.mark_as_modified();
-          }}
-          target_vs_actual_ymin={state.target_vs_actual_ymin}
-          on_target_vs_actual_ymin_change={(y) => {
-            state.set_target_vs_actual_ymin(y);
-            autosave.mark_as_modified();
-          }}
-          target_vs_actual_ymax={state.target_vs_actual_ymax}
-          on_target_vs_actual_ymax_change={(y) => {
-            state.set_target_vs_actual_ymax(y);
-            autosave.mark_as_modified();
-          }}
-          ishikawas={state.ishikawas}
-          on_ishikawas_change={(i) => {
-            state.set_ishikawas(i);
-            autosave.mark_as_modified();
-          }}
-          five_whys_tables={state.five_whys_tables}
-          on_five_whys_tables_change={(w) => {
-            state.set_five_whys_tables(w);
-            autosave.mark_as_modified();
-          }}
-          voz_consumidor={state.voz_consumidor}
-          on_voz_consumidor_change={(v) => {
-            state.set_voz_consumidor(v);
-            autosave.mark_as_modified();
-          }}
-          analisis_riesgos_proyecto={state.analisis_riesgos_proyecto}
-          on_analisis_riesgos_proyecto_change={(a) => {
-            state.set_analisis_riesgos_proyecto(a);
-            autosave.mark_as_modified();
-          }}
-          especificacion_procesos_image={state.especificacion_procesos_image}
-          on_especificacion_procesos_image_change={(img) => {
-            state.set_especificacion_procesos_image(img);
-            autosave.mark_as_modified();
-          }}
-          benchmark_image={state.benchmark_image}
-          on_benchmark_image_change={(img) => {
-            state.set_benchmark_image(img);
-            autosave.mark_as_modified();
-          }}
-          conclusiones_causa_raiz={state.conclusiones_causa_raiz}
-          on_conclusiones_causa_raiz_change={(c) => {
-            state.set_conclusiones_causa_raiz(c);
-            autosave.mark_as_modified();
-          }}
-          has_flavor_correlation={state.has_flavor_correlation}
-          set_has_flavor_correlation={(val) => {
-            state.set_has_flavor_correlation(val);
-            autosave.mark_as_modified();
-          }}
-          rendimiento_actual_pis={state.rendimiento_actual_pis}
-          on_rendimiento_actual_pis_change={(val) => {
-            state.set_rendimiento_actual_pis(val);
-            autosave.mark_as_modified();
-          }}
-          rendimiento_actual_image={state.rendimiento_actual_image}
-          on_rendimiento_actual_image_change={(val) => {
-            state.set_rendimiento_actual_image(val);
-            autosave.mark_as_modified();
-          }}
-          gop_themes_data={state.gop_themes_data}
-          on_gop_themes_data_change={(data) => {
-            state.set_gop_themes_data(data);
-            autosave.mark_as_modified();
-          }}
-        />
+          <PdcaPlanTabContent
+            state={state}
+            autosave={autosave}
+            available_users={available_users}
+            is_admin={is_admin}
+            is_editable={is_editable}
+            on_toggle_step={handle_toggle_step}
+            on_toggle_na={handle_toggle_na}
+          />
         </div>
       )}
 
       {mounted_tabs.has("Do") && (
         <div className={state.active_tab !== "Do" ? "hidden" : "block"}>
-          <PdcaPhaseDo
-          action_items={state.action_items}
-          on_action_items_change={(a) => {
-            state.set_action_items(a);
-            autosave.mark_as_modified();
-          }}
-          evidencias_solucion={state.evidencias_solucion}
-          on_evidencias_solucion_change={(evs) => {
-            state.set_evidencias_solucion(evs);
-            autosave.mark_as_modified();
-          }}
-          kpi_tree_foco_image={state.kpi_tree_foco_image}
-          on_kpi_tree_foco_image_change={(img) => {
-            state.set_kpi_tree_foco_image(img);
-            autosave.mark_as_modified();
-          }}
-          completed_steps={state.completed_steps}
-          na_steps={state.na_steps}
-          on_toggle_step={handle_toggle_step}
-          on_toggle_na={handle_toggle_na}
-        />
+          <PdcaDoTabContent
+            state={state}
+            autosave={autosave}
+            on_toggle_step={handle_toggle_step}
+            on_toggle_na={handle_toggle_na}
+          />
         </div>
       )}
 
       {mounted_tabs.has("Check") && (
         <div className={state.active_tab !== "Check" ? "hidden" : "block"}>
-          <PdcaPhaseCheck
-            final_time_series_data={state.final_time_series_data}
-            on_final_time_series_data_change={(k) => {
-              state.set_final_time_series_data(k);
-              autosave.mark_as_modified();
-            }}
-            final_time_series_unit={state.final_time_series_unit}
-            on_final_time_series_unit_change={(u) => {
-              state.set_final_time_series_unit(u);
-              autosave.mark_as_modified();
-            }}
-            final_time_series_title={state.final_time_series_title}
-            on_final_time_series_title_change={(t) => {
-              state.set_final_time_series_title(t);
-              autosave.mark_as_modified();
-            }}
-            final_time_series_ymin={state.final_time_series_ymin}
-            on_final_time_series_ymin_change={(y) => {
-              state.set_final_time_series_ymin(y);
-              autosave.mark_as_modified();
-            }}
-            final_time_series_ymax={state.final_time_series_ymax}
-            on_final_time_series_ymax_change={(y) => {
-              state.set_final_time_series_ymax(y);
-              autosave.mark_as_modified();
-            }}
-            completed_steps={state.completed_steps}
-            na_steps={state.na_steps}
+          <PdcaCheckTabContent
+            state={state}
+            autosave={autosave}
             on_toggle_step={handle_toggle_step}
             on_toggle_na={handle_toggle_na}
-            mapeo_proceso_image={state.mapeo_proceso_image}
-            on_mapeo_proceso_image_change={(img) => {
-              state.set_mapeo_proceso_image(img);
-              autosave.mark_as_modified();
-            }}
-            pruebas_ejecutadas={state.pruebas_ejecutadas}
-            on_pruebas_ejecutadas_change={(p) => {
-              state.set_pruebas_ejecutadas(p);
-              autosave.mark_as_modified();
-            }}
-            nuevo_performance_image={state.nuevo_performance_image}
-            on_nuevo_performance_image_change={(img) => {
-              state.set_nuevo_performance_image(img);
-              autosave.mark_as_modified();
-            }}
-            nuevo_pareto_drill_downs={state.nuevo_pareto_drill_downs}
-            on_nuevo_pareto_drill_downs_change={(d) => {
-              state.set_nuevo_pareto_drill_downs(d);
-              autosave.mark_as_modified();
-            }}
-            nuevo_pareto_data_map={state.nuevo_pareto_data_map}
-            on_nuevo_pareto_data_map_change={(m) => {
-              state.set_nuevo_pareto_data_map(m);
-              autosave.mark_as_modified();
-            }}
-            nuevo_pareto_unit={state.nuevo_pareto_unit}
-            on_nuevo_pareto_unit_change={(u) => {
-              state.set_nuevo_pareto_unit(u);
-              autosave.mark_as_modified();
-            }}
-            nuevo_pareto_titles={state.nuevo_pareto_titles}
-            on_nuevo_pareto_titles_change={(t) => {
-              state.set_nuevo_pareto_titles(t);
-              autosave.mark_as_modified();
-            }}
-            has_nueva_correlacion={state.has_nueva_correlacion}
-            on_has_nueva_correlacion_change={(val) => {
-              state.set_has_nueva_correlacion(val);
-              autosave.mark_as_modified();
-            }}
-            nueva_correlacion_data={state.nueva_correlacion_data}
-            on_nueva_correlacion_data_change={(d) => {
-              state.set_nueva_correlacion_data(d);
-              autosave.mark_as_modified();
-            }}
-            nuevo_performance={state.nuevo_performance}
-            on_nuevo_performance_change={(n) => {
-              state.set_nuevo_performance(n);
-              autosave.mark_as_modified();
-            }}
           />
         </div>
       )}
 
       {mounted_tabs.has("Act") && (
         <div className={state.active_tab !== "Act" ? "hidden" : "block"}>
-          <div className="space-y-6">
-            <PdcaPhaseAct
-            analisis_riesgos_estandarizacion={state.analisis_riesgos_estandarizacion}
-            on_analisis_riesgos_estandarizacion_change={(data) => {
-              state.set_analisis_riesgos_estandarizacion(data);
-              autosave.mark_as_modified();
-            }}
-            tabla_estandarizacion={state.tabla_estandarizacion}
-            on_tabla_estandarizacion_change={(data) => {
-              state.set_tabla_estandarizacion(data);
-              autosave.mark_as_modified();
-            }}
-            completed_steps={state.completed_steps}
-            na_steps={state.na_steps}
+          <PdcaActTabContent
+            state={state}
+            autosave={autosave}
+            is_editable={is_editable}
             on_toggle_step={handle_toggle_step}
             on_toggle_na={handle_toggle_na}
-            is_editable={is_editable}
-            sops_documentos_image={state.sops_documentos_image}
-            on_sops_documentos_image_change={(img) => {
-              state.set_sops_documentos_image(img);
-              autosave.mark_as_modified();
-            }}
-            plan_entrenamiento_image={state.plan_entrenamiento_image}
-            on_plan_entrenamiento_image_change={(img) => {
-              state.set_plan_entrenamiento_image(img);
-              autosave.mark_as_modified();
-            }}
-            plan_control_image={state.plan_control_image}
-            on_plan_control_image_change={(img) => {
-              state.set_plan_control_image(img);
-              autosave.mark_as_modified();
-            }}
-            lecciones_aprendidas={state.lecciones_aprendidas}
-            on_lecciones_aprendidas_change={(text) => {
-              state.set_lecciones_aprendidas(text);
-              autosave.mark_as_modified();
-            }}
-            conclusiones_finales={state.conclusiones_finales}
-            conclusiones_storyboard_image={state.conclusiones_storyboard_image}
-            on_conclusiones_storyboard_image_change={(img) => {
-              state.set_conclusiones_storyboard_image(img);
-              autosave.mark_as_modified();
-            }}
-            on_conclusiones_finales_change={(c) => {
-              state.set_conclusiones_finales(c);
-              autosave.mark_as_modified();
-            }}
-            conclusiones_kpi_data={state.conclusiones_kpi_data}
-            on_conclusiones_kpi_data_change={(data) => {
-              state.set_conclusiones_kpi_data(data);
-              autosave.mark_as_modified();
-            }}
-            conclusiones_pi_items={state.conclusiones_pi_items}
-            on_conclusiones_pi_items_change={(items) => {
-              state.set_conclusiones_pi_items(items);
-              autosave.mark_as_modified();
-            }}
           />
-        </div>
         </div>
       )}
 
-      <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-        <div className="flex gap-2 border-b border-border pb-2">
-          <button
-            type="button"
-            className={`px-3 py-1 text-xs font-semibold rounded-md ${state.bottom_tab === "comments" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-            onClick={() => state.set_bottom_tab("comments")}
-          >
-            Comentarios
-          </button>
-          <button
-            type="button"
-            className={`px-3 py-1 text-xs font-semibold rounded-md ${state.bottom_tab === "history" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-            onClick={() => state.set_bottom_tab("history")}
-          >
-            Historial
-          </button>
-        </div>
-        {state.bottom_tab === "comments" ? (
-          <PdcaComments
-            comments={state.comments_list}
-            onAddComment={(text, stepTitle) => {
-              const new_comment = {
-                id: crypto.randomUUID(),
-                userId: auth_user?.email || "anonymous",
-                userName: auth_user?.name || "Usuario",
-                text,
-                timestamp: new Date().toISOString(),
-                stepTitle,
-              };
-              state.set_comments_list([...state.comments_list, new_comment]);
-              autosave.mark_as_modified();
-            }}
-            onDeleteComment={(id) => {
-              state.set_comments_list(state.comments_list.filter((c) => c.id !== id));
-              autosave.mark_as_modified();
-            }}
-          />
-        ) : (
-          <PdcaHistory history={state.history_events} />
-        )}
-      </div>
+      <PdcaBottomSection
+        state={state}
+        autosave={autosave}
+        auth_user={auth_user}
+      />
 
       {is_admin && mounted_tabs.has("Evaluacion") && (
         <div className={state.active_tab !== "Evaluacion" ? "hidden" : "block"}>
