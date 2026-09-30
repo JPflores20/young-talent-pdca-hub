@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Plus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StepCard } from "@/components/ui/step-card";
@@ -14,18 +14,21 @@ export function FlavorCorrelationSection({
   onToggleStep,
   onToggleNa,
   title = "Correlación",
-  data,
-  onChange,
 }: {
   isStepCompleted?: boolean;
   isNa?: boolean | undefined;
   onToggleStep?: () => void;
   onToggleNa?: (() => void) | undefined;
   title?: string | undefined;
-  data?: any;
-  onChange?: (data: any) => void;
 }) {
-  const DEFAULT_SERIES_LIST: Series[] = [
+  const [positiveTitle, setPositiveTitle] = useState(
+    "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE POSITIVE ATTRIBUTES",
+  );
+  const [negativeTitle, setNegativeTitle] = useState(
+    "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE NEGATIVE ATTRIBUTES",
+  );
+
+  const [seriesList, setSeriesList] = useState<Series[]>([
     {
       id: "1",
       name: "Clean-End-Finish",
@@ -117,29 +120,7 @@ export function FlavorCorrelationSection({
       stroke: "#8e44ad",
       points: [],
     },
-  ];
-
-  const [positiveTitle, setPositiveTitle] = useState(
-    data?.positiveTitle || "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE POSITIVE ATTRIBUTES",
-  );
-  const [negativeTitle, setNegativeTitle] = useState(
-    data?.negativeTitle || "SENSORY (GLOBAL PANEL) VS % OF TASTERS WHO IDENTIFY THE NEGATIVE ATTRIBUTES",
-  );
-
-  const [seriesList, setSeriesList] = useState<Series[]>(data?.seriesList || DEFAULT_SERIES_LIST);
-
-  const onChangeRef = useRef(onChange);
-  useEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
-
-  useEffect(() => {
-    onChangeRef.current?.({
-      positiveTitle,
-      negativeTitle,
-      seriesList,
-    });
-  }, [positiveTitle, negativeTitle, seriesList]);
+  ]);
 
   const addSeries = (type: "positive" | "negative") => {
     const currentCount = seriesList.filter((s) => s.type === type).length;

@@ -240,8 +240,8 @@ export const use_pdca_dialog_state = (
   const [has_nueva_correlacion, set_has_nueva_correlacion] = useState<boolean>(
     initial_pdca.has_nueva_correlacion || false,
   );
-  const [nueva_correlacion_data, set_nueva_correlacion_data] = useState<any[]>(
-    initial_pdca.nueva_correlacion_data || [],
+  const [nueva_correlacion_data, set_nueva_correlacion_data] = useState<any>(
+    initial_pdca.nueva_correlacion_data || null,
   );
 
   const [analisis_riesgos_estandarizacion, set_analisis_riesgos_estandarizacion] = useState<any[]>(

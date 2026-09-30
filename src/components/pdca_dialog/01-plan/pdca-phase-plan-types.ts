@@ -87,6 +87,8 @@ export interface PhasePlanProps {
   on_conclusiones_causa_raiz_change?: ((items: any[]) => void) | undefined;
   has_flavor_correlation?: boolean | undefined;
   set_has_flavor_correlation?: ((val: boolean) => void) | undefined;
+  flavor_correlation_data?: any;
+  on_flavor_correlation_data_change?: ((data: any) => void) | undefined;
   gop_themes_data?: GopThemeItem[] | undefined;
   on_gop_themes_data_change?: ((data: GopThemeItem[]) => void) | undefined;
   rendimiento_actual_pis?: RendimientoActualPiItem[] | undefined;

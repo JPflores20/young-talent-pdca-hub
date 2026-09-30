@@ -45,8 +45,8 @@ interface PhaseCheckProps {
   on_nuevo_pareto_titles_change?: (t: Record<string, string>) => void;
   has_nueva_correlacion?: boolean;
   on_has_nueva_correlacion_change?: (val: boolean) => void;
-  nueva_correlacion_data?: any[];
-  on_nueva_correlacion_data_change?: (d: any[]) => void;
+  nueva_correlacion_data?: any;
+  on_nueva_correlacion_data_change?: (d: any) => void;
 }
 
 export const PdcaPhaseCheck: React.FC<PhaseCheckProps> = ({
@@ -140,6 +140,8 @@ export const PdcaPhaseCheck: React.FC<PhaseCheckProps> = ({
         isStepCompleted={completed_steps.has("step-26")}
         onToggleStep={() => on_toggle_step("step-26")}
         isNa={na_steps?.has("step-26")} onToggleNa={() => on_toggle_na?.("step-26")}
+        data={nueva_correlacion_data}
+        onChange={on_nueva_correlacion_data_change}
       />
 
       {/* ── PASO 26: Evolución de KPIs ───────────────────────── */}

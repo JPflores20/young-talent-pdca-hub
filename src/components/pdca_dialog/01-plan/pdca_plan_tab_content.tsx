@@ -191,6 +191,11 @@ export const PdcaPlanTabContent: React.FC<PdcaPlanTabContentProps> = ({
         state.set_has_flavor_correlation(val);
         autosave.mark_as_modified();
       }}
+      flavor_correlation_data={state.flavor_correlation_data}
+      on_flavor_correlation_data_change={(val) => {
+        state.set_flavor_correlation_data(val);
+        autosave.mark_as_modified();
+      }}
       rendimiento_actual_pis={state.rendimiento_actual_pis}
       on_rendimiento_actual_pis_change={(val) => {
         state.set_rendimiento_actual_pis(val);

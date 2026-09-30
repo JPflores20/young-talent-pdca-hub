@@ -45,6 +45,8 @@ export const PdcaPhasePlanSubphase2: React.FC<PhasePlanProps> = ({
   on_conclusiones_causa_raiz_change,
   has_flavor_correlation,
   set_has_flavor_correlation,
+  flavor_correlation_data,
+  on_flavor_correlation_data_change,
   gop_themes_data,
   on_gop_themes_data_change,
   rendimiento_actual_pis,
@@ -193,6 +195,8 @@ export const PdcaPhasePlanSubphase2: React.FC<PhasePlanProps> = ({
           onToggleStep={() => on_toggle_step("step-flavor-corr")}
           isNa={na_steps?.has("step-flavor-corr")}
           onToggleNa={() => on_toggle_na?.("step-flavor-corr")}
+          data={flavor_correlation_data}
+          onChange={on_flavor_correlation_data_change}
         />
       )}
 
